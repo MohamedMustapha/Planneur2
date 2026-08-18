@@ -1,0 +1,9 @@
+Step 1.
+Copy Mobiscroll into your app.
+Extract the zip file you just downloaded, then grab the lib folder of the angular CLI project and copy it into src folder of your Angular app.
+
+Step 2.
+Run the config command in the root folder of the Angular project. Make sure to have the Mobiscroll CLI installed.
+This will take care of setting everything up from the package you just downloaded. Please note that it will not install the library from NPM, for updating Mobiscroll you'll have to repeat the process.
+
+$ mobiscroll config angular --no-npm
