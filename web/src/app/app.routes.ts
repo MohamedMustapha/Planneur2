@@ -42,7 +42,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/projects/project-detail').then((m) => m.ProjectDetail),
   },
-  placeholder('portfolio', { titleKey: 'nav.portfolio', slice: 'S4', descriptionKey: 'placeholder.portfolio' }),
+  {
+    path: 'portfolio',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/portfolio/portfolio-board').then((m) => m.PortfolioBoard),
+  },
   placeholder('reports', { titleKey: 'nav.reports', slice: 'S8', descriptionKey: 'placeholder.reports' }),
   placeholder('kudos', { titleKey: 'nav.kudos', slice: 'S9', descriptionKey: 'placeholder.kudos' }),
   placeholder('finance', { titleKey: 'nav.finance', slice: 'S11', descriptionKey: 'placeholder.finance' }),

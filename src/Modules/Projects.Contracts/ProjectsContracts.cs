@@ -75,3 +75,36 @@ public sealed record ProjectDepartmentsChanged(Guid ProjectId, IReadOnlyList<Gui
 
 /// <summary>Someone who could be added to a project team, and the department they would contribute from.</summary>
 public sealed record TeamCandidate(Guid PersonId, string DisplayName, Guid? DepartmentId);
+
+/// <summary>
+/// What Portfolio needs from Projects at the moment of commitment.
+/// </summary>
+/// <remarks>
+/// Committing to a candidate is where it stops being hypothetical and acquires a team and a cost — which means it
+/// acquires a Project. Portfolio can link one that already exists, or ask for one to be provisioned; either way it
+/// goes through this rather than reaching into the Projects schema.
+///
+/// Synchronous and in the caller's transaction: a commitment that recorded the decision but lost the project would
+/// leave an item committed to nothing, and the repair is manual.
+/// </remarks>
+public interface IProjectProvisioner
+{
+    /// <summary>Creates a project for a newly committed portfolio item and returns its id.</summary>
+    Task<Guid> ProvisionAsync(
+        string code,
+        string name,
+        string? description,
+        Guid leadDepartmentId,
+        CancellationToken ct);
+
+    /// <summary>True when the project exists and the caller can see it — used to validate an explicit link.</summary>
+    Task<bool> ExistsAsync(Guid projectId, CancellationToken ct);
+
+    /// <summary>True when the project has at least one active member. The activation guard needs it.</summary>
+    Task<bool> HasTeamAsync(Guid projectId, CancellationToken ct);
+
+    /// <summary>Cost and classification for the board cards, which show them from S3.</summary>
+    Task<IReadOnlyDictionary<Guid, ProjectSummary>> GetSummariesAsync(
+        IReadOnlyList<Guid> projectIds,
+        CancellationToken ct);
+}

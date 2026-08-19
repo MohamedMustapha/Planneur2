@@ -85,7 +85,9 @@
   },
   "common": {
     "noHours": "0,0 h",
-    "loading": "Chargement…"
+    "loading": "Chargement…",
+    "close": "Fermer",
+    "cancel": "Annuler"
   },
   "org": {
     "title": "Annuaire de l'organisation",
@@ -210,6 +212,49 @@
       "build": "BUILD",
       "run": "RUN",
       "mixed": "Mixte"
+    }
+  },
+  "portfolio": {
+    "title": "Portefeuille",
+    "subtitle": "Le portefeuille de votre périmètre, du candidat au déphasage",
+    "propose": "Proposer un candidat",
+    "commit": "Engager",
+    "activate": "Démarrer",
+    "archive": "Déphaser",
+    "revert": "Revenir en arrière",
+    "openProject": "Ouvrir le projet",
+    "addIteration": "Ajouter une itération",
+    "closeIteration": "Clôturer l'itération",
+    "candidateName": "Nom du candidat",
+    "priority": "Priorité",
+    "notes": "Notes",
+    "decision": "Décision",
+    "decisionNotes": "Motif de la décision",
+    "projectCode": "Code du projet",
+    "iterationName": "Nom de l'itération",
+    "length": "Durée",
+    "startsOn": "Début",
+    "endsOn": "Fin",
+    "iterations": "Itérations",
+    "noIterations": "Aucune itération planifiée.",
+    "history": "Historique des décisions",
+    "laneEmpty": "Rien ici.",
+    "genericError": "L'opération a échoué.",
+    "state": {
+      "considered": "Envisagé",
+      "committed": "Engagé",
+      "active": "Actif",
+      "dephase": "Déphasé"
+    },
+    "lengthOption": {
+      "oneweek": "1 sem.",
+      "twoweeks": "2 sem.",
+      "onemonth": "1 mois",
+      "custom": "Libre"
+    },
+    "scope": {
+      "all": "Tout",
+      "mine": "Les miens"
     }
   }
 }

@@ -1,0 +1,306 @@
+:host {
+  display: contents;
+}
+
+.portfolio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.portfolio__status,
+.portfolio__error {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.portfolio__error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+}
+
+// --- Lanes ----------------------------------------------------------------------------------------------------
+// Four equal columns that scroll as one board rather than four independent lists: the whole point of the view is
+// comparing the lanes against each other, which is impossible if they scroll separately.
+.lanes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+  overflow-x: auto;
+}
+
+.lane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+
+  // The state tokens were in the design system from S0; each lane wears its own.
+  --lane-accent: var(--state-considered);
+  --lane-soft: var(--state-considered-soft);
+  --lane-ink: var(--state-considered-ink);
+}
+
+.lane--committed {
+  --lane-accent: var(--state-committed);
+  --lane-soft: var(--state-committed-soft);
+  --lane-ink: var(--state-committed-ink);
+}
+
+.lane--active {
+  --lane-accent: var(--state-active);
+  --lane-soft: var(--state-active-soft);
+  --lane-ink: var(--state-active-ink);
+}
+
+.lane--dephase {
+  --lane-accent: var(--state-dephase);
+  --lane-soft: var(--state-dephase-soft);
+  --lane-ink: var(--state-dephase-ink);
+}
+
+.lane__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--lane-accent);
+}
+
+.lane__title {
+  margin: 0;
+  color: var(--lane-ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lane__count {
+  padding: 1px var(--space-2);
+  color: var(--lane-ink);
+  font-size: var(--text-xs);
+  background: var(--lane-soft);
+  border-radius: var(--radius-pill, 999px);
+}
+
+.lane__empty {
+  margin: 0;
+  padding: var(--space-3) 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+
+// --- Cards ----------------------------------------------------------------------------------------------------
+.item-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--lane-accent);
+  border-radius: var(--radius-sm);
+}
+
+.item-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.item-card__name {
+  padding: 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+}
+
+.item-card__meta {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.item-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}
+
+// --- Iteration strip ------------------------------------------------------------------------------------------
+.iteration {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  font-size: var(--text-2xs);
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.iteration.is-active {
+  color: var(--state-active-ink);
+  background: var(--state-active-soft);
+}
+
+.iteration__name {
+  flex: 1;
+  overflow: hidden;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.iteration__dates,
+.iteration__index {
+  color: var(--ink-3);
+}
+
+// --- Panels ---------------------------------------------------------------------------------------------------
+.panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(420px, calc(100vw - var(--space-4) * 2));
+  max-height: calc(100vh - var(--space-4) * 2);
+  padding: var(--space-4);
+  overflow-y: auto;
+  transform: translate(-50%, -50%);
+}
+
+.panel--wide {
+  width: min(640px, calc(100vw - var(--space-4) * 2));
+}
+
+.panel__title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.panel__section {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.panel__empty {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  font-size: var(--text-xs);
+  border: none;
+}
+
+.field__hint {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+// --- Detail ---------------------------------------------------------------------------------------------------
+.strip,
+.history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.strip__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  font-size: var(--text-xs);
+  background: var(--surface-2);
+  border-left: 3px solid var(--ink-3);
+  border-radius: var(--radius-sm);
+}
+
+.strip__item.is-active {
+  border-left-color: var(--state-active);
+}
+
+.strip__item.is-done {
+  color: var(--ink-3);
+}
+
+.strip__item.is-cancelled {
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+
+.strip__dates {
+  color: var(--ink-3);
+}
+
+.history__entry {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  font-size: var(--text-xs);
+  border-bottom: 1px solid var(--line);
+}
+
+// A reversal is rare and worth spotting at a glance — it is the one move that rewrites where an item sits.
+.history__entry.is-reversal {
+  color: var(--warning);
+}
+
+.history__reason {
+  color: var(--ink-2);
+}
+
+.history__when {
+  color: var(--ink-3);
+}

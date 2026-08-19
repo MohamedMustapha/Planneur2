@@ -50,6 +50,12 @@
   <Folder Name="/src/Modules/Directory/">
     <Project Path="src/Modules/Directory/Cracra.Modules.Directory.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Portfolio.Contracts/">
+    <Project Path="src/Modules/Portfolio.Contracts/Cracra.Modules.Portfolio.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Portfolio/">
+    <Project Path="src/Modules/Portfolio/Cracra.Modules.Portfolio.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Projects.Contracts/">
     <Project Path="src/Modules/Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />
   </Folder>

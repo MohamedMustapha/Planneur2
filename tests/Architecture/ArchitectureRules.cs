@@ -31,6 +31,8 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Access.Contracts.WhoAmIResponse).Assembly,
         typeof(Cracra.Modules.Projects.ProjectsModule).Assembly,
         typeof(Cracra.Modules.Projects.Contracts.ProjectSummary).Assembly,
+        typeof(Cracra.Modules.Portfolio.PortfolioModule).Assembly,
+        typeof(Cracra.Modules.Portfolio.Contracts.PortfolioBoard).Assembly,
     ];
 
     [Fact]

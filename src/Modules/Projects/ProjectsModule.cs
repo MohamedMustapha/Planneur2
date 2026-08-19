@@ -3,6 +3,7 @@ using Cracra.BuildingBlocks.Persistence;
 using Cracra.BuildingBlocks.Persistence.Behaviors;
 using Cracra.Modules.Projects.Application;
 using Cracra.Modules.Projects.Infrastructure;
+using Contracts = Cracra.Modules.Projects.Contracts;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,6 +24,9 @@ public static class ProjectsModule
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IDirectoryPort, DirectoryAdapter>();
         services.AddScoped<IProjectAccessProjection, ProjectAccessProjectionAdapter>();
+
+        // The provisioning contract Portfolio calls when a candidate is committed.
+        services.AddScoped<Contracts.IProjectProvisioner, ProjectProvisioner>();
 
         services.AddMediatorHandlersFrom(typeof(ProjectsModule).Assembly);
 

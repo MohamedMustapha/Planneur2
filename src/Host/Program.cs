@@ -6,6 +6,7 @@ using Cracra.BuildingBlocks.Web;
 using Cracra.BuildingBlocks.Web.Behaviors;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
+using Cracra.Modules.Portfolio;
 using Cracra.Modules.Projects;
 using Cracra.ServiceDefaults;
 using FastEndpoints;
@@ -52,6 +53,7 @@ builder.Services.AddModuleDbContext<PlatformDbContext>(PlatformDbContext.SchemaN
 builder.Services.AddAccessModule();
 builder.Services.AddDirectoryModule();
 builder.Services.AddProjectsModule();
+builder.Services.AddPortfolioModule();
 
 var app = builder.Build();
 

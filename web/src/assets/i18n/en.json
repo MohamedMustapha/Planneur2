@@ -85,7 +85,9 @@
   },
   "common": {
     "noHours": "0.0 h",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "close": "Close",
+    "cancel": "Cancel"
   },
   "org": {
     "title": "Organisation directory",
@@ -210,6 +212,49 @@
       "build": "BUILD",
       "run": "RUN",
       "mixed": "Mixed"
+    }
+  },
+  "portfolio": {
+    "title": "Portfolio",
+    "subtitle": "Your scope's portfolio, from candidate to retirement",
+    "propose": "Propose a candidate",
+    "commit": "Commit",
+    "activate": "Start delivery",
+    "archive": "Retire",
+    "revert": "Move back",
+    "openProject": "Open project",
+    "addIteration": "Add an iteration",
+    "closeIteration": "Close iteration",
+    "candidateName": "Candidate name",
+    "priority": "Priority",
+    "notes": "Notes",
+    "decision": "Decision",
+    "decisionNotes": "Reason for the decision",
+    "projectCode": "Project code",
+    "iterationName": "Iteration name",
+    "length": "Length",
+    "startsOn": "Starts",
+    "endsOn": "Ends",
+    "iterations": "Iterations",
+    "noIterations": "No iteration planned yet.",
+    "history": "Decision history",
+    "laneEmpty": "Nothing here.",
+    "genericError": "The operation failed.",
+    "state": {
+      "considered": "Considered",
+      "committed": "Committed",
+      "active": "Active",
+      "dephase": "Retired"
+    },
+    "lengthOption": {
+      "oneweek": "1 wk",
+      "twoweeks": "2 wks",
+      "onemonth": "1 mo",
+      "custom": "Custom"
+    },
+    "scope": {
+      "all": "All",
+      "mine": "Mine"
     }
   }
 }

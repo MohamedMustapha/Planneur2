@@ -7,6 +7,7 @@
     <ProjectReference Include="../../src/Modules/Directory/Cracra.Modules.Directory.csproj" />
     <ProjectReference Include="../../src/Modules/Access/Cracra.Modules.Access.csproj" />
     <ProjectReference Include="../../src/Modules/Projects/Cracra.Modules.Projects.csproj" />
+    <ProjectReference Include="../../src/Modules/Portfolio/Cracra.Modules.Portfolio.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NetArchTest.Rules" />

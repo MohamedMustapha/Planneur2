@@ -85,7 +85,9 @@
   },
   "common": {
     "noHours": "0,0 h",
-    "loading": "Cargando…"
+    "loading": "Cargando…",
+    "close": "Cerrar",
+    "cancel": "Cancelar"
   },
   "org": {
     "title": "Directorio de la organización",
@@ -210,6 +212,49 @@
       "build": "BUILD",
       "run": "RUN",
       "mixed": "Mixto"
+    }
+  },
+  "portfolio": {
+    "title": "Portafolio",
+    "subtitle": "El portafolio de su ámbito, del candidato a la retirada",
+    "propose": "Proponer un candidato",
+    "commit": "Comprometer",
+    "activate": "Iniciar",
+    "archive": "Retirar",
+    "revert": "Retroceder",
+    "openProject": "Abrir el proyecto",
+    "addIteration": "Añadir una iteración",
+    "closeIteration": "Cerrar la iteración",
+    "candidateName": "Nombre del candidato",
+    "priority": "Prioridad",
+    "notes": "Notas",
+    "decision": "Decisión",
+    "decisionNotes": "Motivo de la decisión",
+    "projectCode": "Código del proyecto",
+    "iterationName": "Nombre de la iteración",
+    "length": "Duración",
+    "startsOn": "Inicio",
+    "endsOn": "Fin",
+    "iterations": "Iteraciones",
+    "noIterations": "Ninguna iteración planificada.",
+    "history": "Historial de decisiones",
+    "laneEmpty": "Nada aquí.",
+    "genericError": "La operación ha fallado.",
+    "state": {
+      "considered": "Considerado",
+      "committed": "Comprometido",
+      "active": "Activo",
+      "dephase": "Retirado"
+    },
+    "lengthOption": {
+      "oneweek": "1 sem.",
+      "twoweeks": "2 sem.",
+      "onemonth": "1 mes",
+      "custom": "Libre"
+    },
+    "scope": {
+      "all": "Todo",
+      "mine": "Los míos"
     }
   }
 }
