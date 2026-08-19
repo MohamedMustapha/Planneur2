@@ -35,6 +35,12 @@
     <Project Path="src/Host/Cracra.Host.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Access.Contracts/">
+    <Project Path="src/Modules/Access.Contracts/Cracra.Modules.Access.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Access/">
+    <Project Path="src/Modules/Access/Cracra.Modules.Access.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Directory.Contracts/">
     <Project Path="src/Modules/Directory.Contracts/Cracra.Modules.Directory.Contracts.csproj" />
   </Folder>

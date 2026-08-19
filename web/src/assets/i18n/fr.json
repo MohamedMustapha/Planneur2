@@ -126,7 +126,9 @@
     "kudoRules": "Règles de kudos",
     "kudoRulesHint": "Mode (compteur ou points), catégories et plafond mensuel. Consommé par le lot S9.",
     "iterationPresets": "Durées d'itération",
-    "iterationPresetsHint": "Raccourcis proposés à la création d'une itération. Consommé par le lot S4."
+    "iterationPresetsHint": "Raccourcis proposés à la création d'une itération. Consommé par le lot S4.",
+    "tabDepartment": "Département",
+    "tabAccess": "Rôles et habilitations"
   },
   "directory": {
     "functionalRole": {
@@ -140,6 +142,40 @@
     "department": {
       "dsi": "Direction des Systèmes d'Information",
       "daf": "Direction Financière"
+    }
+  },
+  "access": {
+    "title": "Rôles et habilitations",
+    "subtitle": "Rôles effectifs et dérogations. L'annuaire reste la source ; les dérogations la complètent.",
+    "people": "Personnes",
+    "searchPlaceholder": "Rechercher une personne…",
+    "noPeople": "Aucune personne dans ce périmètre.",
+    "selectPerson": "Sélectionnez une personne pour voir ses rôles effectifs.",
+    "effectiveRoles": "Rôles effectifs",
+    "noRoles": "Aucun rôle.",
+    "overrides": "Dérogations",
+    "noOverrides": "Aucune dérogation.",
+    "newOverride": "Nouvelle dérogation",
+    "role": "Rôle",
+    "scopeLabel": "Périmètre",
+    "effect": "Effet",
+    "grant": "Accorder",
+    "deny": "Refuser",
+    "reason": "Motif",
+    "reasonPlaceholder": "Pourquoi cette dérogation est nécessaire",
+    "expires": "Expire le",
+    "apply": "Appliquer",
+    "revoke": "Révoquer",
+    "genericError": "La dérogation n'a pas pu être appliquée.",
+    "scope": {
+      "global": "Global",
+      "department": "Département",
+      "unit": "Unité",
+      "project": "Projet"
+    },
+    "source": {
+      "ldap": "Annuaire",
+      "override": "Dérogation"
     }
   }
 }

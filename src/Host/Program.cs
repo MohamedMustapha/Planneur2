@@ -3,6 +3,7 @@ using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Persistence;
 using Cracra.BuildingBlocks.Storage;
 using Cracra.BuildingBlocks.Web;
+using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
 using Cracra.ServiceDefaults;
 using FastEndpoints;
@@ -41,11 +42,16 @@ builder.Services.AddFastEndpoints();
 // --- Modules -------------------------------------------------------------------------------------------------
 // One AddXxxModule() call each; the host knows nothing about a module beyond this line.
 builder.Services.AddModuleDbContext<PlatformDbContext>(PlatformDbContext.SchemaName);
+builder.Services.AddAccessModule();
 builder.Services.AddDirectoryModule();
 
 var app = builder.Build();
 
 app.UseCracraWeb();
+
+// After authentication, before anything opens a connection: this replaces the token's roles with the effective
+// ones, and the RLS interceptor stamps whatever the context holds when the connection opens.
+app.UseAccessModule();
 
 app.UseFastEndpoints(config =>
 {

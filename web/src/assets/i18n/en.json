@@ -126,7 +126,9 @@
     "kudoRules": "Kudo rules",
     "kudoRulesHint": "Mode (counter or points), categories and monthly cap. Consumed by slice S9.",
     "iterationPresets": "Iteration presets",
-    "iterationPresetsHint": "Quick lengths offered when creating an iteration. Consumed by slice S4."
+    "iterationPresetsHint": "Quick lengths offered when creating an iteration. Consumed by slice S4.",
+    "tabDepartment": "Department",
+    "tabAccess": "Roles and permissions"
   },
   "directory": {
     "functionalRole": {
@@ -140,6 +142,40 @@
     "department": {
       "dsi": "Information Systems",
       "daf": "Finance"
+    }
+  },
+  "access": {
+    "title": "Roles and permissions",
+    "subtitle": "Effective roles and overrides. The directory remains the source; overrides fill its gaps.",
+    "people": "People",
+    "searchPlaceholder": "Search for a person…",
+    "noPeople": "Nobody in this scope.",
+    "selectPerson": "Select a person to see their effective roles.",
+    "effectiveRoles": "Effective roles",
+    "noRoles": "No roles.",
+    "overrides": "Overrides",
+    "noOverrides": "No overrides.",
+    "newOverride": "New override",
+    "role": "Role",
+    "scopeLabel": "Scope",
+    "effect": "Effect",
+    "grant": "Grant",
+    "deny": "Deny",
+    "reason": "Reason",
+    "reasonPlaceholder": "Why this override is needed",
+    "expires": "Expires",
+    "apply": "Apply",
+    "revoke": "Revoke",
+    "genericError": "The override could not be applied.",
+    "scope": {
+      "global": "Global",
+      "department": "Department",
+      "unit": "Unit",
+      "project": "Project"
+    },
+    "source": {
+      "ldap": "Directory",
+      "override": "Override"
     }
   }
 }

@@ -1,0 +1,172 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('access.title')" [subtitle]="t('access.subtitle')">
+    <app-settings-tabs slot="tabs" />
+  </app-page-header>
+
+  <div class="rbac">
+    <section class="card rbac__people">
+      <header class="card__header">{{ t('access.people') }}</header>
+
+      <label class="rbac__search">
+        <input
+          class="input"
+          type="search"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          [placeholder]="t('access.searchPlaceholder')"
+        />
+      </label>
+
+      <ul class="rbac__list">
+        @for (person of filtered(); track person.id) {
+          <li>
+            <button
+              type="button"
+              class="rbac__person"
+              [class.is-active]="selected()?.id === person.id"
+              (click)="select(person)"
+            >
+              <span class="avatar">{{ initials(person) }}</span>
+              <span>{{ person.displayName }}</span>
+            </button>
+          </li>
+        } @empty {
+          <li class="rbac__status">{{ t('access.noPeople') }}</li>
+        }
+      </ul>
+    </section>
+
+    <section class="rbac__detail">
+      @if (!selected()) {
+        <p class="rbac__status card">{{ t('access.selectPerson') }}</p>
+      } @else {
+        @if (errorMessage(); as message) {
+          <p class="rbac__error" role="alert">{{ t(message) === message ? message : t(message) }}</p>
+        }
+
+        <section class="card">
+          <header class="card__header">{{ t('access.effectiveRoles') }}</header>
+          <div class="card__body">
+            @for (role of effectiveRoles(); track role.role + role.scopeType + role.scopeId) {
+              <span class="rbac__role">
+                <!-- The source badge is the point of this screen: a role from an LDAP group and one somebody
+                     granted by hand have identical effect and entirely different meaning. -->
+                <span
+                  class="pill"
+                  [class.pill--active]="role.source === 'Ldap'"
+                  [class.pill--committed]="role.source !== 'Ldap'"
+                  >{{ role.role }}</span
+                >
+                <span class="rbac__role-meta">
+                  {{ t('access.scope.' + role.scopeType.toLowerCase()) }} ·
+                  {{ t('access.source.' + (role.source === 'Ldap' ? 'ldap' : 'override')) }}
+                </span>
+              </span>
+            } @empty {
+              <p class="rbac__status">{{ t('access.noRoles') }}</p>
+            }
+          </div>
+        </section>
+
+        <section class="card">
+          <header class="card__header">{{ t('access.overrides') }}</header>
+          <div class="card__body">
+            @if (overrides().length === 0) {
+              <p class="rbac__status">{{ t('access.noOverrides') }}</p>
+            } @else {
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>{{ t('access.role') }}</th>
+                    <th>{{ t('access.effect') }}</th>
+                    <th>{{ t('access.reason') }}</th>
+                    <th>{{ t('access.expires') }}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of overrides(); track item.id) {
+                    <tr [class.rbac__inactive]="!item.isActive">
+                      <td>{{ item.role }}</td>
+                      <td>
+                        <span class="pill" [class.pill--active]="item.isGrant" [class.pill--dephase]="!item.isGrant">
+                          {{ item.isGrant ? t('access.grant') : t('access.deny') }}
+                        </span>
+                      </td>
+                      <td>{{ item.reason }}</td>
+                      <td class="num">{{ item.expiresAt ? (item.expiresAt | date: 'short') : '—' }}</td>
+                      <td>
+                        @if (item.isActive) {
+                          <button type="button" class="btn btn--danger-outline" (click)="revoke(item)">
+                            {{ t('access.revoke') }}
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </section>
+
+        <section class="card">
+          <header class="card__header">{{ t('access.newOverride') }}</header>
+          <div class="card__body rbac__form">
+            <label class="field">
+              <span class="field__label">{{ t('access.role') }}</span>
+              <select class="select" [ngModel]="formRole()" (ngModelChange)="formRole.set($event)">
+                @for (role of roles; track role) {
+                  <option [value]="role">{{ role }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field__label">{{ t('access.scopeLabel') }}</span>
+              <select class="select" [ngModel]="formScopeType()" (ngModelChange)="formScopeType.set($event)">
+                <option value="Unit">{{ t('access.scope.unit') }}</option>
+                <option value="Department">{{ t('access.scope.department') }}</option>
+                <option value="Global">{{ t('access.scope.global') }}</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field__label">{{ t('access.effect') }}</span>
+              <select class="select" [ngModel]="formIsGrant()" (ngModelChange)="setEffect($event)">
+                <option [ngValue]="true">{{ t('access.grant') }}</option>
+                <option [ngValue]="false">{{ t('access.deny') }}</option>
+              </select>
+            </label>
+
+            <label class="field rbac__form-wide">
+              <span class="field__label">{{ t('access.reason') }}</span>
+              <input
+                class="input"
+                [ngModel]="formReason()"
+                (ngModelChange)="formReason.set($event)"
+                [placeholder]="t('access.reasonPlaceholder')"
+              />
+            </label>
+
+            <label class="field">
+              <span class="field__label">{{ t('access.expires') }}</span>
+              <input
+                class="input"
+                type="date"
+                [ngModel]="formExpiresAt()"
+                (ngModelChange)="formExpiresAt.set($event)"
+              />
+            </label>
+
+            <div class="rbac__form-actions">
+              <button type="button" class="btn btn--primary" [disabled]="isBusy() || !formReason()" (click)="submit()">
+                {{ t('access.apply') }}
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+    </section>
+  </div>
+</ng-container>

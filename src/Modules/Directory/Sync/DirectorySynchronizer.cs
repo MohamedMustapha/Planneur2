@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Cracra.BuildingBlocks.Observability;
 using Cracra.BuildingBlocks.Persistence.Outbox;
 using Cracra.BuildingBlocks.Web.Users;
+using Cracra.Modules.Access.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Directory.Data;
 using Cracra.Modules.Directory.Domain;
@@ -60,6 +61,7 @@ internal sealed class DirectorySynchronizer(
         scope.ServiceProvider.GetRequiredService<IUserContextAccessor>().Current = UserContext.SystemJob;
 
         var context = scope.ServiceProvider.GetRequiredService<DirectoryDbContext>();
+        var materializer = scope.ServiceProvider.GetRequiredService<IRoleMaterializer>();
 
         var users = await keycloak.GetUsersAsync(ct);
         var groups = await keycloak.GetGroupsAsync(ct);
@@ -72,7 +74,7 @@ internal sealed class DirectorySynchronizer(
         var strategy = context.Database.CreateExecutionStrategy();
 
         var result = await strategy.ExecuteAsync(async cancellationToken =>
-            await ReconcileAsync(context, users, groups, cancellationToken), ct);
+            await ReconcileAsync(context, materializer, users, groups, cancellationToken), ct);
 
         var elapsed = Stopwatch.GetElapsedTime(started);
 
@@ -93,6 +95,7 @@ internal sealed class DirectorySynchronizer(
 
     private async Task<DirectorySyncResult> ReconcileAsync(
         DirectoryDbContext context,
+        IRoleMaterializer materializer,
         IReadOnlyList<KeycloakUser> users,
         IReadOnlyList<KeycloakGroup> groups,
         CancellationToken ct)
@@ -160,6 +163,11 @@ internal sealed class DirectorySynchronizer(
 
         var seen = new HashSet<Guid>();
 
+        // Accumulated across the whole run and handed to Access in one call at the end. Access replaces its
+        // LDAP-sourced rows wholesale, so it has to see everyone at once — feeding it person by person would make
+        // each one look like the only person with a role.
+        var roleAssignments = new List<SyncedRoleAssignmentDto>();
+
         foreach (var user in users)
         {
             var mapped = DirectoryMapping.Map(user);
@@ -226,6 +234,7 @@ internal sealed class DirectorySynchronizer(
 
             SyncMembership(context, person, mapped);
             SyncFunctionalRole(context, roles, person, mapped);
+            CollectContextualRoles(roleAssignments, mapped);
         }
 
         var deactivated = 0;
@@ -247,7 +256,48 @@ internal sealed class DirectorySynchronizer(
         await context.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
+        // After the commit, deliberately. Role materialization is a separate module's transaction, and a directory
+        // that committed while roles rolled back is far easier to reason about than the reverse — the next run
+        // reconciles the roles, whereas half-written people would need repairing by hand.
+        var roleChanges = await materializer.MaterializeAsync(roleAssignments, ct);
+
+        if (roleChanges > 0)
+        {
+            logger.LogInformation("Directory sync materialized {RoleChanges} contextual role change(s)", roleChanges);
+        }
+
         return new DirectorySyncResult(created, updated, deactivated, newUnits, newDepartments, TimeSpan.Zero);
+    }
+
+    /// <summary>
+    /// Turns the roles LDAP reported into scoped assignments.
+    /// </summary>
+    /// <remarks>
+    /// The scope comes from the role, not from LDAP: a unit-head leads <em>their</em> unit, a dept-head runs
+    /// <em>their</em> department, and PMO is global by definition. LDAP only says which hat someone wears; the
+    /// directory already knows where they stand.
+    ///
+    /// project-lead and po are not materialized here. Those are per-project and belong to whoever owns the project
+    /// team, which is S3 — inventing a scope for them now would mean guessing at a project that does not exist.
+    /// </remarks>
+    private static void CollectContextualRoles(List<SyncedRoleAssignmentDto> assignments, MappedPerson mapped)
+    {
+        foreach (var role in mapped.ContextualRoles)
+        {
+            var (scopeType, scopeId) = role switch
+            {
+                "unit-head" => ("Unit", (Guid?)mapped.UnitId),
+                "dept-head" => ("Department", mapped.DepartmentId),
+                "member" => ("Unit", mapped.UnitId),
+                "pmo" => ("Global", null),
+                _ => (string.Empty, null),
+            };
+
+            if (scopeType.Length > 0)
+            {
+                assignments.Add(new SyncedRoleAssignmentDto(mapped.PersonId, role, scopeType, scopeId));
+            }
+        }
     }
 
     private static void SyncMembership(DirectoryDbContext context, Person person, MappedPerson mapped)

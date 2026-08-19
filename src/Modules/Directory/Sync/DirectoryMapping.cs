@@ -23,7 +23,8 @@ public sealed record MappedPerson(
     string UnitCode,
     string? FunctionalRoleCode,
     string UiLanguage,
-    bool Active);
+    bool Active,
+    IReadOnlyList<string> ContextualRoles);
 
 /// <summary>
 /// The LDAP-to-entity translation, kept pure and static so it can be unit-tested without Keycloak, a database or
@@ -67,7 +68,10 @@ public static class DirectoryMapping
             UnitCode: user.Attribute("unit_code") ?? unitId.ToString("N")[..8],
             FunctionalRoleCode: user.Attribute("functional_role"),
             UiLanguage: SupportedLanguages.Normalize(user.Attribute("locale")),
-            Active: user.Enabled);
+            Active: user.Enabled,
+            // Straight through from the LDAP-derived attribute. Access materializes these into scoped assignments
+            // and merges overrides on top; Directory deliberately does not interpret them.
+            ContextualRoles: ReadContextualRoles(user));
     }
 
     /// <summary>
@@ -199,6 +203,12 @@ public static class DirectoryMapping
         CreatedAt = now,
         ModifiedAt = now,
     };
+
+    private static IReadOnlyList<string> ReadContextualRoles(KeycloakUser user) =>
+        [.. user.AttributeValues("contextual_roles")
+            .SelectMany(value => value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Select(role => role.ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)];
 
     private static string BuildDisplayName(KeycloakUser user)
     {

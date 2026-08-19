@@ -69,6 +69,15 @@ public static class SeedOrganisation
         Departments.Finance,
         ContextualRole.Member);
 
+    /// <summary>Head of the Finance department. The far side of every cross-department assertion.</summary>
+    public static readonly UserContext Laurent = Person(
+        "c0000000-0000-0000-0000-000000000008",
+        "laurent.bouchard",
+        Units.Controlling,
+        Departments.Finance,
+        ContextualRole.Member,
+        ContextualRole.DepartmentHead);
+
     /// <summary>PMO: sees everything, portfolio-wide.</summary>
     public static readonly UserContext Nadia = Person(
         "c0000000-0000-0000-0000-000000000009",

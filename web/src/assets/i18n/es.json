@@ -126,7 +126,9 @@
     "kudoRules": "Reglas de kudos",
     "kudoRulesHint": "Modo (contador o puntos), categorías y límite mensual. Lo consume el lote S9.",
     "iterationPresets": "Duraciones de iteración",
-    "iterationPresetsHint": "Atajos ofrecidos al crear una iteración. Lo consume el lote S4."
+    "iterationPresetsHint": "Atajos ofrecidos al crear una iteración. Lo consume el lote S4.",
+    "tabDepartment": "Departamento",
+    "tabAccess": "Roles y permisos"
   },
   "directory": {
     "functionalRole": {
@@ -140,6 +142,40 @@
     "department": {
       "dsi": "Sistemas de Información",
       "daf": "Dirección Financiera"
+    }
+  },
+  "access": {
+    "title": "Roles y permisos",
+    "subtitle": "Roles efectivos y excepciones. El directorio sigue siendo la fuente; las excepciones lo completan.",
+    "people": "Personas",
+    "searchPlaceholder": "Buscar una persona…",
+    "noPeople": "Nadie en este ámbito.",
+    "selectPerson": "Seleccione una persona para ver sus roles efectivos.",
+    "effectiveRoles": "Roles efectivos",
+    "noRoles": "Sin roles.",
+    "overrides": "Excepciones",
+    "noOverrides": "Sin excepciones.",
+    "newOverride": "Nueva excepción",
+    "role": "Rol",
+    "scopeLabel": "Ámbito",
+    "effect": "Efecto",
+    "grant": "Conceder",
+    "deny": "Denegar",
+    "reason": "Motivo",
+    "reasonPlaceholder": "Por qué es necesaria esta excepción",
+    "expires": "Caduca",
+    "apply": "Aplicar",
+    "revoke": "Revocar",
+    "genericError": "No se ha podido aplicar la excepción.",
+    "scope": {
+      "global": "Global",
+      "department": "Departamento",
+      "unit": "Unidad",
+      "project": "Proyecto"
+    },
+    "source": {
+      "ldap": "Directorio",
+      "override": "Excepción"
     }
   }
 }

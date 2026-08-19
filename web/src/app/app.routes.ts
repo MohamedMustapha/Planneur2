@@ -41,5 +41,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/directory/department-settings').then((m) => m.DepartmentSettings),
   },
+  {
+    // Behind the same nav entry as department settings: the rail is fixed at ten sections by the design, and
+    // both screens are the same job from an administrator's point of view.
+    path: 'settings/access',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/access/rbac-admin').then((m) => m.RbacAdmin),
+  },
   { path: '**', redirectTo: 'board' },
 ];

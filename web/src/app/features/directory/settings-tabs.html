@@ -1,0 +1,10 @@
+<nav class="tabs" *transloco="let t">
+  <a
+    class="tab"
+    routerLink="/settings"
+    routerLinkActive="is-active"
+    [routerLinkActiveOptions]="{ exact: true }"
+    >{{ t('settings.tabDepartment') }}</a
+  >
+  <a class="tab" routerLink="/settings/access" routerLinkActive="is-active">{{ t('settings.tabAccess') }}</a>
+</nav>

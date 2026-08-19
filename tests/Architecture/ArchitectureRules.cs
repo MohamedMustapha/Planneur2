@@ -27,6 +27,8 @@ public sealed class ArchitectureRules
         // evidence. Add each new module's assembly and its contracts assembly as the module lands.
         typeof(Cracra.Modules.Directory.DirectoryModule).Assembly,
         typeof(Cracra.Modules.Directory.Contracts.PersonSummary).Assembly,
+        typeof(Cracra.Modules.Access.AccessModule).Assembly,
+        typeof(Cracra.Modules.Access.Contracts.WhoAmIResponse).Assembly,
     ];
 
     [Fact]
@@ -121,32 +123,47 @@ public sealed class ArchitectureRules
         result.IsSuccessful.ShouldBeTrue(Describe(result));
     }
 
+    /// <summary>
+    /// A module may reference another module's contracts assembly, and nothing else of it.
+    /// </summary>
+    /// <remarks>
+    /// Checked on assembly references rather than namespaces. Namespace prefix matching cannot express this rule:
+    /// forbidding <c>Cracra.Modules.Access</c> also forbids <c>Cracra.Modules.Access.Contracts</c>, which is the
+    /// one reference that is explicitly allowed. Assemblies draw the line exactly where architecture.md §2 draws
+    /// it — the contracts assembly is the sanctioned door, the implementation assembly is not.
+    /// </remarks>
     [Fact]
-    public void No_module_references_another_modules_internals()
+    public void A_module_references_only_other_modules_contracts()
     {
-        var moduleTypes = PlatformAssemblies
-            .SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.Namespace?.StartsWith("Cracra.Modules.", StringComparison.Ordinal) == true)
+        const string modulePrefix = "Cracra.Modules.";
+
+        var moduleAssemblies = PlatformAssemblies
+            .Where(assembly => assembly.GetName().Name?.StartsWith(modulePrefix, StringComparison.Ordinal) == true)
             .ToArray();
 
-        foreach (var type in moduleTypes)
+        // Without at least two modules this rule cannot catch anything, and a green tick would be meaningless.
+        moduleAssemblies.Length.ShouldBeGreaterThan(1, "Module isolation needs more than one module to mean anything.");
+
+        foreach (var assembly in moduleAssemblies)
         {
-            var ownModule = type.Namespace!.Split('.')[2];
+            var name = assembly.GetName().Name!;
 
-            var forbidden = Types.InAssemblies(PlatformAssemblies)
-                .That()
-                .ResideInNamespace(type.Namespace)
-                .ShouldNot()
-                .HaveDependencyOnAny(
-                    [.. moduleTypes
-                        .Select(other => other.Namespace!)
-                        .Where(ns => ns.Split('.')[2] != ownModule)
-                        // Contracts are the sanctioned door between modules: integration events and read DTOs.
-                        .Where(ns => !ns.Contains(".Contracts", StringComparison.Ordinal))
-                        .Distinct()])
-                .GetResult();
+            if (name.EndsWith(".Contracts", StringComparison.Ordinal))
+            {
+                continue;
+            }
 
-            forbidden.IsSuccessful.ShouldBeTrue(Describe(forbidden));
+            var ownModule = name[modulePrefix.Length..];
+
+            var forbidden = assembly.GetReferencedAssemblies()
+                .Select(reference => reference.Name ?? string.Empty)
+                .Where(reference => reference.StartsWith(modulePrefix, StringComparison.Ordinal))
+                .Where(reference => !reference.EndsWith(".Contracts", StringComparison.Ordinal))
+                .Where(reference => reference[modulePrefix.Length..] != ownModule)
+                .ToArray();
+
+            forbidden.ShouldBeEmpty(
+                $"{name} may reference other modules' contracts only, but references: {string.Join(", ", forbidden)}");
         }
     }
 
