@@ -1,0 +1,57 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/AppHost/">
+    <Project Path="src/AppHost/Cracra.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/src/Bff/">
+    <Project Path="src/Bff/Cracra.Bff.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/" />
+  <Folder Name="/src/BuildingBlocks/Ai/">
+    <Project Path="src/BuildingBlocks/Ai/Cracra.BuildingBlocks.Ai.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Mediator/">
+    <Project Path="src/BuildingBlocks/Mediator/Cracra.BuildingBlocks.Mediator.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Messaging/">
+    <Project Path="src/BuildingBlocks/Messaging/Cracra.BuildingBlocks.Messaging.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Observability/">
+    <Project Path="src/BuildingBlocks/Observability/Cracra.BuildingBlocks.Observability.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Persistence/">
+    <Project Path="src/BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Storage/">
+    <Project Path="src/BuildingBlocks/Storage/Cracra.BuildingBlocks.Storage.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Testing/">
+    <Project Path="src/BuildingBlocks/Testing/Cracra.BuildingBlocks.Testing.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Web/">
+    <Project Path="src/BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/Host/">
+    <Project Path="src/Host/Cracra.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/ServiceDefaults/">
+    <Project Path="src/ServiceDefaults/Cracra.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/" />
+  <Folder Name="/src/Tools/LlmStub/">
+    <Project Path="src/Tools/LlmStub/Cracra.Tools.LlmStub.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Architecture/">
+    <Project Path="tests/Architecture/Cracra.Tests.Architecture.csproj" />
+  </Folder>
+  <Folder Name="/tests/E2E/">
+    <Project Path="tests/E2E/Cracra.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/tests/Integration/">
+    <Project Path="tests/Integration/Cracra.Tests.Integration.csproj" />
+  </Folder>
+  <Folder Name="/tests/Unit/">
+    <Project Path="tests/Unit/Cracra.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

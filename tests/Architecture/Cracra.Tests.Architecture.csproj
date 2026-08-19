@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../src/Host/Cracra.Host.csproj" />
+    <ProjectReference Include="../../src/Bff/Cracra.Bff.csproj" />
+    <ProjectReference Include="../../src/BuildingBlocks/Mediator/Cracra.BuildingBlocks.Mediator.csproj" />
+    <ProjectReference Include="../../src/BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+</Project>

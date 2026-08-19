@@ -1,0 +1,61 @@
+{
+  "title": "Cracra — platform baseline",
+  "uid": "cracra-platform",
+  "schemaVersion": 39,
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP requests / s",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "sum by (job) (rate(http_server_request_duration_seconds_count[5m]))", "legendFormat": "{{job}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Request duration p95",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le, job) (rate(http_server_request_duration_seconds_bucket[5m])))", "legendFormat": "{{job}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Outbox — published vs failed",
+      "description": "A rising failure line with a flat published line means a consumer is down; both flat at zero is normal until a module starts publishing.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "sum(rate(cracra_outbox_published_total[5m]))", "legendFormat": "published" },
+        { "expr": "sum(rate(cracra_outbox_failures_total[5m]))", "legendFormat": "failed" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "RLS-denied queries",
+      "description": "Queries that returned nothing because row-level security excluded every row. A sustained rise usually means a role mapping broke and a whole department has gone blind.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        { "expr": "sum(rate(cracra_rls_denied_queries_total[5m]))", "legendFormat": "denied" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Managed memory",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        { "expr": "sum by (job) (dotnet_gc_heap_total_allocated_bytes)", "legendFormat": "{{job}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Npgsql connection pool",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        { "expr": "sum by (job) (db_client_connections_usage)", "legendFormat": "{{job}}" }
+      ]
+    }
+  ]
+}

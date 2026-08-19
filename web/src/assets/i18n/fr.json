@@ -1,0 +1,91 @@
+{
+  "shell": {
+    "appName": "Activité & Portefeuille",
+    "collapseNav": "Réduire le menu",
+    "expandNav": "Déployer le menu",
+    "weekPager": "Navigation par semaine",
+    "weekLabel": "Sem. {{week}}",
+    "previousWeek": "Semaine précédente",
+    "nextWeek": "Semaine suivante",
+    "today": "Aujourd'hui",
+    "searchPlaceholder": "Rechercher un projet, une personne…",
+    "language": "Langue",
+    "toggleTheme": "Changer de thème",
+    "notifications": "Notifications",
+    "logout": "Se déconnecter",
+    "noDepartment": "Aucun département",
+    "unitCount": "{{count}} unités"
+  },
+  "nav": {
+    "ariaLabel": "Navigation principale",
+    "myBoard": "Mon tableau",
+    "myTeam": "Mon équipe",
+    "myUnit": "Mon unité",
+    "department": "Département",
+    "projects": "Projets",
+    "portfolio": "Portefeuille",
+    "reports": "Rapports",
+    "kudos": "Kudos",
+    "finance": "Finance",
+    "settings": "Paramètres"
+  },
+  "scope": {
+    "ariaLabel": "Périmètre de consultation",
+    "label": "Périmètre",
+    "myWork": "Mon activité",
+    "myProject": "Mon projet",
+    "myUnit": "Mon unité",
+    "myDepartment": "Mon département",
+    "portfolio": "Portefeuille"
+  },
+  "board": {
+    "title": "Mon tableau — saisie d'activité",
+    "weeklyTarget": "Semaine — objectif {{hours}} h",
+    "hoursOfTarget": "{{logged}} / {{target}} h",
+    "hoursRemaining": "Il reste {{hours}} h à saisir",
+    "importFromSources": "Importer depuis Azure DevOps / ServiceNow",
+    "quickAdd": "Ajout rapide",
+    "availableInSlice": "Disponible avec le lot {{slice}}",
+    "tabs": {
+      "week": "Semaine",
+      "month": "Mois",
+      "list": "Liste"
+    },
+    "timelineTitle": "Timeline hebdomadaire",
+    "timelinePlaceholder": "Surface de saisie livrée avec les lots S5 et S6. La timeline Mobiscroll est installée et sous licence.",
+    "legendPlanned": "Planifié",
+    "legendActual": "Réel",
+    "legendGrid": "Pas de 1 h · 7 h → 19 h",
+    "summary": {
+      "build": "BUILD",
+      "run": "RUN",
+      "qolTraining": "Confort + formation",
+      "variance": "Écart planifié / réel"
+    },
+    "awaitingActivities": "En attente du module Activités",
+    "myUnit": "Mon unité",
+    "unitEmpty": "L'annuaire arrive avec le lot S1.",
+    "upcoming": "À venir",
+    "upcomingEmpty": "Les réunions et journées spéciales arrivent avec le lot S7.",
+    "shortcuts": "Raccourcis",
+    "shortcutWeekNav": "Semaine précédente / suivante",
+    "shortcutDuplicate": "Dupliquer le créneau"
+  },
+  "placeholder": {
+    "subtitle": "Écran livré avec le lot {{slice}}",
+    "note": "Le shell, le système de design et la chaîne d'authentification sont en place. Cet écran attend son lot.",
+    "team": "Timeline d'équipe pour un chef de pôle : une ligne par membre, activités colorées par type, et génération du rapport de situation.",
+    "unit": "Vue consolidée de l'unité : charge par membre, couverture, projets rattachés.",
+    "department": "Vue département : une ligne par unité, projets imbriqués, journées spéciales et jalons en surimpression.",
+    "projects": "Fiche projet : équipe transverse groupée par département, itérations, coût manuel, classification BUILD/RUN.",
+    "portfolio": "Tableau de portefeuille : couloirs Envisagé · Engagé · Actif · Déphasé, transitions guidées et itérations.",
+    "reports": "Rapport de situation contextuel selon le rôle, avec synthèse rédigée par le modèle hébergé en interne.",
+    "kudos": "Reconnaissance entre pairs : compteur, catégories, badges et classement optionnels par département.",
+    "finance": "Vue capex / opex pour les responsables de département et le PMO.",
+    "settings": "Configuration par département : taxonomie d'activités, rôles contextuels, règles de kudos."
+  },
+  "common": {
+    "noHours": "0,0 h",
+    "loading": "Chargement…"
+  }
+}

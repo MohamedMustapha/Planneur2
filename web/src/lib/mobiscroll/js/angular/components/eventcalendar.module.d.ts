@@ -1,0 +1,34 @@
+import { MbscEventcalendar, MbscEventListDayDirective, MbscEventListItem } from './eventcalendar';
+import * as i0 from "@angular/core";
+import * as i1 from "../../core/components/eventcalendar/eventcalendar";
+import * as i2 from "./eventcalendar";
+import * as i3 from "./schedule-event";
+import * as i4 from "./scheduler";
+import * as i5 from "./timeline";
+import * as i6 from "./schedule-week-day";
+import * as i7 from "./time-indicator";
+import * as i8 from "../../core/components/eventcalendar/scheduler/schedule-event";
+import * as i9 from "../../core/components/eventcalendar/scheduler/scheduler";
+import * as i10 from "../../core/components/eventcalendar/shared/schedule-timeline-base";
+import * as i11 from "../../core/components/eventcalendar/scheduler/time-indicator";
+import * as i12 from "../../core/components/eventcalendar/timeline/timeline";
+import * as i13 from "../../core/components/eventcalendar/scheduler/week-day";
+import * as i14 from "@angular/common";
+import * as i15 from "../shared/calendar-header.module";
+import * as i16 from "../shared/calendar-view.module";
+import * as i17 from "./icon.module";
+import * as i18 from "../shared/structural-directives.module";
+import * as i19 from "./list.module";
+import * as i20 from "./popup.module";
+import * as i21 from "./draggable.module";
+import * as i22 from "./dropcontainer.module";
+export { MbscEventcalendar, MbscEventListDayDirective, MbscEventListItem };
+export * from '../../core/components/eventcalendar/eventcalendar.public';
+export * from '../shared/calendar-header.module';
+export * from './draggable.module';
+export * from './dropcontainer.module';
+export declare class MbscEventcalendarModule {
+    static ɵfac: i0.ɵɵFactoryDeclaration<MbscEventcalendarModule, never>;
+    static ɵmod: i0.ɵɵNgModuleDeclaration<MbscEventcalendarModule, [typeof i1.EventcalendarBase, typeof i2.MbscEventcalendar, typeof i2.MbscEventListDayDirective, typeof i2.MbscEventListItem, typeof i3.MbscScheduleEvent, typeof i4.MbscScheduler, typeof i5.MbscTimeline, typeof i6.MbscWeekDay, typeof i7.MbscTimeIndicator, typeof i8.ScheduleEventBase, typeof i9.SchedulerBase, typeof i10.STBase, typeof i11.TimeIndicatorBase, typeof i12.TimelineBase, typeof i13.WeekDayBase], [typeof i14.CommonModule, typeof i15.MbscCalendarHeaderModule, typeof i16.MbscCalendarViewModule, typeof i17.MbscIconModule, typeof i18.MbscStructuralDirectivesModule, typeof i19.MbscListModule, typeof i20.MbscPopupModule], [typeof i2.MbscEventcalendar, typeof i2.MbscEventListDayDirective, typeof i2.MbscEventListItem, typeof i15.MbscCalendarHeaderModule, typeof i21.MbscDraggableModule, typeof i22.MbscDropcontainerModule]>;
+    static ɵinj: i0.ɵɵInjectorDeclaration<MbscEventcalendarModule>;
+}

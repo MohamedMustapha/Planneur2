@@ -1,0 +1,27 @@
+# Scrapes the /metrics endpoint each service exposes via OpenTelemetry's Prometheus exporter.
+# Targets use host.docker.internal because in the Aspire dev box the .NET processes run on the host, not in
+# containers; the compose deployment overrides this file with service names.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    platform: cracra
+
+scrape_configs:
+  - job_name: cracra-api
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:5100"]
+        labels:
+          service: cracra-api
+
+  - job_name: cracra-bff
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["host.docker.internal:5000"]
+        labels:
+          service: cracra-bff
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

@@ -1,0 +1,164 @@
+# =================================================================================================================
+# Deployment artifact.
+#
+# Local development uses Aspire (`aspire run` against src/AppHost) — see docs/dev-box.md. This file is what gets
+# deployed: same topology, same environment variables, no orchestrator in the loop. The two are kept in step by
+# hand, which is why every variable here has a visible counterpart in AppHost.cs rather than being derived.
+#
+# Copy .env.example to .env and fill it in before running.
+# =================================================================================================================
+
+name: cracra
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cracra
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cracra"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?set KEYCLOAK_ADMIN_PASSWORD in .env}
+      KC_HEALTH_ENABLED: "true"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+      - keycloak-data:/opt/keycloak/data
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '\"status\": \"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${STORAGE_ACCESS_KEY:?set STORAGE_ACCESS_KEY in .env}
+      RUSTFS_SECRET_KEY: ${STORAGE_SECRET_KEY:?set STORAGE_SECRET_KEY in .env}
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - rustfs-data:/data
+    ports:
+      - "9010:9000"
+
+  seq:
+    image: datalust/seq:latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+    volumes:
+      - seq-data:/data
+    ports:
+      - "5341:80"
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: unless-stopped
+    command: ["--config.file=/etc/prometheus/prometheus.yml"]
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+
+  # The on-prem, OpenAI-API-compatible model. The stub image below is a placeholder for a real deployment: point
+  # CRACRA__AI__BASEURL at the actual endpoint and drop this service. It must never be a public API.
+  llm:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.llmstub
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: "8080"
+      Cracra__Database__AdminConnectionString: "Host=postgres;Port=5432;Database=cracra;Username=postgres;Password=${POSTGRES_PASSWORD}"
+      Cracra__Database__OwnerPassword: ${APP_OWNER_PASSWORD:?set APP_OWNER_PASSWORD in .env}
+      Cracra__Database__RuntimePassword: ${APP_RW_PASSWORD:?set APP_RW_PASSWORD in .env}
+      Cracra__Keycloak__Authority: ${KEYCLOAK_PUBLIC_URL:-http://keycloak:8080}/realms/cracra
+      Cracra__Keycloak__Audience: cracra-api
+      Cracra__Storage__ServiceUrl: http://rustfs:9000
+      Cracra__Storage__AccessKey: ${STORAGE_ACCESS_KEY}
+      Cracra__Storage__SecretKey: ${STORAGE_SECRET_KEY}
+      Cracra__Ai__BaseUrl: http://llm:8080
+      ConnectionStrings__seq: http://seq:80
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_ENDPOINT:-}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/alive || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # Serves the built Angular assets from wwwroot and proxies /api. Same origin, so no CORS and the session cookie
+  # behaves the same here as it does behind the Angular dev server in the Aspire dev box.
+  bff:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.bff
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: "8080"
+      Cracra__Keycloak__Authority: ${KEYCLOAK_PUBLIC_URL:-http://keycloak:8080}/realms/cracra
+      Cracra__Keycloak__ClientId: cracra-bff
+      Cracra__Keycloak__ClientSecret: ${BFF_CLIENT_SECRET:?set BFF_CLIENT_SECRET in .env}
+      ReverseProxy__Clusters__api__Destinations__primary__Address: http://api:8080/
+      ConnectionStrings__seq: http://seq:80
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_ENDPOINT:-}
+    ports:
+      - "5000:8080"
+
+volumes:
+  postgres-data:
+  keycloak-data:
+  rustfs-data:
+  seq-data:
+  prometheus-data:
+  grafana-data:

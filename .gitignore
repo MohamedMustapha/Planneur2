@@ -1,0 +1,29 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+artifacts/
+TestResults/
+.vs/
+*.received.*
+
+# Node / Angular
+node_modules/
+web/dist/
+web/.angular/
+npm-debug.log*
+
+# Aspire / local
+.aspire/
+*.local.json
+
+# Playwright
+tests/E2E/**/playwright-report/
+tests/E2E/**/test-results/
+tests/E2E/**/.playwright/
+
+# Env / secrets
+.env
+.env.*
+!.env.example

@@ -1,0 +1,176 @@
+:host {
+  display: contents;
+}
+
+.board {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.board__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+}
+
+// --- Meter --------------------------------------------------------------------------------------------------------
+.board__meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 280px;
+}
+
+.board__meter-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.board__meter-label {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.board__meter-value {
+  font-size: var(--text-base);
+  font-weight: 500;
+}
+
+.board__meter-note {
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.board__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+// --- Timeline card --------------------------------------------------------------------------------------------------
+.board__legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.board__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.board__legend-swatch {
+  width: 14px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.board__legend-swatch--planned {
+  background: var(--activity-build-soft);
+}
+
+.board__legend-swatch--actual {
+  background: var(--activity-build);
+}
+
+// --- Summary tiles ----------------------------------------------------------------------------------------------------
+.board__summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.board__tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) 14px;
+}
+
+.board__tile-value {
+  font-size: var(--text-xl);
+  font-weight: 500;
+}
+
+.board__tile-note {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+// --- Side rail ----------------------------------------------------------------------------------------------------------
+.board__rail {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 18px;
+  width: var(--side-rail-width);
+  padding: var(--space-4);
+  overflow: auto;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.board__rail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.board__divider {
+  height: 1px;
+  margin: 0;
+  border: none;
+  background: var(--line);
+}
+
+.board__empty {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-control);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.board__shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+  }
+
+  dt,
+  dd {
+    margin: 0;
+  }
+}
+
+// Below a laptop width the side rail stops earning its space; the grid it sits next to needs every pixel.
+@media (max-width: 1200px) {
+  .board__rail {
+    display: none;
+  }
+
+  .board__summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

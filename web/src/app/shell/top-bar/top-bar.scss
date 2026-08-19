@@ -1,0 +1,244 @@
+:host {
+  display: contents;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: var(--space-3);
+  height: var(--topbar-height);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.topbar__spacer {
+  flex: 1;
+}
+
+.topbar__menu-anchor {
+  position: relative;
+}
+
+.topbar__control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-base);
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.topbar__dept-name {
+  max-width: 260px;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar__caret {
+  color: var(--ink-3);
+  font-size: var(--text-2xs);
+}
+
+.topbar__dept-menu {
+  top: 36px;
+  left: 0;
+  min-width: 230px;
+}
+
+.topbar__dept-count {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+// --- Week pager -------------------------------------------------------------------------------------------------
+.topbar__pager {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  height: 32px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+}
+
+.topbar__pager-step {
+  width: 30px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+
+  &:first-child {
+    border-right: 1px solid var(--line);
+  }
+
+  &:last-child {
+    border-left: 1px solid var(--line);
+  }
+
+  &:hover {
+    background: var(--surface-2);
+  }
+}
+
+.topbar__pager-label {
+  padding: 0 var(--space-3);
+  font-size: var(--text-base);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+// --- Search ------------------------------------------------------------------------------------------------------
+.topbar__search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  max-width: 340px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  color: var(--ink-3);
+}
+
+.topbar__search-icon {
+  font-size: var(--text-base);
+}
+
+.topbar__search-input {
+  width: 100%;
+  border: none;
+  background: none;
+  font-size: var(--text-base);
+  outline: none;
+
+  &::placeholder {
+    color: var(--ink-3);
+  }
+}
+
+// --- Language ----------------------------------------------------------------------------------------------------
+.topbar__languages {
+  display: flex;
+  overflow: hidden;
+  height: var(--control-height-sm);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+}
+
+.topbar__language {
+  padding: 0 10px;
+  border: none;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+
+  & + & {
+    border-left: 1px solid var(--line);
+  }
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  &.is-active {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 500;
+  }
+}
+
+// --- Icon buttons ------------------------------------------------------------------------------------------------
+.topbar__icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+}
+
+.topbar__bell {
+  position: relative;
+  font-size: 15px;
+}
+
+.topbar__bell-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
+// --- User --------------------------------------------------------------------------------------------------------
+.topbar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.topbar__user-menu {
+  top: 38px;
+  right: 0;
+  min-width: 220px;
+}
+
+.topbar__user-identity {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) 10px var(--space-3);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-1);
+  font-size: var(--text-sm);
+
+  span {
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+  }
+}
+
+.topbar__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  border: none;
+  background: transparent;
+  cursor: default;
+}

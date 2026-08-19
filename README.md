@@ -65,5 +65,6 @@ Each slice file follows the same skeleton: *Purpose → Depends on → Module ar
 - **RustFS** (S3-compatible) for object storage; **SEQ** for structured logs; **Prometheus/Grafana** for metrics.
 - **On-prem, OpenAI-API-compatible** LLM for summaries (never a public endpoint).
 - **Mobiscroll Angular** (licensed) for all timeline surfaces.
+- **.NET Aspire** is the local dev box (`aspire run --project src/AppHost`); `deploy/docker-compose.yml` stays the deployment artifact.
 - **i18n: French, English, Spanish** — every user-facing string keyed, runtime-switchable.
 - Tests: **unit + integration (Testcontainers / WebApplicationFactory) + architecture + Playwright e2e**.

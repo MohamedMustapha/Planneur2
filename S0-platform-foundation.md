@@ -7,7 +7,10 @@ Stand up the empty-but-complete skeleton every later slice plugs into: the modul
 Nothing.
 
 ## Module archetype
-Infrastructure (`BuildingBlocks` + `Host` + `Bff`).
+Infrastructure (`BuildingBlocks` + `Host` + `Bff` + `AppHost` + `ServiceDefaults`).
+
+## Dev box
+**.NET Aspire** orchestrates local development: `aspire run --project src/AppHost` starts postgres, keycloak, rustfs, seq, prometheus, grafana, the OpenAI-compatible stub, the API, the BFF and the Angular dev server. `deploy/docker-compose.yml` remains the deployment artifact — see `architecture.md §8` for why both exist, and `docs/dev-box.md` for how to run it.
 
 ## Deliverables
 
@@ -28,7 +31,8 @@ Implements the contracts in `conventions.md §1`: `ISender/IPublisher/IMediator`
 
 ### Auth (`Bff`)
 - YARP proxy to the monolith; OIDC (Keycloak, Auth Code + PKCE); tokens server-side; HttpOnly cookie; anti-forgery/CSRF; `/bff/user` endpoint returning the resolved context (id, roles, unit, dept, language).
-- Keycloak realm export committed under `/deploy/keycloak` with an LDAP federation config and group→role mappers (dev seed uses an embedded LDAP with fixtures).
+- Keycloak realm export committed under `/deploy/keycloak`, **generated** by `build-realm.py` so the seeded ids stay identical to the ones the RLS matrix test and the Playwright login helper use. Carries the `cracra` client scope with the protocol mappers `UserContextMiddleware` reads (`unit_id`, `dept_ids`, `contextual_roles`, `functional_role`, `locale`), plus a seeded org of two departments and two units each.
+- **LDAP federation is configured but disabled**, pointing at the seeded users. S1 owns the real directory sync; the mapping shape is committed now so it is reviewable rather than invented later.
 
 ### Storage / AI / Observability
 - `Storage`: S3 client pointed at RustFS; `PutObject/GetObject/presign`.
@@ -58,8 +62,8 @@ No business tables yet, but the `access` schema, GUC accessors, and the intercep
 - **E2E:** log in through Keycloak, land on the shell, switch language, see the empty timeline render.
 
 ## Acceptance criteria
-- `docker-compose up` brings the whole stack up healthy.
-- A user can log in via Keycloak (LDAP-backed), reach a secured endpoint, and their RLS context is provably set.
+- `aspire run --project src/AppHost` brings the whole stack up healthy; `docker compose up` in `/deploy` does the same for a deployment.
+- A user can log in via Keycloak, reach a secured endpoint, and their RLS context is provably set — `GET /api/ping` returns both what the application believes about the caller and what Postgres sees in its session, and the integration suite asserts they agree.
 - All four test layers run in CI and pass.
 - Grafana shows the stack's baseline metrics; SEQ shows structured logs with correlation ids.
 

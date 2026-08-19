@@ -1,0 +1,116 @@
+<header class="topbar" *transloco="let t">
+  <!-- Department switcher -->
+  <div class="topbar__menu-anchor">
+    <button
+      type="button"
+      class="topbar__control topbar__dept"
+      (click)="toggleDepartmentMenu()"
+      [disabled]="!departments.canSwitch()"
+      [attr.aria-expanded]="departmentMenuOpen()"
+      aria-haspopup="menu"
+    >
+      <span class="dot" aria-hidden="true"></span>
+      <span class="topbar__dept-name">{{ departments.selected()?.name ?? t('shell.noDepartment') }}</span>
+      @if (departments.canSwitch()) {
+        <span class="topbar__caret" aria-hidden="true">▾</span>
+      }
+    </button>
+
+    @if (departmentMenuOpen()) {
+      <div class="menu topbar__dept-menu" role="menu">
+        @for (department of departments.available(); track department.id) {
+          <button
+            type="button"
+            class="menu__item"
+            role="menuitemradio"
+            [attr.aria-checked]="department.id === departments.selected()?.id"
+            [class.is-selected]="department.id === departments.selected()?.id"
+            (click)="selectDepartment(department.id)"
+          >
+            <span>{{ department.name }}</span>
+            <span class="topbar__dept-count">{{ t('shell.unitCount', { count: department.unitCount }) }}</span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Week pager -->
+  <div class="topbar__pager" role="group" [attr.aria-label]="t('shell.weekPager')">
+    <button type="button" class="topbar__pager-step" (click)="layout.previousWeek()" [attr.aria-label]="t('shell.previousWeek')">‹</button>
+    <span class="topbar__pager-label num">{{ t('shell.weekLabel', { week: weekLabel() }) }}</span>
+    <button type="button" class="topbar__pager-step" (click)="layout.nextWeek()" [attr.aria-label]="t('shell.nextWeek')">›</button>
+  </div>
+
+  <button type="button" class="topbar__control" (click)="layout.today()">{{ t('shell.today') }}</button>
+
+  <!-- Search. S1 wires it to the directory; until there is something to find it stays disabled rather than
+       pretending to work. -->
+  <label class="topbar__search">
+    <span class="topbar__search-icon" aria-hidden="true">⌕</span>
+    <input class="topbar__search-input" type="search" disabled [placeholder]="t('shell.searchPlaceholder')" />
+  </label>
+
+  <div class="topbar__spacer"></div>
+
+  <!-- Language -->
+  <div class="topbar__languages" role="group" [attr.aria-label]="t('shell.language')">
+    @for (option of language.available; track option) {
+      <button
+        type="button"
+        class="topbar__language"
+        [class.is-active]="language.language() === option"
+        [attr.aria-pressed]="language.language() === option"
+        (click)="setLanguage(option)"
+      >
+        {{ option | uppercase }}
+      </button>
+    }
+  </div>
+
+  <button
+    type="button"
+    class="topbar__control topbar__icon-button"
+    (click)="theme.toggle()"
+    [attr.aria-label]="t('shell.toggleTheme')"
+  >
+    {{ theme.theme() === 'dark' ? '☀' : '☾' }}
+  </button>
+
+  <button type="button" class="topbar__icon-button topbar__bell" [attr.aria-label]="t('shell.notifications')">
+    <span aria-hidden="true">◔</span>
+    <span class="topbar__bell-dot" aria-hidden="true"></span>
+  </button>
+
+  <!-- User menu -->
+  <div class="topbar__menu-anchor">
+    <button
+      type="button"
+      class="topbar__user"
+      (click)="toggleUserMenu()"
+      [attr.aria-expanded]="userMenuOpen()"
+      aria-haspopup="menu"
+    >
+      <span class="avatar">{{ session.initials() }}</span>
+      <span class="topbar__caret" aria-hidden="true">▾</span>
+    </button>
+
+    @if (userMenuOpen()) {
+      <div class="menu topbar__user-menu" role="menu">
+        <div class="topbar__user-identity">
+          <strong>{{ session.displayName() }}</strong>
+          <span>{{ session.user().functionalRole }}</span>
+        </div>
+        <button type="button" class="menu__item" role="menuitem" (click)="logout()">
+          {{ t('shell.logout') }}
+        </button>
+      </div>
+    }
+  </div>
+</header>
+
+@if (departmentMenuOpen() || userMenuOpen()) {
+  <!-- Click-away layer. A transparent full-screen button rather than a document listener so keyboard users get
+       Escape-equivalent behaviour through normal focus handling. -->
+  <button type="button" class="topbar__scrim" (click)="closeMenus()" tabindex="-1" aria-hidden="true"></button>
+}

@@ -1,0 +1,104 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('board.title')" [subtitle]="subtitle()">
+    <div slot="meter" class="board__meter">
+      <div class="board__meter-row">
+        <span class="board__meter-label">{{ t('board.weeklyTarget', { hours: weeklyTargetHours }) }}</span>
+        <span class="board__meter-value num" [style.color]="meterColor()">
+          {{ t('board.hoursOfTarget', { logged: loggedHours(), target: weeklyTargetHours }) }}
+        </span>
+      </div>
+      <div class="meter">
+        <div class="meter__fill" [style.width.%]="meterPercent()" [style.background]="meterColor()"></div>
+      </div>
+      <p class="board__meter-note" [style.color]="meterColor()">
+        {{ t('board.hoursRemaining', { hours: weeklyTargetHours - loggedHours() }) }}
+      </p>
+    </div>
+
+    <div slot="actions" class="board__actions">
+      <!-- Both disabled until the slices behind them exist: importing needs the Integrations module (S10), quick
+           add needs the Activities module (S5). A control that looks live and does nothing is worse than one that
+           says so. -->
+      <button type="button" class="btn btn--secondary" disabled [title]="t('board.availableInSlice', { slice: 'S10' })">
+        {{ t('board.importFromSources') }}
+        <span aria-hidden="true">▾</span>
+      </button>
+      <button type="button" class="btn btn--primary" disabled [title]="t('board.availableInSlice', { slice: 'S5' })">
+        {{ t('board.quickAdd') }}
+        <span class="kbd">N</span>
+      </button>
+    </div>
+
+    <app-scope-selector slot="scope" />
+
+    <div slot="tabs" class="tabs">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          class="tab"
+          [class.is-active]="activeTab() === tab.id"
+          [attr.aria-pressed]="activeTab() === tab.id"
+          (click)="selectTab(tab.id)"
+        >
+          {{ t(tab.labelKey) }}
+        </button>
+      }
+    </div>
+  </app-page-header>
+
+  <div class="board">
+    <div class="board__main">
+      <section class="card">
+        <header class="card__header">
+          <span>{{ t('board.timelineTitle') }}</span>
+          <div class="board__legend">
+            <span class="board__legend-item">
+              <span class="board__legend-swatch board__legend-swatch--planned"></span>{{ t('board.legendPlanned') }}
+            </span>
+            <span class="board__legend-item">
+              <span class="board__legend-swatch board__legend-swatch--actual"></span>{{ t('board.legendActual') }}
+            </span>
+            <span>{{ t('board.legendGrid') }}</span>
+          </div>
+        </header>
+
+        <app-smoke-timeline />
+      </section>
+
+      <div class="board__summary">
+        @for (tile of summaryTiles(); track tile.id) {
+          <article class="card board__tile">
+            <span class="section-label">{{ t(tile.labelKey) }}</span>
+            <span class="board__tile-value num" [style.color]="tile.color">{{ t('common.noHours') }}</span>
+            <span class="board__tile-note">{{ t('board.awaitingActivities') }}</span>
+          </article>
+        }
+      </div>
+    </div>
+
+    <aside class="board__rail">
+      <section class="board__rail-section">
+        <h2 class="section-label">{{ t('board.myUnit') }}</h2>
+        <p class="board__empty">{{ t('board.unitEmpty') }}</p>
+      </section>
+
+      <hr class="board__divider" />
+
+      <section class="board__rail-section">
+        <h2 class="section-label">{{ t('board.upcoming') }}</h2>
+        <p class="board__empty">{{ t('board.upcomingEmpty') }}</p>
+      </section>
+
+      <hr class="board__divider" />
+
+      <section class="board__rail-section">
+        <h2 class="section-label">{{ t('board.shortcuts') }}</h2>
+        <dl class="board__shortcuts">
+          <div><dt>{{ t('board.quickAdd') }}</dt><dd class="mono">N</dd></div>
+          <div><dt>{{ t('board.shortcutWeekNav') }}</dt><dd class="mono">← →</dd></div>
+          <div><dt>{{ t('board.shortcutDuplicate') }}</dt><dd class="mono">D</dd></div>
+        </dl>
+      </section>
+    </aside>
+  </div>
+</ng-container>

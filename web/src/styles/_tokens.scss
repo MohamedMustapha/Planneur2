@@ -1,0 +1,200 @@
+// =================================================================================================================
+// Design tokens — lifted verbatim from the Claude Design canvas "Design System & Shell".
+//
+// Every colour, radius and control height in the application comes from this file. A component that hard-codes a
+// hex value is a bug: the dark theme works by redefining these custom properties and nothing else, so a literal
+// colour is a literal colour in both themes.
+// =================================================================================================================
+
+:root {
+  // --- Surfaces and ink (light) ---------------------------------------------------------------------------------
+  --bg: #eceff1;
+  --surface: #ffffff;
+  --surface-2: #f5f6f8;
+  --line: #e0e3e7;
+  --line-2: #cfd4da;
+  --ink: #1c1f23;
+  --ink-2: #5a6470;
+  --ink-3: #8b949e;
+
+  --primary: #3949ab;
+  --primary-hover: #303f9f;
+  --primary-soft: #e8eaf6;
+  --primary-border: #c5cae9;
+  --primary-ink: #283593;
+
+  --rail-bg: #1f2430;
+  --rail-ink: #c4cbd6;
+  --rail-ink-muted: #8b95a5;
+
+  // --- Neutral ramp (8 steps) -----------------------------------------------------------------------------------
+  --neutral-50: #f5f6f8;
+  --neutral-100: #e9ecef;
+  --neutral-200: #d5dae0;
+  --neutral-300: #b3bcc6;
+  --neutral-400: #8b949e;
+  --neutral-600: #5a6470;
+  --neutral-800: #343b45;
+  --neutral-900: #1c1f23;
+
+  // --- Portfolio lifecycle --------------------------------------------------------------------------------------
+  // The four states from the glossary. Déphasé is a muted brown-grey on purpose: archived work must read as
+  // "settled", never as a warning.
+  --state-considered: #64748b;
+  --state-considered-soft: #eceff1;
+  --state-considered-ink: #475569;
+  --state-committed: #1e6fd9;
+  --state-committed-soft: #e3f2fd;
+  --state-committed-ink: #1565c0;
+  --state-active: #2e7d32;
+  --state-active-soft: #e8f5e9;
+  --state-active-ink: #2e7d32;
+  --state-dephase: #a1887f;
+  --state-dephase-soft: #efebe9;
+  --state-dephase-ink: #6d4c41;
+
+  // --- Activity-type accents ------------------------------------------------------------------------------------
+  --activity-build: #3949ab;
+  --activity-build-soft: #c5cae9;
+  --activity-build-bg: #e8eaf6;
+  --activity-build-ink: #283593;
+
+  --activity-run: #00796b;
+  --activity-run-soft: #b2dfdb;
+  --activity-run-bg: #e0f2f1;
+  --activity-run-ink: #00695c;
+
+  --activity-qol: #43a047;
+  --activity-qol-soft: #c8e6c9;
+  --activity-qol-bg: #e8f5e9;
+  --activity-qol-ink: #2e7d32;
+
+  --activity-leave: #ef6c00;
+  --activity-leave-soft: #ffe0b2;
+  --activity-leave-bg: #fff3e0;
+  --activity-leave-ink: #e65100;
+
+  --activity-training: #8e24aa;
+  --activity-training-soft: #e1bee7;
+  --activity-training-bg: #f3e5f5;
+  --activity-training-ink: #6a1b9a;
+
+  // --- Semantic -------------------------------------------------------------------------------------------------
+  --warning: #ef6c00;
+  --warning-soft: #fff3e0;
+  --danger: #c62828;
+  --danger-hover: #a91f1f;
+  --danger-soft: #fff5f5;
+  --danger-border: #ef9a9a;
+  --success: #2e7d32;
+
+  --kudo: #ffb300;
+  --kudo-ink: #b28900;
+  --kudo-soft: #fffdf5;
+  --kudo-border: #ffe082;
+
+  // --- Typography -----------------------------------------------------------------------------------------------
+  --font-sans: 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Roboto Mono', 'Cascadia Mono', ui-monospace, monospace;
+
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+
+  // --- Space, radius, elevation ---------------------------------------------------------------------------------
+  // An 8px grid with 4px half-steps. Enterprise density: this screen is looked at for eight hours a day, so the
+  // steps below 8 exist and get used.
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --radius-control: 4px;
+  --radius-card: 6px;
+  --radius-pill: 999px;
+
+  --control-height: 34px;
+  --control-height-sm: 30px;
+  --control-height-xs: 24px;
+
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 18%);
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 8%);
+  --shadow-menu: 0 6px 18px rgb(0 0 0 / 16%);
+  --shadow-modal: 0 16px 48px rgb(0 0 0 / 32%);
+
+  // --- Layout ---------------------------------------------------------------------------------------------------
+  --rail-width-expanded: 240px;
+  --rail-width-collapsed: 64px;
+  --topbar-height: 52px;
+  --side-rail-width: 290px;
+
+  --transition-fast: 0.18s ease;
+}
+
+// =================================================================================================================
+// Dark theme.
+//
+// Applied by an attribute on <html> rather than by prefers-color-scheme alone, because the choice is a per-user
+// preference stored in the profile — the design's top bar has an explicit toggle, so the OS is at most a default.
+// =================================================================================================================
+:root[data-theme='dark'] {
+  --bg: #15181e;
+  --surface: #1c2028;
+  --surface-2: #232833;
+  --line: #2c323d;
+  --line-2: #3a4250;
+  --ink: #e6e9ee;
+  --ink-2: #a3adbb;
+  --ink-3: #78828f;
+
+  --primary: #7986cb;
+  --primary-hover: #9fa8da;
+  --primary-soft: #2a3050;
+  --primary-border: #3d4370;
+  --primary-ink: #c5cae9;
+
+  --rail-bg: #11141a;
+  --rail-ink: #aab3c0;
+  --rail-ink-muted: #78828f;
+
+  // Soft fills carry text on top of them, so in dark they become dim backdrops rather than pale washes — the
+  // hue is kept, the luminance is inverted.
+  --state-considered-soft: #2a3038;
+  --state-considered-ink: #b0bec5;
+  --state-committed-soft: #16304d;
+  --state-committed-ink: #90caf9;
+  --state-active-soft: #1b3a1f;
+  --state-active-ink: #a5d6a7;
+  --state-dephase-soft: #322a26;
+  --state-dephase-ink: #bcaaa4;
+
+  --activity-build-bg: #23294a;
+  --activity-build-ink: #c5cae9;
+  --activity-run-bg: #12332f;
+  --activity-run-ink: #80cbc4;
+  --activity-qol-bg: #1b3a1f;
+  --activity-qol-ink: #a5d6a7;
+  --activity-leave-bg: #3a2a16;
+  --activity-leave-ink: #ffcc80;
+  --activity-training-bg: #331f3a;
+  --activity-training-ink: #ce93d8;
+
+  --warning-soft: #3a2a16;
+  --danger-soft: #3a1f1f;
+  --danger-border: #6d3030;
+
+  --kudo-soft: #33291a;
+  --kudo-border: #6b5424;
+
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 40%);
+  --shadow-menu: 0 6px 18px rgb(0 0 0 / 50%);
+  --shadow-modal: 0 16px 48px rgb(0 0 0 / 60%);
+}

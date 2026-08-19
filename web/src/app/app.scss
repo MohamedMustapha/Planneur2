@@ -1,0 +1,24 @@
+.shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.shell__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bg);
+}
+
+// The content area is the only scroll container. A page-level scrollbar would take the top bar and the rail with
+// it, and this is a tool where the chrome has to stay put while a dense grid moves underneath.
+.shell__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}

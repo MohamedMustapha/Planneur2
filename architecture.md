@@ -69,12 +69,20 @@ Auth source: Keycloak realm ⟵ LDAP sync (people, units via `fonction`, groups)
     /Kudos            (DDD)
     /Integrations     (2-layer)
     /Finance          (2-layer)
+  /AppHost
+    AppHost.cs                     # .NET Aspire — the dev box (see §8)
+  /ServiceDefaults
+    ServiceDefaults.csproj         # observability, health, resilience, service discovery
+  /Tools
+    /LlmStub                       # OpenAI-compatible stub for the dev box and tests
 /tests
   /Unit /Integration /Architecture /E2E(Playwright)
 /web
   angular workspace (see §7)
 /deploy
-  docker-compose.yml, keycloak/, grafana/, prometheus/, seq/
+  docker-compose.yml, Dockerfile.*, keycloak/, grafana/, prometheus/
+/docs
+  dev-box.md                       # how to run the whole stack locally
 ```
 
 **Module isolation rule:** a module exposes only (a) its FastEndpoints and (b) a thin **public contracts** assembly (`Modules.Xxx.Contracts`) containing integration events and read-DTOs other modules may consume. No module references another module's Domain/Infrastructure. Cross-module reads go through contracts or a query sent on the mediator; cross-module writes go through **integration events** (in-process, via the outbox).
@@ -94,12 +102,16 @@ Auth source: Keycloak realm ⟵ LDAP sync (people, units via `fonction`, groups)
 3. A **request middleware** in `BuildingBlocks/Web` builds an `IUserContext` (user id, unit id, department id(s), contextual roles) from claims, cross-checked against the `Access` module's RBAC fallback view.
 4. A **DbConnection interceptor** in `BuildingBlocks/Persistence` issues, on every opened connection inside a request:
    ```sql
-   SELECT set_config('app.user_id',   @userId,   true);
-   SELECT set_config('app.unit_id',   @unitId,   true);
-   SELECT set_config('app.dept_ids',  @deptCsv,  true);
-   SELECT set_config('app.roles',     @rolesCsv, true);
+   SELECT set_config('app.user_id',   @userId,   false),
+          set_config('app.unit_id',   @unitId,   false),
+          set_config('app.dept_ids',  @deptCsv,  false),
+          set_config('app.roles',     @rolesCsv, false);
    ```
-   (`true` = local to the transaction.) RLS policies then read these via helper SQL functions.
+   RLS policies then read these via helper SQL functions in the `access` schema.
+
+   **Session scope, not transaction scope** (`false`, not `true`). Transaction-local values are discarded when the implicit transaction around an ordinary read ends, which would leave most queries running with an empty scope. Session scope is safe here precisely because the interceptor runs on *every* connection open: a pooled connection is always re-stamped before it is reused, so one request can never observe another's scope. An unauthenticated context writes empty strings rather than skipping the statement — empty means `access.uid()` is NULL, every predicate is false, and the query returns nothing. The system fails closed.
+
+   Integration tests assert both halves of this: that a stamped session reports the caller's scope back through `access.uid()`, and that two consecutive requests as different people on the same pooled connection each get their own.
 5. Background jobs (sync, AI, outbox) run under a **service context** that sets `app.roles = 'system'`, which RLS policies treat as bypass-for-read where explicitly allowed.
 
 ## 5. Cross-cutting concerns (all in `BuildingBlocks`)
@@ -131,6 +143,11 @@ Auth source: Keycloak realm ⟵ LDAP sync (people, units via `fonction`, groups)
 
 ## 8. Environments & deploy
 
-- `docker-compose` for local: postgres, keycloak (+ LDAP), rustfs, seq, prometheus, grafana, the monolith, the BFF, and a stub OpenAI-compatible server for tests.
-- One container for the monolith, one for the BFF, Angular served as static assets behind the BFF (same origin — no CORS).
+**Local development is orchestrated by .NET Aspire.** `src/AppHost` is the dev box: `aspire run` brings up postgres, keycloak (realm import, LDAP federation configured), rustfs, seq, prometheus, grafana, a stub OpenAI-compatible server, the monolith, the BFF and the Angular dev server, with a dashboard for logs, traces and endpoints. Secrets are Aspire parameters held in .NET user secrets. See `docs/dev-box.md`.
+
+**`deploy/docker-compose.yml` remains the deployment artifact.** Aspire is not in the deployed path; the target is a plain Docker host with no orchestrator.
+
+The two are kept in step deliberately rather than derived from one another: the AppHost passes **explicit environment variables** to each service instead of relying on Aspire's connection-string conventions, so every variable in `AppHost.cs` has a visible counterpart in the compose file and application code cannot tell which one started it. That also keeps the integration tests — which start the host with neither — running against exactly the same configuration surface.
+
+- One container for the monolith, one for the BFF, Angular built into the BFF's `wwwroot` and served as static assets (same origin — no CORS).
 - Secrets via environment / a vault; never in source.

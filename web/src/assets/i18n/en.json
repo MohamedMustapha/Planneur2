@@ -1,0 +1,91 @@
+{
+  "shell": {
+    "appName": "Activity & Portfolio",
+    "collapseNav": "Collapse menu",
+    "expandNav": "Expand menu",
+    "weekPager": "Week navigation",
+    "weekLabel": "Wk {{week}}",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "today": "Today",
+    "searchPlaceholder": "Search for a project or a person…",
+    "language": "Language",
+    "toggleTheme": "Switch theme",
+    "notifications": "Notifications",
+    "logout": "Sign out",
+    "noDepartment": "No department",
+    "unitCount": "{{count}} units"
+  },
+  "nav": {
+    "ariaLabel": "Main navigation",
+    "myBoard": "My board",
+    "myTeam": "My team",
+    "myUnit": "My unit",
+    "department": "Department",
+    "projects": "Projects",
+    "portfolio": "Portfolio",
+    "reports": "Reports",
+    "kudos": "Kudos",
+    "finance": "Finance",
+    "settings": "Settings"
+  },
+  "scope": {
+    "ariaLabel": "Viewing scope",
+    "label": "Scope",
+    "myWork": "My work",
+    "myProject": "My project",
+    "myUnit": "My unit",
+    "myDepartment": "My department",
+    "portfolio": "Portfolio"
+  },
+  "board": {
+    "title": "My board — log my activity",
+    "weeklyTarget": "Week — {{hours}} h target",
+    "hoursOfTarget": "{{logged}} / {{target}} h",
+    "hoursRemaining": "{{hours}} h still to log",
+    "importFromSources": "Import from Azure DevOps / ServiceNow",
+    "quickAdd": "Quick add",
+    "availableInSlice": "Arrives with slice {{slice}}",
+    "tabs": {
+      "week": "Week",
+      "month": "Month",
+      "list": "List"
+    },
+    "timelineTitle": "Weekly timeline",
+    "timelinePlaceholder": "The logging surface ships with slices S5 and S6. The Mobiscroll timeline is installed and licensed.",
+    "legendPlanned": "Planned",
+    "legendActual": "Actual",
+    "legendGrid": "1 h steps · 07:00 → 19:00",
+    "summary": {
+      "build": "BUILD",
+      "run": "RUN",
+      "qolTraining": "Quality of life + training",
+      "variance": "Planned / actual variance"
+    },
+    "awaitingActivities": "Awaiting the Activities module",
+    "myUnit": "My unit",
+    "unitEmpty": "The directory arrives with slice S1.",
+    "upcoming": "Coming up",
+    "upcomingEmpty": "Meetings and special days arrive with slice S7.",
+    "shortcuts": "Shortcuts",
+    "shortcutWeekNav": "Previous / next week",
+    "shortcutDuplicate": "Duplicate slot"
+  },
+  "placeholder": {
+    "subtitle": "Screen ships with slice {{slice}}",
+    "note": "The shell, the design system and the authentication chain are in place. This screen is waiting for its slice.",
+    "team": "Team timeline for a unit lead: one row per member, activities colour-coded by type, and status report generation.",
+    "unit": "Consolidated unit view: load per member, coverage, attached projects.",
+    "department": "Department view: one row per unit with projects nested inside, special days and milestones overlaid.",
+    "projects": "Project detail: cross-department team grouped by department, iterations, manual cost, BUILD/RUN classification.",
+    "portfolio": "Portfolio board: Considered · Committed · Active · Déphasé lanes, guarded transitions and iterations.",
+    "reports": "Role-aware status report, with a narrative summary written by the on-prem model.",
+    "kudos": "Peer recognition: counter, categories, optional badges and leaderboard per department.",
+    "finance": "Capex / opex view for department heads and the PMO.",
+    "settings": "Per-department configuration: activity taxonomy, contextual roles, kudo rules."
+  },
+  "common": {
+    "noHours": "0.0 h",
+    "loading": "Loading…"
+  }
+}

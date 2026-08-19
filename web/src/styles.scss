@@ -1,0 +1,8 @@
+// Global stylesheet.
+//
+// Fonts and the Mobiscroll stylesheet are listed in angular.json rather than imported here: they are plain CSS
+// bundled ahead of ours, and pulling them through Sass only to emit them unchanged costs build time for nothing.
+// Ours comes last so the token overrides win.
+@use 'tokens';
+@use 'base';
+@use 'components';

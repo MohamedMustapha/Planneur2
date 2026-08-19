@@ -1,0 +1,14 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t(data().titleKey)" [subtitle]="t('placeholder.subtitle', { slice: data().slice })">
+    <app-scope-selector slot="scope" />
+  </app-page-header>
+
+  <div class="placeholder">
+    <section class="card placeholder__card">
+      <span class="placeholder__badge">{{ data().slice }}</span>
+      <h2 class="placeholder__title">{{ t(data().titleKey) }}</h2>
+      <p class="placeholder__description">{{ t(data().descriptionKey) }}</p>
+      <p class="placeholder__note">{{ t('placeholder.note') }}</p>
+    </section>
+  </div>
+</ng-container>

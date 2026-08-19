@@ -1,0 +1,91 @@
+{
+  "shell": {
+    "appName": "Actividad y Cartera",
+    "collapseNav": "Contraer el menú",
+    "expandNav": "Desplegar el menú",
+    "weekPager": "Navegación por semana",
+    "weekLabel": "Sem. {{week}}",
+    "previousWeek": "Semana anterior",
+    "nextWeek": "Semana siguiente",
+    "today": "Hoy",
+    "searchPlaceholder": "Buscar un proyecto o una persona…",
+    "language": "Idioma",
+    "toggleTheme": "Cambiar de tema",
+    "notifications": "Notificaciones",
+    "logout": "Cerrar sesión",
+    "noDepartment": "Sin departamento",
+    "unitCount": "{{count}} unidades"
+  },
+  "nav": {
+    "ariaLabel": "Navegación principal",
+    "myBoard": "Mi tablero",
+    "myTeam": "Mi equipo",
+    "myUnit": "Mi unidad",
+    "department": "Departamento",
+    "projects": "Proyectos",
+    "portfolio": "Cartera",
+    "reports": "Informes",
+    "kudos": "Kudos",
+    "finance": "Finanzas",
+    "settings": "Ajustes"
+  },
+  "scope": {
+    "ariaLabel": "Ámbito de consulta",
+    "label": "Ámbito",
+    "myWork": "Mi actividad",
+    "myProject": "Mi proyecto",
+    "myUnit": "Mi unidad",
+    "myDepartment": "Mi departamento",
+    "portfolio": "Cartera"
+  },
+  "board": {
+    "title": "Mi tablero — registro de actividad",
+    "weeklyTarget": "Semana — objetivo {{hours}} h",
+    "hoursOfTarget": "{{logged}} / {{target}} h",
+    "hoursRemaining": "Quedan {{hours}} h por registrar",
+    "importFromSources": "Importar desde Azure DevOps / ServiceNow",
+    "quickAdd": "Añadir rápido",
+    "availableInSlice": "Disponible con el lote {{slice}}",
+    "tabs": {
+      "week": "Semana",
+      "month": "Mes",
+      "list": "Lista"
+    },
+    "timelineTitle": "Cronología semanal",
+    "timelinePlaceholder": "La superficie de registro llega con los lotes S5 y S6. La cronología Mobiscroll está instalada y con licencia.",
+    "legendPlanned": "Planificado",
+    "legendActual": "Real",
+    "legendGrid": "Paso de 1 h · 7 h → 19 h",
+    "summary": {
+      "build": "BUILD",
+      "run": "RUN",
+      "qolTraining": "Bienestar + formación",
+      "variance": "Desviación planificado / real"
+    },
+    "awaitingActivities": "A la espera del módulo Actividades",
+    "myUnit": "Mi unidad",
+    "unitEmpty": "El directorio llega con el lote S1.",
+    "upcoming": "Próximamente",
+    "upcomingEmpty": "Las reuniones y jornadas especiales llegan con el lote S7.",
+    "shortcuts": "Atajos",
+    "shortcutWeekNav": "Semana anterior / siguiente",
+    "shortcutDuplicate": "Duplicar la franja"
+  },
+  "placeholder": {
+    "subtitle": "Pantalla incluida en el lote {{slice}}",
+    "note": "El shell, el sistema de diseño y la cadena de autenticación están operativos. Esta pantalla espera su lote.",
+    "team": "Cronología de equipo para un jefe de unidad: una fila por miembro, actividades codificadas por color y generación del informe de situación.",
+    "unit": "Vista consolidada de la unidad: carga por miembro, cobertura y proyectos asociados.",
+    "department": "Vista de departamento: una fila por unidad con los proyectos anidados, jornadas especiales e hitos superpuestos.",
+    "projects": "Ficha de proyecto: equipo transversal agrupado por departamento, iteraciones, coste manual y clasificación BUILD/RUN.",
+    "portfolio": "Tablero de cartera: carriles Considerado · Comprometido · Activo · Déphasé, transiciones controladas e iteraciones.",
+    "reports": "Informe de situación adaptado al rol, con resumen redactado por el modelo alojado internamente.",
+    "kudos": "Reconocimiento entre compañeros: contador, categorías, insignias y clasificación opcionales por departamento.",
+    "finance": "Vista capex / opex para responsables de departamento y PMO.",
+    "settings": "Configuración por departamento: taxonomía de actividades, roles contextuales y reglas de kudos."
+  },
+  "common": {
+    "noHours": "0,0 h",
+    "loading": "Cargando…"
+  }
+}
