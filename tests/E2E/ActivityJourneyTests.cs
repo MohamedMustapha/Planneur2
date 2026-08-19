@@ -147,7 +147,7 @@ public sealed class ActivityJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
-        var code = $"PRJ-{Guid.CreateVersion7():N}"[..12];
+        var code = $"PRJ-{Guid.CreateVersion7().ToString("N")[^8..]}";
 
         var created = await page.APIRequest.PostAsync("/api/projects", new APIRequestContextOptions
         {

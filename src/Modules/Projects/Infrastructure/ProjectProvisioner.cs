@@ -97,3 +97,53 @@ internal sealed class ProjectMembershipReader(ProjectsDbContext context) : IProj
         await context.ProjectMembers.AnyAsync(member =>
             member.ProjectId == projectId && member.PersonId == personId && member.To == null, ct);
 }
+
+/// <summary>
+/// Projects' side of the team-reading contract S6 draws rows from.
+/// </summary>
+/// <remarks>
+/// Flat, and on the caller's own connection. Anyone Directory hid comes back unnamed rather than dropped: they
+/// are on the project and their hours fill the board, so removing the row would understate the load on it.
+/// </remarks>
+internal sealed class ProjectTeamReader(
+    ProjectsDbContext context,
+    Application.IDirectoryPort directory) : IProjectTeamReader
+{
+    public async Task<IReadOnlyList<ProjectTeamMemberView>> GetTeamAsync(Guid projectId, CancellationToken ct)
+    {
+        var members = await context.ProjectMembers
+            .Where(member => member.ProjectId == projectId && member.To == null)
+            .Select(member => new
+            {
+                member.PersonId,
+                member.DepartmentId,
+                member.FunctionalRoleId,
+            })
+            .ToListAsync(ct);
+
+        if (members.Count == 0)
+        {
+            return [];
+        }
+
+        var names = await directory.GetPersonNamesAsync([.. members.Select(member => member.PersonId)], ct);
+
+        var departments = await directory.GetDepartmentNameKeysAsync(
+            [.. members.Select(member => member.DepartmentId).Distinct()],
+            ct);
+
+        var functions = await directory.GetFunctionalRoleCodesAsync(
+            [.. members.Select(member => member.FunctionalRoleId).Distinct()],
+            ct);
+
+        return
+        [
+            .. members.Select(member => new ProjectTeamMemberView(
+                member.PersonId,
+                names.GetValueOrDefault(member.PersonId),
+                member.DepartmentId,
+                departments.GetValueOrDefault(member.DepartmentId, "department.unknown"),
+                functions.GetValueOrDefault(member.FunctionalRoleId, "unknown"))),
+        ];
+    }
+}

@@ -43,7 +43,9 @@ public sealed record DepartmentConfigSnapshot(
     string IterationPresetsJson,
     decimal WeeklyTargetHours,
     bool EnforceWeeklyTarget,
-    int Version);
+    int Version,
+    /// <summary>Shift slots the department offers, and their minimum staffing (S6). Empty means the defaults.</summary>
+    string ShiftTemplatesJson = "{}");
 
 // --- Integration events ------------------------------------------------------------------------------------------
 
@@ -103,6 +105,12 @@ public interface IDirectoryReader
     Task<IReadOnlyDictionary<Guid, string>> GetFunctionalRoleCodesAsync(
         IReadOnlyList<Guid> functionalRoleIds,
         CancellationToken ct);
+
+    /// <summary>Units of a department, or all the caller can see. The department board's rows.</summary>
+    Task<IReadOnlyList<UnitSummary>> GetUnitsAsync(Guid? departmentId, CancellationToken ct);
+
+    /// <summary>People in a unit or department. The team and unit boards' rows.</summary>
+    Task<IReadOnlyList<PersonSummary>> GetPeopleAsync(Guid? unitId, Guid? departmentId, CancellationToken ct);
 }
 
 /// <summary>

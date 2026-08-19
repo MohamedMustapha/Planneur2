@@ -69,3 +69,15 @@ public sealed record IterationOpened(Guid ItemId, Guid IterationId, DateOnly Sta
     : IntegrationEvent;
 
 public sealed record IterationClosed(Guid ItemId, Guid IterationId) : IntegrationEvent;
+
+/// <summary>
+/// Iteration ranges for a project, for modules that draw them.
+/// </summary>
+/// <remarks>
+/// Keyed by project rather than by portfolio item, because that is the id every consumer already has: S6 renders
+/// a project board and should not have to discover whether the project has a portfolio item at all.
+/// </remarks>
+public interface IPortfolioIterationReader
+{
+    Task<IReadOnlyList<IterationSummary>> GetForProjectAsync(Guid projectId, CancellationToken ct);
+}

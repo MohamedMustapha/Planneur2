@@ -196,6 +196,15 @@ public sealed class DepartmentConfig
     /// <summary>Which board a member of this department lands on (S6).</summary>
     public string DefaultBoardLayout { get; set; } = "week";
 
+    /// <summary>
+    /// Shift slots offered by the S6 scheduler, with their minimum staffing.
+    /// </summary>
+    /// <remarks>
+    /// Unlike the activity taxonomy, these are replaced wholesale rather than merged: nothing downstream reports
+    /// on shift codes, so a department that defines its own is not dropping vocabulary anyone else depends on.
+    /// </remarks>
+    public string ShiftTemplatesJson { get; set; } = "{}";
+
     /// <summary>Iteration length presets offered in the quick selector (S4): 1w / 2w / 1m / custom.</summary>
     public string IterationPresetsJson { get; set; } = """["1w","2w","1m"]""";
 

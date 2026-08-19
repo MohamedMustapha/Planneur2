@@ -129,6 +129,9 @@ public class UpdateDepartmentConfigRequestBase
     public decimal WeeklyTargetHours { get; set; } = 35m;
 
     public bool EnforceWeeklyTarget { get; set; }
+
+    /// <summary>Shift slots offered by the S6 scheduler. An empty object means the platform defaults.</summary>
+    public string ShiftTemplatesJson { get; set; } = "{}";
 }
 
 public sealed class UpdateDepartmentConfigEndpoint(IDepartmentConfigService configs)
@@ -154,7 +157,8 @@ public sealed class UpdateDepartmentConfigEndpoint(IDepartmentConfigService conf
                 request.DefaultBoardLayout,
                 request.IterationPresetsJson,
                 request.WeeklyTargetHours,
-                request.EnforceWeeklyTarget),
+                request.EnforceWeeklyTarget,
+                request.ShiftTemplatesJson),
             ct);
 
         await Send.OkAsync(updated, ct);

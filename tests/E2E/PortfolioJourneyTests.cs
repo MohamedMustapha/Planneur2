@@ -45,7 +45,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
         await page.GetByRole(AriaRole.Button, new() { Name = "Proposer un candidat" })
             .ClickAsync(new() { Timeout = TimeoutMs });
 
-        var name = $"Refonte du portail {Guid.CreateVersion7():N}"[..40];
+        var name = $"Refonte du portail {Guid.CreateVersion7().ToString("N")[^12..]}";
 
         var dialog = page.GetByRole(AriaRole.Dialog);
 
@@ -100,7 +100,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
 
         await page.GotoAsync("/portfolio");
 
-        var name = $"Socle {Guid.CreateVersion7():N}"[..24];
+        var name = $"Socle {Guid.CreateVersion7().ToString("N")[^12..]}";
 
         // --- Register the candidate ------------------------------------------------------------------------
         await page.GetByRole(AriaRole.Button, new() { Name = "Proposer un candidat" })
@@ -122,7 +122,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
         await card.GetByRole(AriaRole.Button, new() { Name = "Engager" }).ClickAsync(new() { Timeout = TimeoutMs });
 
         var decision = page.GetByRole(AriaRole.Dialog);
-        await decision.GetByLabel("Code du projet").FillAsync($"PRJ-{Guid.CreateVersion7():N}"[..12]);
+        await decision.GetByLabel("Code du projet").FillAsync($"PRJ-{Guid.CreateVersion7().ToString("N")[^8..]}");
         await decision.GetByLabel("Motif de la décision").FillAsync("Budget validé en comité.");
         await decision.GetByRole(AriaRole.Button, new() { Name = "Engager" }).ClickAsync(new() { Timeout = TimeoutMs });
 
@@ -207,7 +207,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
 
         await page.GotoAsync("/portfolio");
 
-        var name = $"Trace {Guid.CreateVersion7():N}"[..24];
+        var name = $"Trace {Guid.CreateVersion7().ToString("N")[^12..]}";
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Proposer un candidat" })
             .ClickAsync(new() { Timeout = TimeoutMs });

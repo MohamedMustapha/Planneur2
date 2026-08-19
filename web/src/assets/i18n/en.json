@@ -76,7 +76,11 @@
     "thisWeek": "This week",
     "reconciled": "Reconciled",
     "overtime": "{{hours}}h over target",
-    "targetEnforced": "· cap enforced"
+    "targetEnforced": "· cap enforced",
+    "my": "My board",
+    "team": "My team",
+    "unit": "My unit",
+    "department": "Department"
   },
   "placeholder": {
     "subtitle": "Screen ships with slice {{slice}}",
@@ -151,7 +155,8 @@
     "department": {
       "dsi": "Information Systems",
       "daf": "Finance"
-    }
+    },
+    "hiddenPerson": "Hidden member"
   },
   "access": {
     "title": "Roles and permissions",
@@ -289,5 +294,35 @@
       "quality-of-life": "Quality of life",
       "recruitment-admin": "Recruitment & admin"
     }
+  },
+  "boards": {
+    "title": "Schedules",
+    "subtitle": "The team, unit, project and department boards",
+    "my": "My board",
+    "team": "My team",
+    "unit": "My unit",
+    "project": "Project",
+    "department": "Department",
+    "weekNav": "Week navigation",
+    "pool": "Queue",
+    "poolEmpty": "Nothing waiting.",
+    "refreshPool": "Pull from ServiceNow",
+    "assigning": "Assign {{ref}} to:",
+    "roster": "Plan a shift",
+    "person": "Person",
+    "choosePerson": "Choose…",
+    "shift": "Shift",
+    "chooseShift": "Choose…",
+    "day": "Day",
+    "addShift": "Add",
+    "empty": "Nothing to show for this period.",
+    "genericError": "The operation failed.",
+    "chooseProject": "Choose a project…",
+    "pickProject": "Choose a project to see its board."
+  },
+  "shift": {
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "on-call": "On call"
   }
 }

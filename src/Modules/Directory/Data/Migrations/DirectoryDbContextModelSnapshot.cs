@@ -167,6 +167,11 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("role_labels_json");
 
+                    b.Property<string>("ShiftTemplatesJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("shift_templates_json");
+
                     b.Property<int>("Version")
                         .HasColumnType("integer")
                         .HasColumnName("version");

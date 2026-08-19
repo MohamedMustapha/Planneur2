@@ -57,6 +57,8 @@
     <Project Path="src/Modules/Portfolio/Cracra.Modules.Portfolio.csproj" />
     <Project Path="src/Modules/Activities.Contracts/Cracra.Modules.Activities.Contracts.csproj" />
     <Project Path="src/Modules/Activities/Cracra.Modules.Activities.csproj" />
+    <Project Path="src/Modules/Scheduling.Contracts/Cracra.Modules.Scheduling.Contracts.csproj" />
+    <Project Path="src/Modules/Scheduling/Cracra.Modules.Scheduling.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Projects.Contracts/">
     <Project Path="src/Modules/Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />

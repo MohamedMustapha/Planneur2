@@ -23,14 +23,27 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/board/board').then((m) => m.Board),
   },
-  placeholder('team', { titleKey: 'nav.myTeam', slice: 'S6', descriptionKey: 'placeholder.team' }),
+  {
+    // The five boards are one screen with a tab strip, not five routes: the scope selector and the week pager are
+    // the same controls throughout, and splitting them would mean five copies that drift. The rail entries still
+    // land on the board they name, which is what `board` in the route data does.
+    path: 'team',
+    canActivate: [authGuard],
+    data: { board: 'team' },
+    loadComponent: () => import('./features/scheduling/boards').then((m) => m.Boards),
+  },
   {
     // S1 delivers the org explorer; the timeline view of a unit still belongs to S6.
     path: 'unit',
     canActivate: [authGuard],
     loadComponent: () => import('./features/directory/org-explorer').then((m) => m.OrgExplorer),
   },
-  placeholder('department', { titleKey: 'nav.department', slice: 'S6', descriptionKey: 'placeholder.department' }),
+  {
+    path: 'department',
+    canActivate: [authGuard],
+    data: { board: 'department' },
+    loadComponent: () => import('./features/scheduling/boards').then((m) => m.Boards),
+  },
   {
     path: 'projects',
     canActivate: [authGuard],

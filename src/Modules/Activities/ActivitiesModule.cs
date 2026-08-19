@@ -3,6 +3,7 @@ using Cracra.BuildingBlocks.Persistence;
 using Cracra.BuildingBlocks.Persistence.Behaviors;
 using Cracra.Modules.Activities.Application;
 using Cracra.Modules.Activities.Infrastructure;
+using Contracts = Cracra.Modules.Activities.Contracts;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,10 @@ public static class ActivitiesModule
         services.AddScoped<IActivityRepository, ActivityRepository>();
         services.AddScoped<IDirectoryPort, DirectoryAdapter>();
         services.AddScoped<IProjectsPort, ProjectsAdapter>();
+
+        // The write-back contract S6 schedules through. Planned entries only, on the caller's own connection,
+        // so RLS answers "may this lead plan for this person" exactly as it does for the API.
+        services.AddScoped<Contracts.IActivityScheduler, ActivityScheduler>();
 
         // --- The S10 seam -----------------------------------------------------------------------------------
         // Registered as a collection because the dropdown may ask for one source or for all of them, and because

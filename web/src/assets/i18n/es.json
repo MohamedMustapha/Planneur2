@@ -76,7 +76,11 @@
     "thisWeek": "Esta semana",
     "reconciled": "Conciliado",
     "overtime": "{{hours}} h por encima del objetivo",
-    "targetEnforced": "· límite aplicado"
+    "targetEnforced": "· límite aplicado",
+    "my": "Mi tablero",
+    "team": "Mi equipo",
+    "unit": "Mi unidad",
+    "department": "Departamento"
   },
   "placeholder": {
     "subtitle": "Pantalla incluida en el lote {{slice}}",
@@ -151,7 +155,8 @@
     "department": {
       "dsi": "Sistemas de Información",
       "daf": "Dirección Financiera"
-    }
+    },
+    "hiddenPerson": "Miembro no visible"
   },
   "access": {
     "title": "Roles y permisos",
@@ -289,5 +294,35 @@
       "quality-of-life": "Calidad de vida",
       "recruitment-admin": "Selección y administración"
     }
+  },
+  "boards": {
+    "title": "Planificaciones",
+    "subtitle": "Los tableros de equipo, unidad, proyecto y departamento",
+    "my": "Mi tablero",
+    "team": "Mi equipo",
+    "unit": "Mi unidad",
+    "project": "Proyecto",
+    "department": "Departamento",
+    "weekNav": "Navegación por semanas",
+    "pool": "Cola de espera",
+    "poolEmpty": "Nada pendiente.",
+    "refreshPool": "Importar desde ServiceNow",
+    "assigning": "Asignar {{ref}} a:",
+    "roster": "Planificar un turno",
+    "person": "Persona",
+    "choosePerson": "Elegir…",
+    "shift": "Turno",
+    "chooseShift": "Elegir…",
+    "day": "Día",
+    "addShift": "Añadir",
+    "empty": "Nada que mostrar en este periodo.",
+    "genericError": "La operación ha fallado.",
+    "chooseProject": "Elegir un proyecto…",
+    "pickProject": "Elija un proyecto para ver su tablero."
+  },
+  "shift": {
+    "morning": "Mañana",
+    "afternoon": "Tarde",
+    "on-call": "Guardia"
   }
 }

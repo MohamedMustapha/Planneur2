@@ -125,3 +125,24 @@ public interface IProjectMembershipReader
     /// <summary>True when the person is currently on the project — a past membership does not count.</summary>
     Task<bool> IsActiveMemberAsync(Guid projectId, Guid personId, CancellationToken ct);
 }
+
+/// <summary>One member of a project team, flattened for a consumer that groups them itself.</summary>
+public sealed record ProjectTeamMemberView(
+    Guid PersonId,
+    string? DisplayName,
+    Guid DepartmentId,
+    string DepartmentNameKey,
+    string FunctionCode);
+
+/// <summary>
+/// The team, for modules that draw rows from it.
+/// </summary>
+/// <remarks>
+/// Flat rather than the nested <see cref="ProjectTeam"/> the API returns: S6 nests it differently again (a
+/// department row, then a person row beneath it) and re-flattening a tree only to rebuild another one is work that
+/// exists purely because the shape was chosen for a different consumer.
+/// </remarks>
+public interface IProjectTeamReader
+{
+    Task<IReadOnlyList<ProjectTeamMemberView>> GetTeamAsync(Guid projectId, CancellationToken ct);
+}

@@ -31,6 +31,9 @@ public static class ProjectsModule
         // Asked on every hour S5 books against a project.
         services.AddScoped<Contracts.IProjectMembershipReader, ProjectMembershipReader>();
 
+        // The team rows S6 groups by department on the project board.
+        services.AddScoped<Contracts.IProjectTeamReader, ProjectTeamReader>();
+
         services.AddMediatorHandlersFrom(typeof(ProjectsModule).Assembly);
 
         return services;

@@ -23,6 +23,15 @@ public interface IUserContext
     string Language { get; }
 
     bool Has(string role);
+
+    /// <summary>
+    /// True when any of these roles is held.
+    /// </summary>
+    /// <remarks>
+    /// A default implementation rather than a member each type repeats: what "any of" means is not something an
+    /// implementation should get to disagree about, and two of them already exist.
+    /// </remarks>
+    bool HasAnyRole(params string[] roles) => roles.Any(Has);
 }
 
 /// <summary>

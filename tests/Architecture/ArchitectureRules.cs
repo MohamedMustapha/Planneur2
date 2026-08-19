@@ -35,6 +35,8 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Portfolio.Contracts.PortfolioBoard).Assembly,
         typeof(Cracra.Modules.Activities.ActivitiesModule).Assembly,
         typeof(Cracra.Modules.Activities.Contracts.ActivityEntryView).Assembly,
+        typeof(Cracra.Modules.Scheduling.SchedulingModule).Assembly,
+        typeof(Cracra.Modules.Scheduling.Contracts.BoardPayload).Assembly,
     ];
 
     [Fact]
@@ -127,6 +129,43 @@ public sealed class ArchitectureRules
         // In a DDD module the endpoint maps a request to a command and sends it. Reaching for the DbContext there
         // is how the domain layer gets bypassed one "just this once" at a time.
         result.IsSuccessful.ShouldBeTrue(Describe(result));
+    }
+
+    /// <summary>
+    /// Endpoints map requests to commands and queries; they never reach into a module's domain.
+    /// </summary>
+    /// <remarks>
+    /// "The assignment side stays isolated", as a rule the build can check. An endpoint that constructs an
+    /// aggregate or reads its state has taken a decision the domain was supposed to own, and it is the shortest
+    /// path from a thin API layer to a fat one — each individual case looks harmless.
+    ///
+    /// Note this is stricter than the DbContext rule above and subsumes none of it: a handler may legitimately do
+    /// both, an endpoint may do neither.
+    /// </remarks>
+    [Fact]
+    public void Endpoints_do_not_reach_into_a_module_domain()
+    {
+        foreach (var assembly in PlatformAssemblies)
+        {
+            var moduleName = assembly.GetName().Name;
+
+            if (moduleName is null || !moduleName.StartsWith("Cracra.Modules.", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var result = Types.InAssembly(assembly)
+                .That()
+                .ResideInNamespaceMatching(@"Cracra\.Modules\.\w+\.Api")
+                .ShouldNot()
+                .HaveDependencyOnAny([.. assembly.GetTypes()
+                    .Select(type => type.Namespace)
+                    .Where(space => space is not null && space.EndsWith(".Domain", StringComparison.Ordinal))
+                    .Distinct()!])
+                .GetResult();
+
+            result.IsSuccessful.ShouldBeTrue($"{moduleName}: {Describe(result)}");
+        }
     }
 
     /// <summary>

@@ -117,6 +117,9 @@ var api = builder.AddProject<Projects.Cracra_Host>("api")
     // pull-a-task flow is exercisable here. Sample tasks are derived from the caller's own projects, never
     // invented, and this flag stays off in every real deployment.
     .WithEnvironment("Cracra__Activities__AssignableTasks__SeedSampleTasks", "true")
+    // Likewise for the S6 work-order pool: the dev box stands in for ServiceNow so the drag-from-queue journey
+    // is exercisable before S10's adapters exist. Samples derive from the unit that asked and never leave it.
+    .WithEnvironment("Cracra__Scheduling__Pool__SeedSampleWorkOrders", "true")
     .WithEnvironment("ConnectionStrings__seq", seq.GetEndpoint("http"))
     .WithHttpHealthCheck("/alive")
     // Pinned, not dynamic: Prometheus scrapes /metrics from a static target list, and the Angular dev proxy needs

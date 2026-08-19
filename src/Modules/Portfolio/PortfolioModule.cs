@@ -3,6 +3,7 @@ using Cracra.BuildingBlocks.Persistence;
 using Cracra.BuildingBlocks.Persistence.Behaviors;
 using Cracra.Modules.Portfolio.Application;
 using Cracra.Modules.Portfolio.Infrastructure;
+using Contracts = Cracra.Modules.Portfolio.Contracts;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,9 @@ public static class PortfolioModule
         services.AddScoped<IPortfolioRepository, PortfolioRepository>();
         services.AddScoped<IProjectsPort, ProjectsAdapter>();
         services.AddScoped<IDirectoryPort, DirectoryAdapter>();
+
+        // Iteration ranges, drawn as overlays on the S6 project board.
+        services.AddScoped<Contracts.IPortfolioIterationReader, PortfolioIterationReader>();
 
         services.AddMediatorHandlersFrom(typeof(PortfolioModule).Assembly);
 

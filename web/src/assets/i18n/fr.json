@@ -76,7 +76,11 @@
     "thisWeek": "Cette semaine",
     "reconciled": "Rapproché",
     "overtime": "{{hours}} h au-delà de l'objectif",
-    "targetEnforced": "· plafond appliqué"
+    "targetEnforced": "· plafond appliqué",
+    "my": "Mon tableau",
+    "team": "Mon équipe",
+    "unit": "Mon unité",
+    "department": "Département"
   },
   "placeholder": {
     "subtitle": "Écran livré avec le lot {{slice}}",
@@ -151,7 +155,8 @@
     "department": {
       "dsi": "Direction des Systèmes d'Information",
       "daf": "Direction Financière"
-    }
+    },
+    "hiddenPerson": "Membre non visible"
   },
   "access": {
     "title": "Rôles et habilitations",
@@ -289,5 +294,35 @@
       "quality-of-life": "Qualité de vie",
       "recruitment-admin": "Recrutement & administratif"
     }
+  },
+  "boards": {
+    "title": "Plannings",
+    "subtitle": "Les tableaux d'équipe, d'unité, de projet et de département",
+    "my": "Mon tableau",
+    "team": "Mon équipe",
+    "unit": "Mon unité",
+    "project": "Projet",
+    "department": "Département",
+    "weekNav": "Navigation par semaine",
+    "pool": "File d'attente",
+    "poolEmpty": "Aucune demande en attente.",
+    "refreshPool": "Importer depuis ServiceNow",
+    "assigning": "Affecter {{ref}} à :",
+    "roster": "Planifier un créneau",
+    "person": "Personne",
+    "choosePerson": "Choisir…",
+    "shift": "Créneau",
+    "chooseShift": "Choisir…",
+    "day": "Jour",
+    "addShift": "Ajouter",
+    "empty": "Rien à afficher pour cette période.",
+    "genericError": "L'opération a échoué.",
+    "chooseProject": "Choisir un projet…",
+    "pickProject": "Choisissez un projet pour afficher son planning."
+  },
+  "shift": {
+    "morning": "Matin",
+    "afternoon": "Après-midi",
+    "on-call": "Astreinte"
   }
 }

@@ -16,7 +16,8 @@ public sealed record UpdateDepartmentConfigRequest(
     string DefaultBoardLayout,
     string IterationPresetsJson,
     decimal WeeklyTargetHours,
-    bool EnforceWeeklyTarget);
+    bool EnforceWeeklyTarget,
+    string ShiftTemplatesJson = "{}");
 
 public interface IDepartmentConfigService
 {
@@ -59,6 +60,7 @@ internal sealed class DepartmentConfigService(DirectoryDbContext context, IUserC
         var now = DateTimeOffset.UtcNow;
 
         config.ActivityTaxonomyJson = request.ActivityTaxonomyJson;
+        config.ShiftTemplatesJson = request.ShiftTemplatesJson;
         config.RoleLabelsJson = request.RoleLabelsJson;
         config.KudoRulesJson = request.KudoRulesJson;
         config.DefaultBoardLayout = request.DefaultBoardLayout;

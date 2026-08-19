@@ -23,6 +23,7 @@ public static class DepartmentConfigValidator
         EnsureJsonObject(request.ActivityTaxonomyJson, nameof(request.ActivityTaxonomyJson));
         EnsureJsonObject(request.RoleLabelsJson, nameof(request.RoleLabelsJson));
         EnsureJsonObject(request.KudoRulesJson, nameof(request.KudoRulesJson));
+        EnsureJsonObject(request.ShiftTemplatesJson, nameof(request.ShiftTemplatesJson));
         EnsureJsonArray(request.IterationPresetsJson, nameof(request.IterationPresetsJson));
 
         if (request.WeeklyTargetHours <= 0 || request.WeeklyTargetHours > MaximumWeeklyTargetHours)

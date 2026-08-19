@@ -97,4 +97,56 @@ internal sealed class DirectoryReader(DirectoryDbContext context) : IDirectoryRe
             .Where(role => functionalRoleIds.Contains(role.Id))
             .ToDictionaryAsync(role => role.Id, role => role.Code, ct);
     }
+
+    /// <summary>
+    /// Units the caller can see, optionally narrowed to one department.
+    /// </summary>
+    /// <remarks>
+    /// The department board's rows. No role check here: RLS on the unit table already decided which units this
+    /// caller may see, and a member asking for a department they are not in simply gets nothing back.
+    /// </remarks>
+    public async Task<IReadOnlyList<UnitSummary>> GetUnitsAsync(Guid? departmentId, CancellationToken ct)
+    {
+        var query = context.Units.AsQueryable();
+
+        if (departmentId is { } scoped)
+        {
+            query = query.Where(unit => unit.DepartmentId == scoped);
+        }
+
+        return await query
+            .OrderBy(unit => unit.Name)
+            .Select(unit => new UnitSummary(unit.Id, unit.DepartmentId, unit.Code, unit.Name, unit.Kind.ToString()))
+            .ToListAsync(ct);
+    }
+
+    /// <summary>People in a unit or department — the team and unit boards' rows.</summary>
+    public async Task<IReadOnlyList<PersonSummary>> GetPeopleAsync(
+        Guid? unitId,
+        Guid? departmentId,
+        CancellationToken ct)
+    {
+        var query = context.People.Where(person => person.Active);
+
+        if (unitId is { } unit)
+        {
+            query = query.Where(person => person.PrimaryUnitId == unit);
+        }
+
+        if (departmentId is { } department)
+        {
+            query = query.Where(person => person.PrimaryDepartmentId == department);
+        }
+
+        return await query
+            .OrderBy(person => person.DisplayName)
+            .Select(person => new PersonSummary(
+                person.Id,
+                person.DisplayName,
+                person.PrimaryUnitId,
+                person.PrimaryDepartmentId,
+                new List<string>(),
+                person.Active))
+            .ToListAsync(ct);
+    }
 }

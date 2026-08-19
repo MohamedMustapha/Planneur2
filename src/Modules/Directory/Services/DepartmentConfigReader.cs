@@ -31,6 +31,7 @@ internal sealed class DepartmentConfigReader(DirectoryDbContext context) : IDepa
                 config.IterationPresetsJson,
                 config.WeeklyTargetHours,
                 config.EnforceWeeklyTarget,
-                config.Version);
+                config.Version,
+                config.ShiftTemplatesJson);
     }
 }

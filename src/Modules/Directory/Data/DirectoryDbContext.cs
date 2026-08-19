@@ -167,6 +167,7 @@ internal sealed class DepartmentConfigConfiguration : IEntityTypeConfiguration<D
 
         // jsonb rather than text: these are queried (S5 reads the taxonomy) and Postgres can index into jsonb.
         builder.Property(config => config.ActivityTaxonomyJson).HasColumnType("jsonb").IsRequired();
+        builder.Property(config => config.ShiftTemplatesJson).HasColumnType("jsonb").IsRequired();
         builder.Property(config => config.RoleLabelsJson).HasColumnType("jsonb").IsRequired();
         builder.Property(config => config.KudoRulesJson).HasColumnType("jsonb").IsRequired();
         builder.Property(config => config.IterationPresetsJson).HasColumnType("jsonb").IsRequired();

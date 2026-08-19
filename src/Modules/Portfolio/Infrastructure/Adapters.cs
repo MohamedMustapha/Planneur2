@@ -78,3 +78,29 @@ public sealed class PortfolioDbContextFactory : IDesignTimeDbContextFactory<Port
         return new PortfolioDbContext(options);
     }
 }
+
+/// <summary>
+/// Portfolio's side of the iteration-reading contract S6 draws ranges from.
+/// </summary>
+/// <remarks>
+/// Keyed by project and answers with nothing where the project has no portfolio item — which is the common case
+/// for a project created directly through S3, and not a condition any board should have to handle specially.
+/// </remarks>
+internal sealed class PortfolioIterationReader(PortfolioDbContext context)
+    : Cracra.Modules.Portfolio.Contracts.IPortfolioIterationReader
+{
+    public async Task<IReadOnlyList<Cracra.Modules.Portfolio.Contracts.IterationSummary>> GetForProjectAsync(Guid projectId, CancellationToken ct) =>
+        await context.Iterations
+            .Where(iteration => context.Items.Any(item => item.Id == iteration.PortfolioItemId
+                && item.ProjectId == projectId))
+            .OrderBy(iteration => iteration.Sequence)
+            .Select(iteration => new Cracra.Modules.Portfolio.Contracts.IterationSummary(
+                iteration.Id,
+                iteration.Sequence,
+                iteration.Name,
+                iteration.Length.ToString().ToLower(),
+                iteration.StartsOn,
+                iteration.EndsOn,
+                iteration.State.ToString().ToLower()))
+            .ToListAsync(ct);
+}

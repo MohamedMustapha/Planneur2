@@ -90,3 +90,53 @@ public sealed record ActivityReconciled(
     decimal ActualHours,
     string PlannedTypeCode,
     string ActualTypeCode) : IntegrationEvent;
+
+/// <summary>
+/// Writing planned activity on someone's behalf, for the scheduling boards.
+/// </summary>
+/// <remarks>
+/// <para>
+/// S6 assigns work orders and plans shifts, and both of those <em>are</em> planned activity — the whole point of
+/// the boards is that what a lead schedules shows up in the person's own week. Rather than let Scheduling write
+/// rows into this schema, it asks through here, so every entry still passes the taxonomy check, the slot rules and
+/// the department's guardrail.
+/// </para>
+/// <para>
+/// Planned only, deliberately. Nothing outside this module may assert that someone actually did something: an
+/// actual is a claim about the past and only its owner, or their lead acting for them, gets to make it.
+/// </para>
+/// </remarks>
+public interface IActivityScheduler
+{
+    /// <summary>Creates a planned slot for someone. Returns the new entry's id.</summary>
+    Task<Guid> PlanAsync(
+        Guid personId,
+        string activityTypeCode,
+        Guid? projectId,
+        DateTimeOffset start,
+        DateTimeOffset end,
+        string? note,
+        string source,
+        string? externalRef,
+        CancellationToken ct);
+
+    /// <summary>Moves a planned slot. Used when a task or an assignment is dragged on the timeline.</summary>
+    Task RescheduleAsync(Guid entryId, DateTimeOffset start, DateTimeOffset end, CancellationToken ct);
+
+    /// <summary>Removes a planned slot this module created. Silently tolerates one already gone.</summary>
+    Task CancelAsync(Guid entryId, CancellationToken ct);
+
+    /// <summary>Entries for a set of people over a window — the rows every board is drawn from.</summary>
+    Task<IReadOnlyList<ActivityEntryView>> GetForPeopleAsync(
+        IReadOnlyList<Guid> personIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct);
+
+    /// <summary>Entries against a project over a window, whoever logged them.</summary>
+    Task<IReadOnlyList<ActivityEntryView>> GetForProjectAsync(
+        Guid projectId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct);
+}

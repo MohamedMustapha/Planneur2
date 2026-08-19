@@ -9,6 +9,7 @@ using Cracra.Modules.Directory;
 using Cracra.Modules.Activities;
 using Cracra.Modules.Portfolio;
 using Cracra.Modules.Projects;
+using Cracra.Modules.Scheduling;
 using Cracra.ServiceDefaults;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -56,6 +57,7 @@ builder.Services.AddDirectoryModule();
 builder.Services.AddProjectsModule();
 builder.Services.AddPortfolioModule();
 builder.Services.AddActivitiesModule(builder.Configuration);
+builder.Services.AddSchedulingModule(builder.Configuration);
 
 var app = builder.Build();
 
