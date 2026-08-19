@@ -53,3 +53,20 @@ public interface IRoleMaterializer
 {
     Task<int> MaterializeAsync(IReadOnlyList<SyncedRoleAssignmentDto> assignments, CancellationToken ct);
 }
+
+/// <summary>One person on one project, as the access projection records it.</summary>
+public sealed record ProjectMembershipEntry(Guid PersonId, Guid DepartmentId);
+
+/// <summary>
+/// Maintains the projection <c>access.on_project</c> and <c>access.project_in_my_depts</c> read.
+/// </summary>
+/// <remarks>
+/// Implemented by Access, called by Projects inside the transaction that changes the team. Deliberately not an
+/// integration event: this projection decides who can read a project, and a lag between removing someone and them
+/// losing access is a hole rather than a latency.
+/// </remarks>
+public interface IProjectMembershipProjection
+{
+    /// <summary>Replaces the whole membership for a project. An empty list clears it.</summary>
+    Task ReplaceAsync(Guid projectId, IReadOnlyList<ProjectMembershipEntry> members, CancellationToken ct);
+}

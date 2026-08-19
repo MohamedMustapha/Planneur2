@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Cracra.BuildingBlocks.Web.Errors;
+using Cracra.BuildingBlocks.Abstractions;
 
 namespace Cracra.Modules.Directory.Services;
 

@@ -77,7 +77,6 @@
     "team": "Cronología de equipo para un jefe de unidad: una fila por miembro, actividades codificadas por color y generación del informe de situación.",
     "unit": "Vista consolidada de la unidad: carga por miembro, cobertura y proyectos asociados.",
     "department": "Vista de departamento: una fila por unidad con los proyectos anidados, jornadas especiales e hitos superpuestos.",
-    "projects": "Ficha de proyecto: equipo transversal agrupado por departamento, iteraciones, coste manual y clasificación BUILD/RUN.",
     "portfolio": "Tablero de cartera: carriles Considerado · Comprometido · Activo · Déphasé, transiciones controladas e iteraciones.",
     "reports": "Informe de situación adaptado al rol, con resumen redactado por el modelo alojado internamente.",
     "kudos": "Reconocimiento entre compañeros: contador, categorías, insignias y clasificación opcionales por departamento.",
@@ -176,6 +175,41 @@
     "source": {
       "ldap": "Directorio",
       "override": "Excepción"
+    }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "subtitle": "Proyectos visibles en su ámbito",
+    "empty": "No hay proyectos visibles.",
+    "count": "{{count}} proyectos",
+    "code": "Código",
+    "name": "Nombre",
+    "classification": "Clasificación",
+    "team": "Equipo",
+    "cost": "Coste",
+    "costNotes": "Notas de coste",
+    "description": "Descripción",
+    "leadDepartment": "Departamento responsable",
+    "departments": "Departamentos participantes",
+    "lead": "Responsable",
+    "teamPanel": "Equipo del proyecto",
+    "memberCount": "{{count}} miembros",
+    "noMembers": "Todavía no hay miembros.",
+    "hiddenMember": "Miembro no visible",
+    "addMember": "Añadir un miembro",
+    "person": "Persona",
+    "choosePerson": "Elegir…",
+    "function": "Función",
+    "chooseFunction": "Elegir…",
+    "allocation": "Asignación (%)",
+    "add": "Añadir",
+    "remove": "Quitar",
+    "genericError": "La operación ha fallado.",
+    "filter": {
+      "all": "Todos",
+      "build": "BUILD",
+      "run": "RUN",
+      "mixed": "Mixto"
     }
   }
 }

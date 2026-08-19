@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using FluentValidation;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Http;
 
 namespace Cracra.BuildingBlocks.Web.Errors;
@@ -46,6 +48,15 @@ public sealed class CracraExceptionHandler(
 
         problem.Extensions["correlationId"] = httpContext.Response.Headers[CorrelationIdMiddleware.HeaderName].ToString();
 
+        if (exception is ValidationException validation)
+        {
+            // The one case where detail is safe outside Development: these are the client's own field errors, and
+            // withholding them turns a fixable form into a guessing game.
+            problem.Extensions["errors"] = validation.Errors
+                .GroupBy(failure => failure.PropertyName)
+                .ToDictionary(group => group.Key, group => group.Select(failure => failure.ErrorMessage).ToArray());
+        }
+
         if (environment.IsDevelopment())
         {
             problem.Detail = exception.Message;
@@ -62,6 +73,7 @@ public sealed class CracraExceptionHandler(
 
     private static (int Status, string Title) Classify(Exception exception) => exception switch
     {
+        ValidationException => (StatusCodes.Status400BadRequest, "The request is not valid."),
         DomainRuleViolationException => (StatusCodes.Status422UnprocessableEntity, "The request violates a domain rule."),
         ResourceNotFoundException => (StatusCodes.Status404NotFound, "The requested resource does not exist."),
         ConcurrencyConflictException => (StatusCodes.Status409Conflict, "The resource changed since it was read."),
@@ -70,14 +82,3 @@ public sealed class CracraExceptionHandler(
         _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred."),
     };
 }
-
-/// <summary>A business invariant was broken. Maps to 422 — the request was well-formed but the domain said no.</summary>
-public class DomainRuleViolationException(string message) : Exception(message);
-
-/// <summary>
-/// The row does not exist <em>or</em> RLS filtered it out. Deliberately indistinguishable, so a probe cannot use
-/// 404-vs-403 to learn that a project it may not read exists.
-/// </summary>
-public class ResourceNotFoundException(string message) : Exception(message);
-
-public class ConcurrencyConflictException(string message) : Exception(message);

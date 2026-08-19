@@ -4,6 +4,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Mediator/Cracra.BuildingBlocks.Mediator.csproj" />
+    <ProjectReference Include="../Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FastEndpoints" />

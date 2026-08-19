@@ -7,6 +7,9 @@
     <Project Path="src/Bff/Cracra.Bff.csproj" />
   </Folder>
   <Folder Name="/src/BuildingBlocks/" />
+  <Folder Name="/src/BuildingBlocks/Abstractions/">
+    <Project Path="src/BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
+  </Folder>
   <Folder Name="/src/BuildingBlocks/Ai/">
     <Project Path="src/BuildingBlocks/Ai/Cracra.BuildingBlocks.Ai.csproj" />
   </Folder>
@@ -46,6 +49,12 @@
   </Folder>
   <Folder Name="/src/Modules/Directory/">
     <Project Path="src/Modules/Directory/Cracra.Modules.Directory.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Projects.Contracts/">
+    <Project Path="src/Modules/Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Projects/">
+    <Project Path="src/Modules/Projects/Cracra.Modules.Projects.csproj" />
   </Folder>
   <Folder Name="/src/ServiceDefaults/">
     <Project Path="src/ServiceDefaults/Cracra.ServiceDefaults.csproj" />

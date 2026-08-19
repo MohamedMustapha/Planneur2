@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Web.Errors;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Directory.Data;

@@ -77,7 +77,6 @@
     "team": "Timeline d'équipe pour un chef de pôle : une ligne par membre, activités colorées par type, et génération du rapport de situation.",
     "unit": "Vue consolidée de l'unité : charge par membre, couverture, projets rattachés.",
     "department": "Vue département : une ligne par unité, projets imbriqués, journées spéciales et jalons en surimpression.",
-    "projects": "Fiche projet : équipe transverse groupée par département, itérations, coût manuel, classification BUILD/RUN.",
     "portfolio": "Tableau de portefeuille : couloirs Envisagé · Engagé · Actif · Déphasé, transitions guidées et itérations.",
     "reports": "Rapport de situation contextuel selon le rôle, avec synthèse rédigée par le modèle hébergé en interne.",
     "kudos": "Reconnaissance entre pairs : compteur, catégories, badges et classement optionnels par département.",
@@ -176,6 +175,41 @@
     "source": {
       "ldap": "Annuaire",
       "override": "Dérogation"
+    }
+  },
+  "projects": {
+    "title": "Projets",
+    "subtitle": "Projets visibles dans votre périmètre",
+    "empty": "Aucun projet visible.",
+    "count": "{{count}} projets",
+    "code": "Code",
+    "name": "Nom",
+    "classification": "Classification",
+    "team": "Équipe",
+    "cost": "Coût",
+    "costNotes": "Notes de coût",
+    "description": "Description",
+    "leadDepartment": "Département pilote",
+    "departments": "Départements contributeurs",
+    "lead": "Pilote",
+    "teamPanel": "Équipe du projet",
+    "memberCount": "{{count}} membres",
+    "noMembers": "Aucun membre pour le moment.",
+    "hiddenMember": "Membre non visible",
+    "addMember": "Ajouter un membre",
+    "person": "Personne",
+    "choosePerson": "Choisir…",
+    "function": "Fonction",
+    "chooseFunction": "Choisir…",
+    "allocation": "Allocation (%)",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "genericError": "L'opération a échoué.",
+    "filter": {
+      "all": "Tous",
+      "build": "BUILD",
+      "run": "RUN",
+      "mixed": "Mixte"
     }
   }
 }

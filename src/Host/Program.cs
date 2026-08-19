@@ -3,8 +3,10 @@ using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Persistence;
 using Cracra.BuildingBlocks.Storage;
 using Cracra.BuildingBlocks.Web;
+using Cracra.BuildingBlocks.Web.Behaviors;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
+using Cracra.Modules.Projects;
 using Cracra.ServiceDefaults;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -33,6 +35,11 @@ builder.Services
 // --- Cross-cutting -------------------------------------------------------------------------------------------
 builder.Services.AddCracraWeb();
 builder.Services.AddMediator();
+
+// Pipeline order is registration order (conventions.md §1): Logging (from AddMediator) -> Validation -> Transaction
+// -> Handler. Validation is registered centrally because it is request-shaped, not module-shaped; the transaction
+// behavior registers itself per module, because only the module knows which unit of work is its own.
+builder.Services.AddMediatorBehavior(typeof(ValidationBehavior<,>));
 builder.Services.AddCracraPersistence(builder.Configuration);
 builder.Services.AddCracraStorage();
 builder.Services.AddCracraAi();
@@ -44,6 +51,7 @@ builder.Services.AddFastEndpoints();
 builder.Services.AddModuleDbContext<PlatformDbContext>(PlatformDbContext.SchemaName);
 builder.Services.AddAccessModule();
 builder.Services.AddDirectoryModule();
+builder.Services.AddProjectsModule();
 
 var app = builder.Build();
 

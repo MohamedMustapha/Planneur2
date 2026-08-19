@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Web.Errors;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.Modules.Directory.Services;
 
 namespace Cracra.Tests.Unit.Directory;

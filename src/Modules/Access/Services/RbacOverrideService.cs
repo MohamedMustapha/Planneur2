@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Cracra.BuildingBlocks.Web.Errors;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Access.Contracts;
 using Cracra.Modules.Access.Data;

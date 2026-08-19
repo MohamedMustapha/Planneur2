@@ -23,6 +23,10 @@ public static class AccessModule
         services.AddScoped<IRoleAssignmentWriter, RoleAssignmentWriter>();
         services.AddScoped<IRoleMaterializer, RoleMaterializer>();
 
+        // Singleton: it creates its own system-context scope per call, because the projection's RLS
+        // policy is system-write-only and the caller's session must not be able to write it.
+        services.AddSingleton<IProjectMembershipProjection, ProjectMembershipProjection>();
+
         services.AddMediatorHandlersFrom(typeof(AccessModule).Assembly);
 
         return services;

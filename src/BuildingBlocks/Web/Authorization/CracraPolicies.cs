@@ -20,6 +20,16 @@ public static class CracraPolicies
     /// <summary>Any role that governs beyond a single person — unit-head, dept-head or PMO.</summary>
     public const string AnyHead = "cracra:any-head";
 
+    /// <summary>
+    /// Anyone who may run delivery work: a project lead, a PO, or any head.
+    /// </summary>
+    /// <remarks>
+    /// One policy rather than two on the endpoint. FastEndpoints combines multiple <c>Policies(...)</c> with AND,
+    /// so listing project-lead and any-head there would demand both and refuse a department head who is not also
+    /// a named project lead — which is most of them.
+    /// </remarks>
+    public const string DeliveryLead = "cracra:delivery-lead";
+
     public static IServiceCollection AddCracraAuthorization(this IServiceCollection services)
     {
         services.AddAuthorizationBuilder()
@@ -30,7 +40,9 @@ public static class CracraPolicies
             .AddPolicy(DepartmentHead, policy => policy.RequireContextualRole(ContextualRole.DepartmentHead))
             .AddPolicy(ProjectLead, policy => policy.RequireContextualRole(ContextualRole.ProjectLead, ContextualRole.ProductOwner))
             .AddPolicy(Pmo, policy => policy.RequireContextualRole(ContextualRole.Pmo))
-            .AddPolicy(AnyHead, policy => policy.RequireContextualRole([.. ContextualRole.Heads]));
+            .AddPolicy(AnyHead, policy => policy.RequireContextualRole([.. ContextualRole.Heads]))
+            .AddPolicy(DeliveryLead, policy => policy.RequireContextualRole(
+                [ContextualRole.ProjectLead, ContextualRole.ProductOwner, .. ContextualRole.Heads]));
 
         return services;
     }

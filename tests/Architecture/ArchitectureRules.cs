@@ -29,6 +29,8 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Directory.Contracts.PersonSummary).Assembly,
         typeof(Cracra.Modules.Access.AccessModule).Assembly,
         typeof(Cracra.Modules.Access.Contracts.WhoAmIResponse).Assembly,
+        typeof(Cracra.Modules.Projects.ProjectsModule).Assembly,
+        typeof(Cracra.Modules.Projects.Contracts.ProjectSummary).Assembly,
     ];
 
     [Fact]

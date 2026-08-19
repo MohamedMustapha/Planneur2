@@ -1,6 +1,7 @@
 using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Persistence;
 using Cracra.Modules.Directory.Data;
+using Contracts = Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Directory.Services;
 using Cracra.Modules.Directory.Sync;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,14 @@ public static class DirectoryModule
 
         services.AddScoped<IDirectoryQueryService, DirectoryQueryService>();
         services.AddScoped<IDepartmentConfigService, DepartmentConfigService>();
+
+        // The read port other modules consume. Registered against the contracts interface so nothing
+        // outside Directory ever names the implementation.
+        services.AddScoped<Contracts.IDirectoryReader, DirectoryReader>();
+
+        // Singleton: it opens its own system-context scope per call, deliberately outside whatever
+        // session is asking. See the type for why that is safe and how narrow it is kept.
+        services.AddSingleton<Contracts.IDirectoryReferenceReader, DirectoryReferenceReader>();
 
         services.AddHttpClient<IKeycloakDirectoryClient, KeycloakDirectoryClient>((serviceProvider, client) =>
             {

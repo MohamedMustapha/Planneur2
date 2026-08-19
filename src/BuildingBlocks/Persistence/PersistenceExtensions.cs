@@ -1,3 +1,5 @@
+using Cracra.BuildingBlocks.Mediator;
+using Cracra.BuildingBlocks.Persistence.Behaviors;
 using Cracra.BuildingBlocks.Persistence.Outbox;
 using Cracra.BuildingBlocks.Persistence.Rls;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +67,39 @@ public static class PersistenceExtensions
 
         services.AddSingleton<IModuleMigrator, ModuleMigrator<TContext>>();
         services.AddSingleton<IOutboxDrainer, OutboxDrainer<TContext>>();
+
+        return services;
+    }
+}
+
+public static class ModuleTransactionExtensions
+{
+    /// <summary>
+    /// Registers a module's unit of work and, once, the transaction behavior itself.
+    /// </summary>
+    /// <remarks>
+    /// The behavior is a single open generic shared by every module; what varies per module is the registry entry
+    /// mapping its assembly to its DbContext. Registering the behavior more than once would wrap each command in
+    /// as many nested scopes as there are modules.
+    /// </remarks>
+    public static IServiceCollection AddModuleTransactions<TContext>(
+        this IServiceCollection services,
+        System.Reflection.Assembly moduleAssembly)
+        where TContext : ModuleDbContext
+    {
+        var registry = (ModuleUnitOfWorkRegistry?)services
+            .FirstOrDefault(descriptor => descriptor.ServiceType == typeof(ModuleUnitOfWorkRegistry))
+            ?.ImplementationInstance;
+
+        if (registry is null)
+        {
+            registry = new ModuleUnitOfWorkRegistry();
+
+            services.AddSingleton(registry);
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));
+        }
+
+        registry.Register(moduleAssembly, typeof(TContext));
 
         return services;
     }

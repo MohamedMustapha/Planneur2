@@ -77,7 +77,6 @@
     "team": "Team timeline for a unit lead: one row per member, activities colour-coded by type, and status report generation.",
     "unit": "Consolidated unit view: load per member, coverage, attached projects.",
     "department": "Department view: one row per unit with projects nested inside, special days and milestones overlaid.",
-    "projects": "Project detail: cross-department team grouped by department, iterations, manual cost, BUILD/RUN classification.",
     "portfolio": "Portfolio board: Considered · Committed · Active · Déphasé lanes, guarded transitions and iterations.",
     "reports": "Role-aware status report, with a narrative summary written by the on-prem model.",
     "kudos": "Peer recognition: counter, categories, optional badges and leaderboard per department.",
@@ -176,6 +175,41 @@
     "source": {
       "ldap": "Directory",
       "override": "Override"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "subtitle": "Projects visible in your scope",
+    "empty": "No projects visible.",
+    "count": "{{count}} projects",
+    "code": "Code",
+    "name": "Name",
+    "classification": "Classification",
+    "team": "Team",
+    "cost": "Cost",
+    "costNotes": "Cost notes",
+    "description": "Description",
+    "leadDepartment": "Lead department",
+    "departments": "Contributing departments",
+    "lead": "Lead",
+    "teamPanel": "Project team",
+    "memberCount": "{{count}} members",
+    "noMembers": "No members yet.",
+    "hiddenMember": "Member not visible",
+    "addMember": "Add a member",
+    "person": "Person",
+    "choosePerson": "Choose…",
+    "function": "Function",
+    "chooseFunction": "Choose…",
+    "allocation": "Allocation (%)",
+    "add": "Add",
+    "remove": "Remove",
+    "genericError": "The operation failed.",
+    "filter": {
+      "all": "All",
+      "build": "BUILD",
+      "run": "RUN",
+      "mixed": "Mixed"
     }
   }
 }

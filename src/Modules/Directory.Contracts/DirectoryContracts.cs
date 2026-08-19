@@ -72,3 +72,72 @@ public sealed record PersonDeactivated(Guid PersonId) : IntegrationEvent;
 
 /// <summary>Raised on every config write so boards can invalidate what they cached against the old version.</summary>
 public sealed record DepartmentConfigChanged(Guid DepartmentId, int Version) : IntegrationEvent;
+
+// --- Read port for other modules -------------------------------------------------------------------------------
+
+/// <summary>
+/// The reads other modules need from the directory.
+/// </summary>
+/// <remarks>
+/// Implemented by Directory, consumed through this assembly. Every call runs under the caller's RLS session, so a
+/// consumer can only resolve people it was already allowed to see — validation inherits the visibility rules
+/// instead of restating them.
+/// </remarks>
+public interface IDirectoryReader
+{
+    Task<PersonSummary?> GetPersonAsync(Guid personId, CancellationToken ct);
+
+    Task<bool> DepartmentExistsAsync(Guid departmentId, CancellationToken ct);
+
+    Task<bool> FunctionalRoleExistsAsync(Guid functionalRoleId, CancellationToken ct);
+
+    /// <summary>Display names by person id. Anyone RLS hid is simply absent from the result.</summary>
+    Task<IReadOnlyDictionary<Guid, string>> GetPersonNamesAsync(
+        IReadOnlyList<Guid> personIds,
+        CancellationToken ct);
+
+    Task<IReadOnlyDictionary<Guid, string>> GetDepartmentNameKeysAsync(
+        IReadOnlyList<Guid> departmentIds,
+        CancellationToken ct);
+
+    Task<IReadOnlyDictionary<Guid, string>> GetFunctionalRoleCodesAsync(
+        IReadOnlyList<Guid> functionalRoleIds,
+        CancellationToken ct);
+}
+
+/// <summary>
+/// Referential lookups that run outside the caller's own visibility.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Separate from <see cref="IDirectoryReader"/> so the distinction is impossible to miss at the call site: that
+/// one answers "what can this caller see", this one answers "does this exist, and who is in these departments".
+/// </para>
+/// <para>
+/// It resolves a genuine deadlock in the matrix. A head leading a cross-department project must add a colleague
+/// from the contributing department, but the directory is department-scoped — so they cannot see that person until
+/// the person is on the project, and cannot add them without seeing them.
+/// </para>
+/// <para>
+/// The authority comes from elsewhere: callers reach this only after loading a project, and loading it proves
+/// through that project's own RLS policy that they may write it. Deliberately narrow — no free-form query, only
+/// existence by id and people filtered to departments the caller has already been authorized for.
+/// </para>
+/// </remarks>
+public interface IDirectoryReferenceReader
+{
+    Task<bool> DepartmentExistsAsync(Guid departmentId, CancellationToken ct);
+
+    Task<bool> FunctionalRoleExistsAsync(Guid functionalRoleId, CancellationToken ct);
+
+    Task<PersonSummary?> GetPersonAsync(Guid personId, CancellationToken ct);
+
+    /// <summary>People in an explicit set of departments — the team picker for a cross-department project.</summary>
+    Task<IReadOnlyList<PersonSummary>> GetPeopleInDepartmentsAsync(
+        IReadOnlyList<Guid> departmentIds,
+        CancellationToken ct);
+
+    Task<IReadOnlyDictionary<Guid, string>> GetPersonNamesAsync(
+        IReadOnlyList<Guid> personIds,
+        CancellationToken ct);
+}

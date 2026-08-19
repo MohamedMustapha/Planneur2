@@ -31,7 +31,17 @@ export const routes: Routes = [
     loadComponent: () => import('./features/directory/org-explorer').then((m) => m.OrgExplorer),
   },
   placeholder('department', { titleKey: 'nav.department', slice: 'S6', descriptionKey: 'placeholder.department' }),
-  placeholder('projects', { titleKey: 'nav.projects', slice: 'S3', descriptionKey: 'placeholder.projects' }),
+  {
+    path: 'projects',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/projects/project-list').then((m) => m.ProjectList),
+  },
+  {
+    // withComponentInputBinding maps the route parameter straight onto the component's id input.
+    path: 'projects/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/projects/project-detail').then((m) => m.ProjectDetail),
+  },
   placeholder('portfolio', { titleKey: 'nav.portfolio', slice: 'S4', descriptionKey: 'placeholder.portfolio' }),
   placeholder('reports', { titleKey: 'nav.reports', slice: 'S8', descriptionKey: 'placeholder.reports' }),
   placeholder('kudos', { titleKey: 'nav.kudos', slice: 'S9', descriptionKey: 'placeholder.kudos' }),

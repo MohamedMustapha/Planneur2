@@ -1,0 +1,196 @@
+:host {
+  display: contents;
+}
+
+.project {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.project__body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.project__team {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.project__header-facts {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.project__fact {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.project__fact-label {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.project__fact-value {
+  font-size: var(--text-base);
+  font-weight: 500;
+}
+
+// --- Team panel ---------------------------------------------------------------------------------------------
+.project__dept + .project__dept {
+  border-top: 1px solid var(--line);
+}
+
+.project__dept-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 10px var(--space-3);
+  border: none;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: var(--text-base);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--line);
+  }
+}
+
+.project__dept-caret {
+  width: 12px;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.project__dept-name {
+  flex: 1;
+}
+
+.project__function {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-6);
+  border-top: 1px solid var(--line);
+}
+
+.project__function-label {
+  min-width: 120px;
+  padding-top: var(--space-1);
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.project__members {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project__member {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.project__member-name {
+  flex: 1;
+  font-size: var(--text-base);
+}
+
+.project__member-allocation {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.project__member-remove {
+  height: var(--control-height-xs);
+  font-size: var(--text-xs);
+}
+
+// --- Add member ----------------------------------------------------------------------------------------------
+.project__add {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.project__add-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
+// --- Rail ------------------------------------------------------------------------------------------------------
+.project__rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.project__dept-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  font-size: var(--text-base);
+}
+
+.project__description {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  white-space: pre-wrap;
+}
+
+.project__count {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.project__status {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.project__error {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-control);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 1100px) {
+  .project__body {
+    grid-template-columns: 1fr;
+  }
+}
