@@ -87,5 +87,59 @@
   "common": {
     "noHours": "0,0 h",
     "loading": "Cargando…"
+  },
+  "org": {
+    "title": "Directorio de la organización",
+    "subtitle": "Departamentos, unidades y personas",
+    "units": "Unidades",
+    "unitsAriaLabel": "Unidades del departamento",
+    "wholeDepartment": "Todo el departamento",
+    "noUnits": "Sin unidades",
+    "noPeople": "Nadie visible en este ámbito.",
+    "peopleCount": "{{count}} personas",
+    "person": "Persona",
+    "functionalRoles": "Roles profesionales",
+    "kind": {
+      "delivery": "Delivery",
+      "run": "Operación",
+      "support": "Soporte",
+      "admin": "Administración"
+    }
+  },
+  "settings": {
+    "title": "Ajustes del departamento",
+    "subtitle": "Configuración · versión {{version}}",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Configuración guardada.",
+    "cancel": "Cancelar",
+    "loadFailed": "No se ha podido cargar la configuración de este departamento.",
+    "saveFailed": "No se ha podido guardar la configuración.",
+    "hours": "Tiempo de trabajo",
+    "weeklyTarget": "Objetivo semanal (horas)",
+    "enforceWeeklyTarget": "Bloquear el registro por encima del objetivo",
+    "defaultBoardLayout": "Vista predeterminada",
+    "activityTaxonomy": "Taxonomía de actividades",
+    "activityTaxonomyHint": "Tipos de actividad ofrecidos al registrar. Lo consume el lote S5.",
+    "roleLabels": "Etiquetas de roles profesionales",
+    "roleLabelsHint": "Personalización de los nombres de rol, por idioma.",
+    "kudoRules": "Reglas de kudos",
+    "kudoRulesHint": "Modo (contador o puntos), categorías y límite mensual. Lo consume el lote S9.",
+    "iterationPresets": "Duraciones de iteración",
+    "iterationPresetsHint": "Atajos ofrecidos al crear una iteración. Lo consume el lote S4."
+  },
+  "directory": {
+    "functionalRole": {
+      "dev": "Desarrollador",
+      "tech-lead": "Tech lead",
+      "architecte": "Arquitecto",
+      "chef-de-pole": "Jefe de unidad",
+      "comptable": "Contable",
+      "expert-comptable": "Contable senior"
+    },
+    "department": {
+      "dsi": "Sistemas de Información",
+      "daf": "Dirección Financiera"
+    }
   }
 }

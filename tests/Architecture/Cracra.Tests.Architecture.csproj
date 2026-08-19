@@ -4,6 +4,7 @@
     <ProjectReference Include="../../src/Bff/Cracra.Bff.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/Mediator/Cracra.BuildingBlocks.Mediator.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="../../src/Modules/Directory/Cracra.Modules.Directory.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NetArchTest.Rules" />

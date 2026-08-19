@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { UpperCasePipe } from '@angular/common';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { DepartmentScopeStore } from '../../core/scope/department-scope.store';
+import { DepartmentScope, DepartmentScopeStore } from '../../core/scope/department-scope.store';
 import { Language, LanguageStore } from '../../core/i18n/language.store';
 import { LayoutStore } from '../../core/layout/layout.store';
 import { SessionStore } from '../../core/session/session.store';
@@ -55,6 +55,23 @@ export class TopBar {
   protected closeMenus(): void {
     this.departmentMenuOpen.set(false);
     this.userMenuOpen.set(false);
+  }
+
+  /**
+   * Departments are keyed, not named — the same department reads differently in fr/en/es. Falls back to the code
+   * when a dictionary has no entry yet, which is better than rendering a raw translation key at someone.
+   */
+  protected departmentLabel(
+    translate: (key: string) => string,
+    department: DepartmentScope | null | undefined,
+  ): string {
+    if (!department) {
+      return translate('shell.noDepartment');
+    }
+
+    const label = translate(department.nameKey);
+
+    return label === department.nameKey ? department.code.toUpperCase() : label;
   }
 
   protected logout(): void {

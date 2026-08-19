@@ -4,6 +4,7 @@
     <ProjectReference Include="../../src/BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/Ai/Cracra.BuildingBlocks.Ai.csproj" />
+    <ProjectReference Include="../../src/Modules/Directory/Cracra.Modules.Directory.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NSubstitute" />

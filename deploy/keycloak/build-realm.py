@@ -117,6 +117,19 @@ def build():
             "realmRoles": ["default-roles-" + REALM],
         })
 
+    # Keycloak represents a service account as a user named service-account-<clientId>. Roles are granted to that
+    # user, which is why this lives in "users" rather than on the client: a client scope mapping only bounds which
+    # roles a token may carry, it does not grant one.
+    #
+    # Read-only, deliberately. view-users and the two query roles are everything a reconciliation needs; adding
+    # manage-users would make a job that only ever reads capable of rewriting the identity provider it reads from.
+    users.append({
+        "username": "service-account-cracra-sync",
+        "enabled": True,
+        "serviceAccountClientId": "cracra-sync",
+        "clientRoles": {"realm-management": ["view-users", "query-users", "query-groups"]},
+    })
+
     groups = []
     for dept_key, (dept_id, dept_name) in DEPARTMENTS.items():
         subgroups = []
@@ -186,6 +199,21 @@ def build():
                 # Keycloak create its normal defaults; hanging our five claims off the client keeps them in one
                 # place with the redirect URIs they travel with.
                 "protocolMappers": CRACRA_MAPPERS,
+            },
+            {
+                "clientId": "cracra-sync",
+                "name": "Cracra directory sync",
+                "description": "Service account the Directory module reads people and groups with (S1).",
+                "enabled": True,
+                "protocol": "openid-connect",
+                "publicClient": False,
+                "bearerOnly": False,
+                # Service account only: no interactive flow, so this client can never be used to log a human in.
+                "standardFlowEnabled": False,
+                "implicitFlowEnabled": False,
+                "directAccessGrantsEnabled": False,
+                "serviceAccountsEnabled": True,
+                "secret": "cracra-sync-dev-secret",
             },
             {
                 "clientId": "cracra-api",

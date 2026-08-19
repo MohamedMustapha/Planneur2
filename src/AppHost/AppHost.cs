@@ -19,6 +19,7 @@ var appOwnerPassword = builder.AddParameter("app-owner-password", secret: true);
 var appRuntimePassword = builder.AddParameter("app-rw-password", secret: true);
 var keycloakAdminPassword = builder.AddParameter("keycloak-admin-password", secret: true);
 var bffClientSecret = builder.AddParameter("bff-client-secret", secret: true);
+var syncClientSecret = builder.AddParameter("sync-client-secret", secret: true);
 var storageAccessKey = builder.AddParameter("storage-access-key", secret: true);
 var storageSecretKey = builder.AddParameter("storage-secret-key", secret: true);
 
@@ -108,6 +109,10 @@ var api = builder.AddProject<Projects.Cracra_Host>("api")
     .WithEnvironment("Cracra__Storage__AccessKey", storageAccessKey)
     .WithEnvironment("Cracra__Storage__SecretKey", storageSecretKey)
     .WithEnvironment("Cracra__Ai__BaseUrl", llm.GetEndpoint("http"))
+    .WithEnvironment("Cracra__Directory__Sync__KeycloakBaseUrl", keycloak.GetEndpoint("http"))
+    .WithEnvironment("Cracra__Directory__Sync__Realm", "cracra")
+    .WithEnvironment("Cracra__Directory__Sync__ClientId", "cracra-sync")
+    .WithEnvironment("Cracra__Directory__Sync__ClientSecret", syncClientSecret)
     .WithEnvironment("ConnectionStrings__seq", seq.GetEndpoint("http"))
     .WithHttpHealthCheck("/alive")
     // Pinned, not dynamic: Prometheus scrapes /metrics from a static target list, and the Angular dev proxy needs

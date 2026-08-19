@@ -21,6 +21,12 @@ public sealed class ArchitectureRules
         typeof(ModuleDbContext).Assembly,
         typeof(BuildingBlocks.Web.Users.IUserContext).Assembly,
         typeof(Cracra.Host.Endpoints.PingEndpoint).Assembly,
+
+        // Every module assembly must be listed here, or the module-isolation and layering rules below scan
+        // nothing and pass vacuously — which is worse than not having them, because the green tick is read as
+        // evidence. Add each new module's assembly and its contracts assembly as the module lands.
+        typeof(Cracra.Modules.Directory.DirectoryModule).Assembly,
+        typeof(Cracra.Modules.Directory.Contracts.PersonSummary).Assembly,
     ];
 
     [Fact]

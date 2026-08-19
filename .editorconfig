@@ -26,7 +26,13 @@ indent_size = 2
 [*.md]
 trim_trailing_whitespace = false
 
-# EF Core scaffolds these; they follow the generator's style, not ours.
+# EF Core scaffolds these; they follow the generator's style, not ours. Both globs are needed: some editorconfig
+# implementations do not let "**/" match zero directories, so files directly under Migrations/ miss the first one.
+[**/Migrations/*.cs]
+generated_code = true
+dotnet_diagnostic.IDE0161.severity = none
+dotnet_analyzer_diagnostic.severity = none
+
 [**/Migrations/**/*.cs]
 generated_code = true
 dotnet_diagnostic.IDE0161.severity = none

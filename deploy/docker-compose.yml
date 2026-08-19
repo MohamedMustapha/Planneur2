@@ -123,6 +123,10 @@ services:
       Cracra__Storage__AccessKey: ${STORAGE_ACCESS_KEY}
       Cracra__Storage__SecretKey: ${STORAGE_SECRET_KEY}
       Cracra__Ai__BaseUrl: http://llm:8080
+      Cracra__Directory__Sync__KeycloakBaseUrl: http://keycloak:8080
+      Cracra__Directory__Sync__Realm: cracra
+      Cracra__Directory__Sync__ClientId: cracra-sync
+      Cracra__Directory__Sync__ClientSecret: ${SYNC_CLIENT_SECRET:?set SYNC_CLIENT_SECRET in .env}
       ConnectionStrings__seq: http://seq:80
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_ENDPOINT:-}
     healthcheck:

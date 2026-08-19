@@ -10,7 +10,7 @@
       aria-haspopup="menu"
     >
       <span class="dot" aria-hidden="true"></span>
-      <span class="topbar__dept-name">{{ departments.selected()?.name ?? t('shell.noDepartment') }}</span>
+      <span class="topbar__dept-name">{{ departmentLabel(t, departments.selected()) }}</span>
       @if (departments.canSwitch()) {
         <span class="topbar__caret" aria-hidden="true">▾</span>
       }
@@ -27,7 +27,7 @@
             [class.is-selected]="department.id === departments.selected()?.id"
             (click)="selectDepartment(department.id)"
           >
-            <span>{{ department.name }}</span>
+            <span>{{ departmentLabel(t, department) }}</span>
             <span class="topbar__dept-count">{{ t('shell.unitCount', { count: department.unitCount }) }}</span>
           </button>
         }

@@ -1,0 +1,79 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('org.title')" [subtitle]="t('org.subtitle')" />
+
+  <div class="org">
+    <nav class="org__tree card" [attr.aria-label]="t('org.unitsAriaLabel')">
+      <header class="card__header">{{ t('org.units') }}</header>
+
+      <ul class="org__units">
+        <li>
+          <button
+            type="button"
+            class="org__unit"
+            [class.is-active]="selectedUnitId() === null"
+            (click)="selectUnit(null)"
+          >
+            <span>{{ t('org.wholeDepartment') }}</span>
+          </button>
+        </li>
+
+        @for (unit of unitsInScope(); track unit.id) {
+          <li>
+            <button
+              type="button"
+              class="org__unit"
+              [class.is-active]="selectedUnitId() === unit.id"
+              (click)="selectUnit(unit.id)"
+            >
+              <span>{{ unit.name }}</span>
+              <span class="org__unit-kind">{{ t('org.kind.' + unit.kind.toLowerCase()) }}</span>
+            </button>
+          </li>
+        } @empty {
+          <li class="org__empty">{{ t('org.noUnits') }}</li>
+        }
+      </ul>
+    </nav>
+
+    <section class="org__people card">
+      <header class="card__header">
+        <span>{{ selectedUnitName() ?? t('org.wholeDepartment') }}</span>
+        <span class="org__count num">{{ t('org.peopleCount', { count: people().length }) }}</span>
+      </header>
+
+      @if (isLoading()) {
+        <p class="org__status">{{ t('common.loading') }}</p>
+      } @else if (people().length === 0) {
+        <p class="org__status">{{ t('org.noPeople') }}</p>
+      } @else {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ t('org.person') }}</th>
+              <th>{{ t('org.functionalRoles') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (person of people(); track person.id) {
+              <tr>
+                <td>
+                  <span class="org__person">
+                    <span class="avatar">{{ initials(person) }}</span>
+                    <span>{{ person.displayName }}</span>
+                  </span>
+                </td>
+                <td>
+                  @for (role of person.functionalRoleCodes; track role) {
+                    <span class="pill pill--considered">{{ t('directory.functionalRole.' + role) }}</span>
+                  } @empty {
+                    <span class="org__status">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  </div>
+</ng-container>

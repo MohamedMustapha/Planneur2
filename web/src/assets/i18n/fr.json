@@ -87,5 +87,59 @@
   "common": {
     "noHours": "0,0 h",
     "loading": "Chargement…"
+  },
+  "org": {
+    "title": "Annuaire de l'organisation",
+    "subtitle": "Départements, unités et personnes",
+    "units": "Unités",
+    "unitsAriaLabel": "Unités du département",
+    "wholeDepartment": "Tout le département",
+    "noUnits": "Aucune unité",
+    "noPeople": "Aucune personne visible dans ce périmètre.",
+    "peopleCount": "{{count}} personnes",
+    "person": "Personne",
+    "functionalRoles": "Rôles métier",
+    "kind": {
+      "delivery": "Delivery",
+      "run": "Exploitation",
+      "support": "Support",
+      "admin": "Administratif"
+    }
+  },
+  "settings": {
+    "title": "Paramètres du département",
+    "subtitle": "Configuration · version {{version}}",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Configuration enregistrée.",
+    "cancel": "Annuler",
+    "loadFailed": "Impossible de charger la configuration de ce département.",
+    "saveFailed": "Impossible d'enregistrer la configuration.",
+    "hours": "Temps de travail",
+    "weeklyTarget": "Objectif hebdomadaire (heures)",
+    "enforceWeeklyTarget": "Bloquer la saisie au-delà de l'objectif",
+    "defaultBoardLayout": "Vue par défaut",
+    "activityTaxonomy": "Taxonomie d'activités",
+    "activityTaxonomyHint": "Types d'activité proposés à la saisie. Consommé par le lot S5.",
+    "roleLabels": "Libellés des rôles métier",
+    "roleLabelsHint": "Renommage des rôles métier, par langue.",
+    "kudoRules": "Règles de kudos",
+    "kudoRulesHint": "Mode (compteur ou points), catégories et plafond mensuel. Consommé par le lot S9.",
+    "iterationPresets": "Durées d'itération",
+    "iterationPresetsHint": "Raccourcis proposés à la création d'une itération. Consommé par le lot S4."
+  },
+  "directory": {
+    "functionalRole": {
+      "dev": "Développeur",
+      "tech-lead": "Tech lead",
+      "architecte": "Architecte",
+      "chef-de-pole": "Chef de pôle",
+      "comptable": "Comptable",
+      "expert-comptable": "Expert-comptable"
+    },
+    "department": {
+      "dsi": "Direction des Systèmes d'Information",
+      "daf": "Direction Financière"
+    }
   }
 }

@@ -87,5 +87,59 @@
   "common": {
     "noHours": "0.0 h",
     "loading": "Loading…"
+  },
+  "org": {
+    "title": "Organisation directory",
+    "subtitle": "Departments, units and people",
+    "units": "Units",
+    "unitsAriaLabel": "Units in the department",
+    "wholeDepartment": "Whole department",
+    "noUnits": "No units",
+    "noPeople": "Nobody visible in this scope.",
+    "peopleCount": "{{count}} people",
+    "person": "Person",
+    "functionalRoles": "Functional roles",
+    "kind": {
+      "delivery": "Delivery",
+      "run": "Run",
+      "support": "Support",
+      "admin": "Admin"
+    }
+  },
+  "settings": {
+    "title": "Department settings",
+    "subtitle": "Configuration · version {{version}}",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Configuration saved.",
+    "cancel": "Cancel",
+    "loadFailed": "This department could not be loaded.",
+    "saveFailed": "The configuration could not be saved.",
+    "hours": "Working time",
+    "weeklyTarget": "Weekly target (hours)",
+    "enforceWeeklyTarget": "Block logging beyond the target",
+    "defaultBoardLayout": "Default board view",
+    "activityTaxonomy": "Activity taxonomy",
+    "activityTaxonomyHint": "Activity types offered when logging. Consumed by slice S5.",
+    "roleLabels": "Functional role labels",
+    "roleLabelsHint": "Per-language overrides for functional role names.",
+    "kudoRules": "Kudo rules",
+    "kudoRulesHint": "Mode (counter or points), categories and monthly cap. Consumed by slice S9.",
+    "iterationPresets": "Iteration presets",
+    "iterationPresetsHint": "Quick lengths offered when creating an iteration. Consumed by slice S4."
+  },
+  "directory": {
+    "functionalRole": {
+      "dev": "Developer",
+      "tech-lead": "Tech lead",
+      "architecte": "Architect",
+      "chef-de-pole": "Unit head",
+      "comptable": "Accountant",
+      "expert-comptable": "Senior accountant"
+    },
+    "department": {
+      "dsi": "Information Systems",
+      "daf": "Finance"
+    }
   }
 }

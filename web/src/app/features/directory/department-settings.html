@@ -1,0 +1,88 @@
+<ng-container *transloco="let t">
+  <app-page-header
+    [title]="t('settings.title')"
+    [subtitle]="t('settings.subtitle', { version: config()?.version ?? 0 })"
+  >
+    <div slot="actions" class="settings__actions">
+      <button type="button" class="btn btn--neutral" (click)="cancel()">{{ t('settings.cancel') }}</button>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="!config() || saveState() === 'saving'"
+        (click)="save()"
+      >
+        {{ saveState() === 'saving' ? t('settings.saving') : t('settings.save') }}
+      </button>
+    </div>
+  </app-page-header>
+
+  <div class="settings">
+    @if (errorMessage(); as message) {
+      <p class="settings__error" role="alert">{{ t(message) === message ? message : t(message) }}</p>
+    }
+
+    @if (saveState() === 'saved') {
+      <p class="settings__saved" role="status">{{ t('settings.saved') }}</p>
+    }
+
+    @if (!config()) {
+      <p class="settings__status">{{ t('common.loading') }}</p>
+    } @else {
+      <section class="card settings__section">
+        <header class="card__header">{{ t('settings.hours') }}</header>
+        <div class="card__body settings__grid">
+          <label class="field">
+            <span class="field__label">{{ t('settings.weeklyTarget') }}</span>
+            <input class="input num" type="number" min="1" max="60" step="0.5" [(ngModel)]="weeklyTargetHours" />
+          </label>
+
+          <label class="field settings__checkbox">
+            <input type="checkbox" [(ngModel)]="enforceWeeklyTarget" />
+            <span>{{ t('settings.enforceWeeklyTarget') }}</span>
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('settings.defaultBoardLayout') }}</span>
+            <select class="select" [(ngModel)]="defaultBoardLayout">
+              <option value="week">{{ t('board.tabs.week') }}</option>
+              <option value="month">{{ t('board.tabs.month') }}</option>
+              <option value="list">{{ t('board.tabs.list') }}</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="card settings__section">
+        <header class="card__header">{{ t('settings.activityTaxonomy') }}</header>
+        <div class="card__body">
+          <p class="settings__hint">{{ t('settings.activityTaxonomyHint') }}</p>
+          <textarea class="textarea mono settings__json" rows="10" [(ngModel)]="activityTaxonomyJson"></textarea>
+        </div>
+      </section>
+
+      <section class="card settings__section">
+        <header class="card__header">{{ t('settings.roleLabels') }}</header>
+        <div class="card__body">
+          <p class="settings__hint">{{ t('settings.roleLabelsHint') }}</p>
+          <textarea class="textarea mono settings__json" rows="8" [(ngModel)]="roleLabelsJson"></textarea>
+        </div>
+      </section>
+
+      <section class="card settings__section">
+        <header class="card__header">{{ t('settings.kudoRules') }}</header>
+        <div class="card__body">
+          <p class="settings__hint">{{ t('settings.kudoRulesHint') }}</p>
+          <textarea class="textarea mono settings__json" rows="6" [(ngModel)]="kudoRulesJson"></textarea>
+        </div>
+      </section>
+
+      <section class="card settings__section">
+        <header class="card__header">{{ t('settings.iterationPresets') }}</header>
+        <div class="card__body">
+          <p class="settings__hint">{{ t('settings.iterationPresetsHint') }}</p>
+          <textarea class="textarea mono settings__json" rows="4" [(ngModel)]="iterationPresetsJson"></textarea>
+        </div>
+      </section>
+    }
+  </div>
+</ng-container>

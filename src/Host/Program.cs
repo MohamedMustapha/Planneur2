@@ -3,6 +3,7 @@ using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Persistence;
 using Cracra.BuildingBlocks.Storage;
 using Cracra.BuildingBlocks.Web;
+using Cracra.Modules.Directory;
 using Cracra.ServiceDefaults;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -38,9 +39,9 @@ builder.Services.AddCracraAi();
 builder.Services.AddFastEndpoints();
 
 // --- Modules -------------------------------------------------------------------------------------------------
-// S1 onwards each add themselves here with a single AddXxxModule() call. S0 registers only the platform's own
-// schema, which exists to prove the migration, RLS and outbox machinery works before any module depends on it.
+// One AddXxxModule() call each; the host knows nothing about a module beyond this line.
 builder.Services.AddModuleDbContext<PlatformDbContext>(PlatformDbContext.SchemaName);
+builder.Services.AddDirectoryModule();
 
 var app = builder.Build();
 

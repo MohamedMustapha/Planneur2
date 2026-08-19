@@ -24,13 +24,22 @@ export const routes: Routes = [
     loadComponent: () => import('./features/board/board').then((m) => m.Board),
   },
   placeholder('team', { titleKey: 'nav.myTeam', slice: 'S6', descriptionKey: 'placeholder.team' }),
-  placeholder('unit', { titleKey: 'nav.myUnit', slice: 'S6', descriptionKey: 'placeholder.unit' }),
+  {
+    // S1 delivers the org explorer; the timeline view of a unit still belongs to S6.
+    path: 'unit',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/directory/org-explorer').then((m) => m.OrgExplorer),
+  },
   placeholder('department', { titleKey: 'nav.department', slice: 'S6', descriptionKey: 'placeholder.department' }),
   placeholder('projects', { titleKey: 'nav.projects', slice: 'S3', descriptionKey: 'placeholder.projects' }),
   placeholder('portfolio', { titleKey: 'nav.portfolio', slice: 'S4', descriptionKey: 'placeholder.portfolio' }),
   placeholder('reports', { titleKey: 'nav.reports', slice: 'S8', descriptionKey: 'placeholder.reports' }),
   placeholder('kudos', { titleKey: 'nav.kudos', slice: 'S9', descriptionKey: 'placeholder.kudos' }),
   placeholder('finance', { titleKey: 'nav.finance', slice: 'S11', descriptionKey: 'placeholder.finance' }),
-  placeholder('settings', { titleKey: 'nav.settings', slice: 'S2', descriptionKey: 'placeholder.settings' }),
+  {
+    path: 'settings',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/directory/department-settings').then((m) => m.DepartmentSettings),
+  },
   { path: '**', redirectTo: 'board' },
 ];

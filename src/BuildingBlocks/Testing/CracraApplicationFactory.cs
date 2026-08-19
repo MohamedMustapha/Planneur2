@@ -68,6 +68,16 @@ public sealed class CracraApplicationFactory(string adminConnectionString) : Web
                 // The drain loop is driven explicitly by the outbox tests; a background timer racing them would
                 // make those tests flaky for no benefit.
                 ["Outbox:PollingInterval"] = "00:04:00",
+
+                // Directory sync is likewise driven explicitly. Tests replace IKeycloakDirectoryClient with a fake
+                // they can rewrite between runs, so these values only have to satisfy options validation — but a
+                // background reconciliation firing mid-assertion would reconcile away the state under test.
+                ["Cracra:Directory:Sync:KeycloakBaseUrl"] = "http://localhost:8080",
+                ["Cracra:Directory:Sync:Realm"] = "cracra",
+                ["Cracra:Directory:Sync:ClientId"] = "cracra-sync",
+                ["Cracra:Directory:Sync:ClientSecret"] = "test-sync-secret",
+                ["Cracra:Directory:Sync:SyncOnStartup"] = "false",
+                ["Cracra:Directory:Sync:Interval"] = "00:00:00",
             });
         });
 

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { DepartmentScopeStore } from '../../core/scope/department-scope.store';
+import { DirectoryStore } from '../../core/directory/directory.store';
 import { SessionStore } from '../../core/session/session.store';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { ScopeSelector } from '../../shared/ui/scope-selector/scope-selector';
@@ -26,6 +27,7 @@ type BoardTab = 'week' | 'month' | 'list';
 export class Board {
   protected readonly session = inject(SessionStore);
   protected readonly departments = inject(DepartmentScopeStore);
+  protected readonly directory = inject(DirectoryStore);
 
   protected readonly activeTab = signal<BoardTab>('week');
 
@@ -58,10 +60,15 @@ export class Board {
     return logged >= this.weeklyTargetHours - 2 ? 'var(--success)' : 'var(--primary)';
   });
 
+  /**
+   * "Camille Villeneuve · Infrastructure & Réseaux" — name, unit, department, whichever of them the directory
+   * knows. Built from the directory rather than the token now that S1 supplies it, so the unit appears too.
+   */
   protected readonly subtitle = computed(() => {
-    const parts = [this.session.displayName(), this.departments.selected()?.name].filter(Boolean);
+    const me = this.directory.me();
+    const unit = me?.units.find((candidate) => candidate.id === me.primaryUnitId);
 
-    return parts.join(' · ');
+    return [this.directory.displayName(), unit?.name].filter(Boolean).join(' · ');
   });
 
   protected readonly summaryTiles = computed(() => [

@@ -1,53 +1,51 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
-import { SessionStore } from '../session/session.store';
+import { DirectoryStore } from '../directory/directory.store';
 
 export interface DepartmentScope {
   readonly id: string;
-  readonly name: string;
+  /** Transloco key. Department names are localized, so the switcher renders a key, not stored text. */
+  readonly nameKey: string;
+  readonly code: string;
   readonly unitCount: number;
 }
 
 /**
- * The seeded organisation, matching `deploy/keycloak/build-realm.py` id for id.
- *
- * S1 replaces this with the Directory module's `/api/directory/departments`. It lives here rather than being
- * faked inside the top bar so that replacement is a one-line change to this store and nothing else — the shell
- * already consumes it through the same signals the real thing will expose.
- */
-const SEEDED_DEPARTMENTS: readonly DepartmentScope[] = [
-  { id: '11111111-1111-1111-1111-111111111111', name: "Direction des Systèmes d'Information", unitCount: 2 },
-  { id: '22222222-2222-2222-2222-222222222222', name: 'Direction Financière', unitCount: 2 },
-];
-
-/**
  * Which department the boards are currently scoped to.
  *
- * A viewer only ever sees the departments their token grants — PMO sees all of them, everyone else sees their own.
- * Selecting one narrows the query; it can never widen what the server will return.
+ * The list comes from `/api/directory/departments`, which RLS has already filtered — a member gets their own
+ * department, the PMO gets all of them, and neither the client nor this store had to know the difference. That is
+ * the point: selecting a department narrows what the boards query and can never widen what the server returns.
  */
 @Injectable({ providedIn: 'root' })
 export class DepartmentScopeStore {
-  private readonly session = inject(SessionStore);
+  private readonly directory = inject(DirectoryStore);
 
   private readonly explicitSelection = signal<string | null>(null);
 
   readonly available = computed<readonly DepartmentScope[]>(() => {
-    const user = this.session.user();
+    const units = this.directory.units();
 
-    if (user.roles.includes('pmo')) {
-      return SEEDED_DEPARTMENTS;
-    }
-
-    const mine = SEEDED_DEPARTMENTS.filter((department) => user.departmentIds.includes(department.id));
-
-    return mine.length > 0 ? mine : SEEDED_DEPARTMENTS.slice(0, 1);
+    return this.directory.departments().map((department) => ({
+      id: department.id,
+      nameKey: department.nameKey,
+      code: department.code,
+      unitCount: units.filter((unit) => unit.departmentId === department.id).length,
+    }));
   });
 
   readonly selected = computed<DepartmentScope | null>(() => {
     const available = this.available();
     const explicit = this.explicitSelection();
 
-    return available.find((department) => department.id === explicit) ?? available[0] ?? null;
+    // Falls back to the caller's own department, then to the first they can see. An explicit choice that is no
+    // longer in the list — they moved department, or lost a role — quietly stops applying rather than pinning the
+    // shell to something the server will not return.
+    return (
+      available.find((department) => department.id === explicit) ??
+      available.find((department) => department.id === this.directory.me()?.primaryDepartmentId) ??
+      available[0] ??
+      null
+    );
   });
 
   readonly canSwitch = computed(() => this.available().length > 1);

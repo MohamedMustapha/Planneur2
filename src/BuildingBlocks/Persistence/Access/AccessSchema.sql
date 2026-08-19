@@ -12,6 +12,34 @@
 
 create schema if not exists access;
 
+-- app_owner owns the schema and everything in it. Each module's migration adds its own predicates here — that is
+-- what keeps the visibility matrix in one place instead of scattered across module schemas — and migrations run
+-- as app_owner, so a superuser-owned schema would refuse every one of them with "permission denied for schema
+-- access". Setting the role means the functions below are created owned by app_owner too, which is what lets a
+-- later migration CREATE OR REPLACE them.
+alter schema access owner to app_owner;
+
+-- Reassign anything already in the schema. A database created before app_owner owned it holds functions owned by
+-- the bootstrap superuser, and CREATE OR REPLACE below would fail with "must be owner of function uid" — so the
+-- upgrade path from an earlier deploy breaks on the first startup rather than on the first request. Rerunning this
+-- on an already-correct database is a no-op.
+do $$
+declare
+    routine record;
+begin
+    for routine in
+        select p.oid::regprocedure as signature
+        from pg_proc p
+        join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'access'
+    loop
+        execute format('alter function %s owner to app_owner', routine.signature);
+    end loop;
+end
+$$;
+
+set role app_owner;
+
 -- -------------------------------------------------------------------------------------------------------------
 -- Session accessors. Each reads one of the GUCs the RlsSessionInterceptor stamps on connection open.
 -- `true` in current_setting means "return NULL if unset" rather than raising — an unstamped connection must
@@ -72,7 +100,9 @@ create or replace function access.is_scoped() returns boolean
 -- Grants. app_rw executes the predicates but owns nothing, so FORCE ROW LEVEL SECURITY applies to it.
 -- -------------------------------------------------------------------------------------------------------------
 
-grant usage on schema access to app_rw, app_owner;
-grant execute on all functions in schema access to app_rw, app_owner;
+grant usage on schema access to app_rw;
+grant execute on all functions in schema access to app_rw;
 
-alter default privileges in schema access grant execute on functions to app_rw, app_owner;
+alter default privileges in schema access grant execute on functions to app_rw;
+
+reset role;
