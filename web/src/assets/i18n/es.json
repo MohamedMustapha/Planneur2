@@ -69,7 +69,14 @@
     "upcomingEmpty": "Las reuniones y jornadas especiales llegan con el lote S7.",
     "shortcuts": "Atajos",
     "shortcutWeekNav": "Semana anterior / siguiente",
-    "shortcutDuplicate": "Duplicar la franja"
+    "shortcutDuplicate": "Duplicar la franja",
+    "entriesTitle": "Actividad de la semana",
+    "entryCount": "{{count}} entradas",
+    "noEntries": "No se ha registrado nada esta semana.",
+    "thisWeek": "Esta semana",
+    "reconciled": "Conciliado",
+    "overtime": "{{hours}} h por encima del objetivo",
+    "targetEnforced": "· límite aplicado"
   },
   "placeholder": {
     "subtitle": "Pantalla incluida en el lote {{slice}}",
@@ -87,7 +94,8 @@
     "noHours": "0,0 h",
     "loading": "Cargando…",
     "close": "Cerrar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "delete": "Eliminar"
   },
   "org": {
     "title": "Directorio de la organización",
@@ -255,6 +263,31 @@
     "scope": {
       "all": "Todo",
       "mine": "Los míos"
+    }
+  },
+  "activity": {
+    "logTitle": "Registrar una actividad",
+    "log": "Registrar",
+    "kind": "Naturaleza",
+    "kindActual": "Realizado",
+    "kindPlanned": "Previsto",
+    "chooseType": "Elegir…",
+    "project": "Proyecto",
+    "chooseProject": "Elegir…",
+    "startTime": "Hora de inicio",
+    "hours": "Horas",
+    "note": "Nota",
+    "pullFromSources": "Importar una tarea asignada",
+    "noAssignableTasks": "No se han encontrado tareas asignadas.",
+    "linkedTo": "Vinculado a {{ref}}",
+    "unlink": "Desvincular",
+    "genericError": "El registro ha fallado.",
+    "typeLabel": "Tipo de actividad",
+    "type": {
+      "project-build": "Proyecto — BUILD",
+      "project-run": "Proyecto — RUN",
+      "quality-of-life": "Calidad de vida",
+      "recruitment-admin": "Selección y administración"
     }
   }
 }

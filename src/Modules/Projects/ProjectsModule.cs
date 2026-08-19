@@ -28,6 +28,9 @@ public static class ProjectsModule
         // The provisioning contract Portfolio calls when a candidate is committed.
         services.AddScoped<Contracts.IProjectProvisioner, ProjectProvisioner>();
 
+        // Asked on every hour S5 books against a project.
+        services.AddScoped<Contracts.IProjectMembershipReader, ProjectMembershipReader>();
+
         services.AddMediatorHandlersFrom(typeof(ProjectsModule).Assembly);
 
         return services;

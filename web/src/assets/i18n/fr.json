@@ -69,7 +69,14 @@
     "upcomingEmpty": "Les réunions et journées spéciales arrivent avec le lot S7.",
     "shortcuts": "Raccourcis",
     "shortcutWeekNav": "Semaine précédente / suivante",
-    "shortcutDuplicate": "Dupliquer le créneau"
+    "shortcutDuplicate": "Dupliquer le créneau",
+    "entriesTitle": "Activités de la semaine",
+    "entryCount": "{{count}} entrées",
+    "noEntries": "Aucune activité enregistrée cette semaine.",
+    "thisWeek": "Cette semaine",
+    "reconciled": "Rapproché",
+    "overtime": "{{hours}} h au-delà de l'objectif",
+    "targetEnforced": "· plafond appliqué"
   },
   "placeholder": {
     "subtitle": "Écran livré avec le lot {{slice}}",
@@ -87,7 +94,8 @@
     "noHours": "0,0 h",
     "loading": "Chargement…",
     "close": "Fermer",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "delete": "Supprimer"
   },
   "org": {
     "title": "Annuaire de l'organisation",
@@ -255,6 +263,31 @@
     "scope": {
       "all": "Tout",
       "mine": "Les miens"
+    }
+  },
+  "activity": {
+    "logTitle": "Enregistrer une activité",
+    "log": "Enregistrer",
+    "kind": "Nature",
+    "kindActual": "Réalisé",
+    "kindPlanned": "Prévu",
+    "chooseType": "Choisir…",
+    "project": "Projet",
+    "chooseProject": "Choisir…",
+    "startTime": "Heure de début",
+    "hours": "Heures",
+    "note": "Note",
+    "pullFromSources": "Importer une tâche assignée",
+    "noAssignableTasks": "Aucune tâche assignée trouvée.",
+    "linkedTo": "Lié à {{ref}}",
+    "unlink": "Délier",
+    "genericError": "L'enregistrement a échoué.",
+    "typeLabel": "Type d'activité",
+    "type": {
+      "project-build": "Projet — BUILD",
+      "project-run": "Projet — RUN",
+      "quality-of-life": "Qualité de vie",
+      "recruitment-admin": "Recrutement & administratif"
     }
   }
 }

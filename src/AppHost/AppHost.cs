@@ -113,6 +113,10 @@ var api = builder.AddProject<Projects.Cracra_Host>("api")
     .WithEnvironment("Cracra__Directory__Sync__Realm", "cracra")
     .WithEnvironment("Cracra__Directory__Sync__ClientId", "cracra-sync")
     .WithEnvironment("Cracra__Directory__Sync__ClientSecret", syncClientSecret)
+    // The dev box stands in for Azure DevOps and ServiceNow until S10 brings the real adapters, so the
+    // pull-a-task flow is exercisable here. Sample tasks are derived from the caller's own projects, never
+    // invented, and this flag stays off in every real deployment.
+    .WithEnvironment("Cracra__Activities__AssignableTasks__SeedSampleTasks", "true")
     .WithEnvironment("ConnectionStrings__seq", seq.GetEndpoint("http"))
     .WithHttpHealthCheck("/alive")
     // Pinned, not dynamic: Prometheus scrapes /metrics from a static target list, and the Angular dev proxy needs

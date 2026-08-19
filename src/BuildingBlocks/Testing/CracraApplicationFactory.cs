@@ -35,6 +35,16 @@ public sealed class CracraApplicationFactory(string adminConnectionString) : Web
     /// </summary>
     public Action<IServiceCollection>? ConfigureAdditionalServices { get; init; }
 
+    /// <summary>
+    /// Extra configuration for one test — a feature flag, a per-module option.
+    /// </summary>
+    /// <remarks>
+    /// Applied after the defaults below, so it can override them as well as add. Configuration rather than a
+    /// service replacement because what it is usually adjusting is a real options binding, and going through the
+    /// same path production does is what makes the test evidence about production behaviour.
+    /// </remarks>
+    public IReadOnlyDictionary<string, string?>? Settings { get; init; }
+
     public CracraApplicationFactory AsUser(IUserContext user)
     {
         CurrentUser = user;
@@ -79,6 +89,11 @@ public sealed class CracraApplicationFactory(string adminConnectionString) : Web
                 ["Cracra:Directory:Sync:SyncOnStartup"] = "false",
                 ["Cracra:Directory:Sync:Interval"] = "00:00:00",
             });
+
+            if (Settings is { Count: > 0 } overrides)
+            {
+                configuration.AddInMemoryCollection(overrides);
+            }
         });
 
         builder.ConfigureTestServices(services =>

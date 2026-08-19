@@ -6,6 +6,7 @@ using Cracra.BuildingBlocks.Web;
 using Cracra.BuildingBlocks.Web.Behaviors;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
+using Cracra.Modules.Activities;
 using Cracra.Modules.Portfolio;
 using Cracra.Modules.Projects;
 using Cracra.ServiceDefaults;
@@ -54,6 +55,7 @@ builder.Services.AddAccessModule();
 builder.Services.AddDirectoryModule();
 builder.Services.AddProjectsModule();
 builder.Services.AddPortfolioModule();
+builder.Services.AddActivitiesModule(builder.Configuration);
 
 var app = builder.Build();
 

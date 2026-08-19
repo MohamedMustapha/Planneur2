@@ -2,28 +2,36 @@
   <app-page-header [title]="t('board.title')" [subtitle]="subtitle()">
     <div slot="meter" class="board__meter">
       <div class="board__meter-row">
-        <span class="board__meter-label">{{ t('board.weeklyTarget', { hours: weeklyTargetHours }) }}</span>
+        <span class="board__meter-label">{{ t('board.weeklyTarget', { hours: weeklyTargetHours() }) }}</span>
         <span class="board__meter-value num" [style.color]="meterColor()">
-          {{ t('board.hoursOfTarget', { logged: loggedHours(), target: weeklyTargetHours }) }}
+          {{ t('board.hoursOfTarget', { logged: loggedHours(), target: weeklyTargetHours() }) }}
         </span>
       </div>
       <div class="meter">
         <div class="meter__fill" [style.width.%]="meterPercent()" [style.background]="meterColor()"></div>
       </div>
       <p class="board__meter-note" [style.color]="meterColor()">
-        {{ t('board.hoursRemaining', { hours: weeklyTargetHours - loggedHours() }) }}
+        @if (activities.isOverTarget()) {
+          <!-- Named as overtime rather than shown as a negative remainder. The hours were worked; the platform's
+               job is to say so plainly, not to imply they should not have been. -->
+          {{ t('board.overtime', { hours: activities.overtime() }) }}
+          @if (activities.isEnforced()) {
+            <span class="board__meter-enforced">{{ t('board.targetEnforced') }}</span>
+          }
+        } @else {
+          {{ t('board.hoursRemaining', { hours: remainingHours() }) }}
+        }
       </p>
     </div>
 
     <div slot="actions" class="board__actions">
-      <!-- Both disabled until the slices behind them exist: importing needs the Integrations module (S10), quick
-           add needs the Activities module (S5). A control that looks live and does nothing is worse than one that
-           says so. -->
+      <!-- Importing still needs S10's adapters, so it stays disabled and says so. Quick add is live: the pull
+           dropdown lives inside it, which is where a task actually becomes an entry. -->
       <button type="button" class="btn btn--secondary" disabled [title]="t('board.availableInSlice', { slice: 'S10' })">
         {{ t('board.importFromSources') }}
         <span aria-hidden="true">▾</span>
       </button>
-      <button type="button" class="btn btn--primary" disabled [title]="t('board.availableInSlice', { slice: 'S5' })">
+      <button type="button" class="btn btn--primary" (click)="openQuickAdd()">
         {{ t('board.quickAdd') }}
         <span class="kbd">N</span>
       </button>
@@ -65,12 +73,54 @@
         <app-smoke-timeline />
       </section>
 
+      <section class="card">
+        <header class="card__header">
+          <span>{{ t('board.entriesTitle') }}</span>
+          <span class="board__entry-count num">{{ t('board.entryCount', { count: activities.entries().length }) }}</span>
+        </header>
+
+        @if (activities.isLoading()) {
+          <p class="board__empty">{{ t('common.loading') }}</p>
+        } @else if (days().length === 0) {
+          <p class="board__empty">{{ t('board.noEntries') }}</p>
+        } @else {
+          @for (group of days(); track group.day) {
+            <div class="day">
+              <h3 class="day__label mono">{{ group.day }}</h3>
+              <ul class="day__entries">
+                @for (entry of group.entries; track entry.id) {
+                  <li class="entry" [class.is-planned]="entry.kind === 'planned'">
+                    <span class="entry__hours num">{{ entry.hours }}h</span>
+                    <span class="entry__type">{{ t(entry.activityTypeLabelKey) }}</span>
+                    @if (entry.projectCode) {
+                      <span class="entry__project mono">{{ entry.projectCode }}</span>
+                    }
+                    @if (entry.externalRef) {
+                      <!-- Where the hour came from. The link back to the ticket is what makes a pulled entry
+                           auditable rather than just pre-filled. -->
+                      <span class="entry__ref mono">{{ entry.externalRef }}</span>
+                    }
+                    @if (entry.reconciled) {
+                      <span class="entry__badge">{{ t('board.reconciled') }}</span>
+                    }
+                    <span class="entry__note">{{ entry.note }}</span>
+                    <button type="button" class="btn btn--ghost entry__remove" (click)="remove(entry.id)">
+                      {{ t('common.delete') }}
+                    </button>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        }
+      </section>
+
       <div class="board__summary">
         @for (tile of summaryTiles(); track tile.id) {
           <article class="card board__tile">
             <span class="section-label">{{ t(tile.labelKey) }}</span>
-            <span class="board__tile-value num" [style.color]="tile.color">{{ t('common.noHours') }}</span>
-            <span class="board__tile-note">{{ t('board.awaitingActivities') }}</span>
+            <span class="board__tile-value num" [style.color]="tile.color">{{ tile.hours }}h</span>
+            <span class="board__tile-note">{{ t('board.thisWeek') }}</span>
           </article>
         }
       </div>
@@ -101,4 +151,8 @@
       </section>
     </aside>
   </div>
+
+  @if (quickAddOpen()) {
+    <app-quick-add (closed)="closeQuickAdd()" />
+  }
 </ng-container>

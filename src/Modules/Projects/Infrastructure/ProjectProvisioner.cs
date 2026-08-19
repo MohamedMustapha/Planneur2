@@ -51,6 +51,12 @@ internal sealed class ProjectProvisioner(ProjectsDbContext context, IUserContext
     public async Task<bool> HasTeamAsync(Guid projectId, CancellationToken ct) =>
         await context.ProjectMembers.AnyAsync(member => member.ProjectId == projectId && member.To == null, ct);
 
+    public async Task<IReadOnlyList<Guid>> GetVisibleProjectIdsAsync(CancellationToken ct) =>
+        await context.Projects
+            .Where(project => !project.Archived)
+            .Select(project => project.Id)
+            .ToListAsync(ct);
+
     public async Task<IReadOnlyDictionary<Guid, ProjectSummary>> GetSummariesAsync(
         IReadOnlyList<Guid> projectIds,
         CancellationToken ct)
@@ -76,4 +82,18 @@ internal sealed class ProjectProvisioner(ProjectsDbContext context, IUserContext
                 context.ProjectMembers.Count(member => member.ProjectId == project.Id && member.To == null)))
             .ToDictionaryAsync(summary => summary.Id, ct);
     }
+}
+
+/// <summary>
+/// Projects answering "is this person on it" for S5.
+/// </summary>
+/// <remarks>
+/// Runs on the caller's own connection, so a project RLS hides answers false — which is the right answer for the
+/// question being asked. Someone who cannot see a project has no business booking time to it.
+/// </remarks>
+internal sealed class ProjectMembershipReader(ProjectsDbContext context) : IProjectMembershipReader
+{
+    public async Task<bool> IsActiveMemberAsync(Guid projectId, Guid personId, CancellationToken ct) =>
+        await context.ProjectMembers.AnyAsync(member =>
+            member.ProjectId == projectId && member.PersonId == personId && member.To == null, ct);
 }

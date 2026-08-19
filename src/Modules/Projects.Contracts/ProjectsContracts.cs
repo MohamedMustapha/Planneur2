@@ -107,4 +107,21 @@ public interface IProjectProvisioner
     Task<IReadOnlyDictionary<Guid, ProjectSummary>> GetSummariesAsync(
         IReadOnlyList<Guid> projectIds,
         CancellationToken ct);
+
+    /// <summary>Every project the caller can read. RLS decides what that means; this does not filter further.</summary>
+    Task<IReadOnlyList<Guid>> GetVisibleProjectIdsAsync(CancellationToken ct);
+}
+
+/// <summary>
+/// Membership questions other modules ask about a project.
+/// </summary>
+/// <remarks>
+/// Separate from <see cref="IProjectProvisioner"/> because the callers are different: provisioning is Portfolio's
+/// one act at commitment, whereas S5 asks this on every hour anyone books. One interface holding both would give
+/// each caller a surface mostly made of methods it must not use.
+/// </remarks>
+public interface IProjectMembershipReader
+{
+    /// <summary>True when the person is currently on the project — a past membership does not count.</summary>
+    Task<bool> IsActiveMemberAsync(Guid projectId, Guid personId, CancellationToken ct);
 }

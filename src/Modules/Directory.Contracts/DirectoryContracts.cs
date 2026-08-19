@@ -141,3 +141,23 @@ public interface IDirectoryReferenceReader
         IReadOnlyList<Guid> personIds,
         CancellationToken ct);
 }
+
+/// <summary>
+/// Reads a department's configuration from outside Directory.
+/// </summary>
+/// <remarks>
+/// <para>
+/// S5 needs the activity taxonomy and weekly target on every write, and S6 and S9 need their own knobs. All of
+/// them are in another module, so the read goes through a contract rather than through Directory's service, which
+/// is internal to it.
+/// </para>
+/// <para>
+/// Caller-scoped, so a config a caller may not read simply is not returned. Consumers are expected to fall back to
+/// their own defaults rather than fail: a department's knobs are a refinement of platform behaviour, and not being
+/// able to read them should degrade the refinement, not stop someone logging their week.
+/// </para>
+/// </remarks>
+public interface IDepartmentConfigReader
+{
+    Task<DepartmentConfigSnapshot?> TryGetAsync(Guid departmentId, CancellationToken ct);
+}

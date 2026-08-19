@@ -31,6 +31,9 @@ public static class DirectoryModule
         // outside Directory ever names the implementation.
         services.AddScoped<Contracts.IDirectoryReader, DirectoryReader>();
 
+        // The knobs S5, S6 and S9 read across the module boundary.
+        services.AddScoped<Contracts.IDepartmentConfigReader, DepartmentConfigReader>();
+
         // Singleton: it opens its own system-context scope per call, deliberately outside whatever
         // session is asking. See the type for why that is safe and how narrow it is kept.
         services.AddSingleton<Contracts.IDirectoryReferenceReader, DirectoryReferenceReader>();

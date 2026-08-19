@@ -69,7 +69,14 @@
     "upcomingEmpty": "Meetings and special days arrive with slice S7.",
     "shortcuts": "Shortcuts",
     "shortcutWeekNav": "Previous / next week",
-    "shortcutDuplicate": "Duplicate slot"
+    "shortcutDuplicate": "Duplicate slot",
+    "entriesTitle": "This week's activity",
+    "entryCount": "{{count}} entries",
+    "noEntries": "Nothing logged this week.",
+    "thisWeek": "This week",
+    "reconciled": "Reconciled",
+    "overtime": "{{hours}}h over target",
+    "targetEnforced": "· cap enforced"
   },
   "placeholder": {
     "subtitle": "Screen ships with slice {{slice}}",
@@ -87,7 +94,8 @@
     "noHours": "0.0 h",
     "loading": "Loading…",
     "close": "Close",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "delete": "Delete"
   },
   "org": {
     "title": "Organisation directory",
@@ -255,6 +263,31 @@
     "scope": {
       "all": "All",
       "mine": "Mine"
+    }
+  },
+  "activity": {
+    "logTitle": "Log an activity",
+    "log": "Log",
+    "kind": "Kind",
+    "kindActual": "Actual",
+    "kindPlanned": "Planned",
+    "chooseType": "Choose…",
+    "project": "Project",
+    "chooseProject": "Choose…",
+    "startTime": "Start time",
+    "hours": "Hours",
+    "note": "Note",
+    "pullFromSources": "Pull an assigned task",
+    "noAssignableTasks": "No assigned tasks found.",
+    "linkedTo": "Linked to {{ref}}",
+    "unlink": "Unlink",
+    "genericError": "Logging failed.",
+    "typeLabel": "Activity type",
+    "type": {
+      "project-build": "Project — BUILD",
+      "project-run": "Project — RUN",
+      "quality-of-life": "Quality of life",
+      "recruitment-admin": "Recruitment & admin"
     }
   }
 }

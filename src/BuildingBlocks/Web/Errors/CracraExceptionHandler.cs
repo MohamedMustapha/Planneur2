@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Security;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -71,6 +72,9 @@ public sealed class CracraExceptionHandler(
         });
     }
 
+    /// <summary>Postgres <c>insufficient_privilege</c>, which is what a WITH CHECK violation raises.</summary>
+    private const string PostgresInsufficientPrivilege = "42501";
+
     private static (int Status, string Title) Classify(Exception exception) => exception switch
     {
         ValidationException => (StatusCodes.Status400BadRequest, "The request is not valid."),
@@ -78,7 +82,38 @@ public sealed class CracraExceptionHandler(
         ResourceNotFoundException => (StatusCodes.Status404NotFound, "The requested resource does not exist."),
         ConcurrencyConflictException => (StatusCodes.Status409Conflict, "The resource changed since it was read."),
         UnauthorizedAccessException or SecurityException => (StatusCodes.Status403Forbidden, "Access denied."),
+
         OperationCanceledException => (StatusCodes.Status499ClientClosedRequest, "The request was cancelled."),
+
+        // An RLS policy refusing a write. Postgres raises insufficient_privilege when a WITH CHECK clause rejects
+        // an INSERT or UPDATE, and without this it would surface as a 500 — an access decision reported as a bug.
+        //
+        // 403 rather than 404: the caller reached this by naming a row or a person they could already see, so
+        // there is nothing left to conceal by pretending it does not exist. Reads are the opposite case, and RLS
+        // handles those by returning no row at all.
+        _ when IsWriteRefusedByPolicy(exception) => (StatusCodes.Status403Forbidden, "Access denied."),
+
         _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred."),
     };
+
+    /// <summary>
+    /// Walks the chain looking for Postgres refusing the write.
+    /// </summary>
+    /// <remarks>
+    /// EF wraps the provider's exception in a DbUpdateException, so the SqlState is never on the exception that
+    /// actually reaches here. Matching only the outer type would silently stop working the first time anything
+    /// wrapped it — which is exactly what a 500 on a permission check looks like.
+    /// </remarks>
+    private static bool IsWriteRefusedByPolicy(Exception exception)
+    {
+        for (var current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is DbException { SqlState: PostgresInsufficientPrivilege })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
