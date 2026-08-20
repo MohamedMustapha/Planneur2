@@ -294,6 +294,13 @@
       "project-run": "Project — RUN",
       "quality-of-life": "Quality of life",
       "recruitment-admin": "Recruitment & admin"
+    },
+    "source": {
+      "manual": "Typed in",
+      "scheduler": "Scheduled",
+      "integration": "Integration",
+      "azuredevops": "Azure DevOps",
+      "servicenow": "ServiceNow"
     }
   },
   "boards": {
@@ -413,6 +420,133 @@
       "FR": "Fri",
       "SA": "Sat",
       "SU": "Sun"
+    }
+  },
+  "reports": {
+    "title": "Status report",
+    "subtitle": "The report adapts to your role.",
+    "export": "Export as PDF",
+    "exportReady": "Download the PDF",
+    "exportExpires": "The link is valid for a few minutes.",
+    "periodNav": "Previous or next period",
+    "project": "Project",
+    "chooseProject": "Choose a project…",
+    "pickProject": "Choose a project to see its report.",
+    "sectionEmpty": "Nothing in this period.",
+    "genericError": "The report could not be produced.",
+    "period": {
+      "label": "Period",
+      "week": "Week {{week}} · {{year}}",
+      "month": "Month of {{from}}",
+      "custom": "Chosen period",
+      "weekShort": "Week",
+      "monthShort": "Month"
+    },
+    "summary": {
+      "title": "Narrative",
+      "disclaimer": "Written by a local model from the figures below. The figures themselves are computed by the platform.",
+      "generate": "Write the narrative",
+      "regenerate": "Regenerate",
+      "writing": "Writing…",
+      "stale": "Figures changed since",
+      "none": "No narrative for this period."
+    },
+    "scope": {
+      "my": "My work",
+      "team": "My project teams",
+      "unit": "My unit",
+      "department": "My department",
+      "project": "Project",
+      "portfolio": "Portfolio"
+    },
+    "section": {
+      "hours": "Hours",
+      "sources": "Where entries came from",
+      "agenda": "Coming up",
+      "teamActivity": "Project activity",
+      "iterations": "Iterations",
+      "members": "Unit activity",
+      "runLoad": "RUN load",
+      "qol": "Quality of life",
+      "units": "By unit",
+      "projects": "Projects",
+      "burn": "Progress",
+      "contribution": "Contribution by department",
+      "cost": "Cost",
+      "states": "Portfolio states",
+      "archived": "Archived",
+      "priority": "Priorities"
+    },
+    "metric": {
+      "targetHours": "Target",
+      "actualHours": "Actual",
+      "plannedHours": "Planned",
+      "overtimeHours": "Overtime",
+      "targetShare": "Of target",
+      "entries": "Entries",
+      "meetings": "Meetings",
+      "specialDays": "Special days",
+      "projects": "Projects",
+      "headcount": "Headcount",
+      "units": "Units",
+      "openWorkOrders": "Open work orders",
+      "assignedWorkOrders": "Assigned work orders",
+      "workOrderHours": "Estimated hours",
+      "shiftHours": "Shift hours",
+      "coverageGaps": "Coverage gaps",
+      "qolHours": "QoL hours",
+      "kudos": "Kudos",
+      "cost": "Cost",
+      "members": "Members",
+      "iterationDaysElapsed": "Days elapsed",
+      "items": "Items",
+      "archived": "Archived"
+    },
+    "column": {
+      "label": "Label",
+      "actualHours": "Actual",
+      "plannedHours": "Planned",
+      "qolHours": "QoL",
+      "entries": "Entries",
+      "members": "Members",
+      "headcount": "Headcount",
+      "cost": "Cost",
+      "sequence": "#",
+      "daysElapsed": "Days",
+      "share": "Share",
+      "items": "Items",
+      "priority": "Priority",
+      "iterations": "Iterations"
+    },
+    "table": {
+      "hoursByType": "By activity type",
+      "sources": "By source",
+      "projectActivity": "By project",
+      "iterations": "Iterations",
+      "memberActivity": "By person",
+      "unitRollup": "By unit",
+      "projects": "Projects",
+      "contribution": "By department",
+      "states": "By state",
+      "priority": "Highest priority"
+    },
+    "note": {
+      "overTarget": "The week is over target.",
+      "overTargetEnforced": "The week is over target, which this department enforces.",
+      "coverageGaps": "Some shift slots are under-staffed.",
+      "noIteration": "No iteration was running in this period.",
+      "archived": "Archived project",
+      "agenda": {
+        "meeting": "Meeting",
+        "specialDay": "Special day"
+      },
+      "state": {
+        "considered": "Considered",
+        "committed": "Committed",
+        "active": "Active",
+        "dephase": "Archived"
+      },
+      "truncated": "List truncated: {{count}} more not shown."
     }
   }
 }

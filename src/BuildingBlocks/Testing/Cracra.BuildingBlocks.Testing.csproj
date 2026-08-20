@@ -4,6 +4,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="../Storage/Cracra.BuildingBlocks.Storage.csproj" />
     <ProjectReference Include="../../Host/Cracra.Host.csproj" />
   </ItemGroup>
   <ItemGroup>

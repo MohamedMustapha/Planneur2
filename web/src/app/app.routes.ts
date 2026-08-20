@@ -61,11 +61,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/portfolio/portfolio-board').then((m) => m.PortfolioBoard),
   },
-  placeholder('reports', {
-    titleKey: 'nav.reports',
-    slice: 'S8',
-    descriptionKey: 'placeholder.reports',
-  }),
+  {
+    // The scope is not in the route: the report opens on the widest one the viewer's role grants, which only the
+    // server knows. A /reports/department URL would be a client-side claim about the visibility matrix.
+    path: 'reports',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/reporting/report-view').then((m) => m.ReportView),
+  },
   placeholder('kudos', { titleKey: 'nav.kudos', slice: 'S9', descriptionKey: 'placeholder.kudos' }),
   placeholder('finance', {
     titleKey: 'nav.finance',

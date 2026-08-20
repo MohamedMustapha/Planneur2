@@ -130,6 +130,10 @@ services:
       # The clock a recurring meeting's local start time is read against. An org outside France changes this one
       # value; nothing else about S7 is deployment-specific.
       Cracra__Meetings__DefaultTimeZoneId: ${ORG_TIME_ZONE:-Europe/Paris}
+      # The on-prem model's name as its OpenAI-compatible server reports it, and the bucket exported reports are
+      # written to. The bucket is created on first start if it is missing.
+      Cracra__Ai__Model: ${LLM_MODEL:-local-model}
+      Cracra__Storage__Bucket: ${STORAGE_BUCKET:-cracra}
       ConnectionStrings__seq: http://seq:80
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_ENDPOINT:-}
     healthcheck:

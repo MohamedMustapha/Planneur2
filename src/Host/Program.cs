@@ -10,6 +10,7 @@ using Cracra.Modules.Meetings;
 using Cracra.Modules.Activities;
 using Cracra.Modules.Portfolio;
 using Cracra.Modules.Projects;
+using Cracra.Modules.Reporting;
 using Cracra.Modules.Scheduling;
 using Cracra.ServiceDefaults;
 using FastEndpoints;
@@ -60,6 +61,7 @@ builder.Services.AddPortfolioModule();
 builder.Services.AddActivitiesModule(builder.Configuration);
 builder.Services.AddSchedulingModule(builder.Configuration);
 builder.Services.AddMeetingsModule();
+builder.Services.AddReportingModule();
 
 var app = builder.Build();
 

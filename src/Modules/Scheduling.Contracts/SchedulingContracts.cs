@@ -147,6 +147,32 @@ public sealed record ShiftTemplate(
     int MinimumStaff,
     string? Color);
 
+/// <summary>The RUN side of a unit's week, in the two numbers a lead actually asks about.</summary>
+/// <param name="CoverageGaps">Slot-days that fell short of their minimum staffing. Warnings, never refusals.</param>
+public sealed record ScheduleLoad(
+    Guid UnitId,
+    int OpenWorkOrders,
+    int AssignedWorkOrders,
+    decimal EstimatedHours,
+    int ShiftsPlanned,
+    decimal ShiftHours,
+    int CoverageGaps);
+
+/// <summary>
+/// The RUN load of a unit over a window.
+/// </summary>
+/// <remarks>
+/// Added for S8: the unit report needs "RUN load (work-orders / shift coverage)" and had no way to ask for it.
+/// Deliberately six numbers rather than the rows behind them — a report summarizes, and handing it the whole
+/// board would invite it to re-derive on the client what the board already computes correctly.
+///
+/// Caller-scoped like every other cross-module reader, so a report can only count what its reader may see.
+/// </remarks>
+public interface IScheduleLoadReader
+{
+    Task<ScheduleLoad> GetLoadAsync(Guid unitId, DateOnly from, DateOnly to, CancellationToken ct);
+}
+
 // --- Integration events ------------------------------------------------------------------------------------------
 
 public sealed record WorkOrderAssigned(Guid WorkOrderId, Guid PersonId, Guid? ActivityEntryId) : IntegrationEvent;

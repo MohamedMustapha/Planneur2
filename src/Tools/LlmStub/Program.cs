@@ -109,3 +109,22 @@ static string BuildReply(JsonElement request)
 
     return $"[stub:{language}] Résumé généré localement. Prompt reçu : {preview}".Trim();
 }
+
+namespace Cracra.Tools.LlmStub
+{
+    /// <summary>
+    /// A marker the integration tests point <c>WebApplicationFactory</c> at, so this stub can be hosted in-process.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// S8's spec asks for the AI path to be exercised "against the stub OpenAI server", and this is what makes
+    /// that literally true rather than approximately: the tests run the real client, the real streaming parser
+    /// and the real prompt against this same program, instead of a second fake that would drift from it.
+    /// </para>
+    /// <para>
+    /// A marker rather than the usual <c>public partial class Program</c>, because the API host already declares
+    /// one in the global namespace and a test assembly referencing both would not be able to name either.
+    /// </para>
+    /// </remarks>
+    public sealed class LlmStubEntryPoint;
+}

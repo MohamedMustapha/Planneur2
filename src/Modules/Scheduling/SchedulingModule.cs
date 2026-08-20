@@ -2,6 +2,7 @@ using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Persistence;
 using Cracra.BuildingBlocks.Persistence.Behaviors;
 using Cracra.Modules.Scheduling.Application;
+using Contracts = Cracra.Modules.Scheduling.Contracts;
 using Cracra.Modules.Scheduling.Infrastructure;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +31,10 @@ public static class SchedulingModule
         services.AddScoped<IProjectsPort, ProjectsAdapter>();
         services.AddScoped<IActivitiesPort, ActivitiesAdapter>();
         services.AddScoped<IPortfolioPort, PortfolioAdapter>();
+
+        // The read port S8's unit report consumes. Registered against the contracts interface so nothing outside
+        // Scheduling ever names the implementation.
+        services.AddScoped<Contracts.IScheduleLoadReader, ScheduleLoadReader>();
 
         // The S7 seam, filled. This is the one line the S6 comment promised would change: the boards' payload
         // shape, the composer and every client template stayed exactly as they were.

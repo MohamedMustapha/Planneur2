@@ -104,3 +104,20 @@ internal sealed class PortfolioIterationReader(PortfolioDbContext context)
                 iteration.State.ToString().ToLower()))
             .ToListAsync(ct);
 }
+
+/// <summary>
+/// The board, for S8's reports.
+/// </summary>
+/// <remarks>
+/// Delegates to the same query the screen uses rather than re-querying the items. That is the whole point of the
+/// port: a report counting "three active" and a board showing four would be a bug nobody could locate, because
+/// both would look correct in isolation.
+/// </remarks>
+internal sealed class PortfolioBoardReader(Cracra.BuildingBlocks.Mediator.ISender sender)
+    : Cracra.Modules.Portfolio.Contracts.IPortfolioBoardReader
+{
+    public async Task<Cracra.Modules.Portfolio.Contracts.PortfolioBoard> GetBoardAsync(
+        Guid? departmentId,
+        CancellationToken ct) =>
+        await sender.Send(new Application.GetBoardQuery(departmentId, null), ct);
+}

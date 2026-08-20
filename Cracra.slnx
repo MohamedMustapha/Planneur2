@@ -13,6 +13,9 @@
   <Folder Name="/src/BuildingBlocks/Ai/">
     <Project Path="src/BuildingBlocks/Ai/Cracra.BuildingBlocks.Ai.csproj" />
   </Folder>
+  <Folder Name="/src/BuildingBlocks/Documents/">
+    <Project Path="src/BuildingBlocks/Documents/Cracra.BuildingBlocks.Documents.csproj" />
+  </Folder>
   <Folder Name="/src/BuildingBlocks/Mediator/">
     <Project Path="src/BuildingBlocks/Mediator/Cracra.BuildingBlocks.Mediator.csproj" />
   </Folder>
@@ -63,6 +66,10 @@
   <Folder Name="/src/Modules/Meetings/">
     <Project Path="src/Modules/Meetings.Contracts/Cracra.Modules.Meetings.Contracts.csproj" />
     <Project Path="src/Modules/Meetings/Cracra.Modules.Meetings.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Reporting/">
+    <Project Path="src/Modules/Reporting.Contracts/Cracra.Modules.Reporting.Contracts.csproj" />
+    <Project Path="src/Modules/Reporting/Cracra.Modules.Reporting.csproj" />
   </Folder>
   <Folder Name="/src/Modules/Projects.Contracts/">
     <Project Path="src/Modules/Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />

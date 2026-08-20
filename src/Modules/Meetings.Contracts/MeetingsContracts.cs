@@ -230,6 +230,18 @@ public interface IMeetingCalendarReader
         DateOnly from,
         DateOnly to,
         CancellationToken ct);
+
+    /// <summary>
+    /// The meetings and special days falling inside a window, flat and ordered.
+    /// </summary>
+    /// <remarks>
+    /// Added for S8, which needs "upcoming copil" and "audits and patch parties ahead" as report sections rather
+    /// than as board decoration. Deliberately the same <see cref="UpcomingEntry"/> the strip already renders: a
+    /// report that invented its own shape for the same rows would drift from the strip within a slice or two.
+    ///
+    /// Caller-scoped like everything else here, so a report can only ever mention meetings its reader may see.
+    /// </remarks>
+    Task<IReadOnlyList<UpcomingEntry>> GetInWindowAsync(DateOnly from, DateOnly to, CancellationToken ct);
 }
 
 // --- Integration events ------------------------------------------------------------------------------------------

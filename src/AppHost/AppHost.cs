@@ -123,6 +123,10 @@ var api = builder.AddProject<Projects.Cracra_Host>("api")
     // The zone a meeting's wall-clock time is read in. A 09:00 stand-up is 09:00 all year, so the series stores
     // the local time and this says which clock that is — the one knob S7 needs from a deployment.
     .WithEnvironment("Cracra__Meetings__DefaultTimeZoneId", "Europe/Paris")
+    // The stub answers as this model name, so the dev box's summaries carry a model somebody can recognize in a
+    // report footer rather than a placeholder that looks like a bug.
+    .WithEnvironment("Cracra__Ai__Model", "local-model")
+    .WithEnvironment("Cracra__Storage__Bucket", "cracra")
     .WithEnvironment("ConnectionStrings__seq", seq.GetEndpoint("http"))
     .WithHttpHealthCheck("/alive")
     // Pinned, not dynamic: Prometheus scrapes /metrics from a static target list, and the Angular dev proxy needs

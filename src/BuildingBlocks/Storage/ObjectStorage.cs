@@ -2,6 +2,8 @@ using System.ComponentModel.DataAnnotations;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
@@ -33,6 +35,17 @@ public sealed class ObjectStorageOptions
 
     [Range(typeof(TimeSpan), "00:00:30", "24:00:00")]
     public TimeSpan DefaultPresignLifetime { get; set; } = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// Creates the bucket at startup when it is missing.
+    /// </summary>
+    /// <remarks>
+    /// On in every real deployment, where a first run against an empty RustFS should just work. Off in the
+    /// integration tests, which substitute the storage entirely — leaving it on there costs every host start the
+    /// AWS SDK's full retry budget against a port nothing is listening on, which is seconds each across a suite
+    /// that starts a hundred hosts.
+    /// </remarks>
+    public bool CreateBucketOnStartup { get; set; } = true;
 }
 
 /// <summary>
@@ -60,6 +73,18 @@ internal sealed class S3ObjectStorage(IAmazonS3 client, IOptions<ObjectStorageOp
 {
     private readonly ObjectStorageOptions _options = options.Value;
 
+    /// <summary>
+    /// Whether the payload may go up unsigned.
+    /// </summary>
+    /// <remarks>
+    /// Only over HTTPS. Unsigned payloads shift integrity from the signature to the transport, so the AWS SDK
+    /// refuses the combination over plain HTTP — with an exception at sign time rather than a rejected upload,
+    /// which is why nothing caught it until a slice actually stored something. On-prem RustFS is commonly plain
+    /// HTTP inside the perimeter, and there the payload is simply signed instead.
+    /// </remarks>
+    private readonly bool _canSkipPayloadSigning =
+        options.Value.ServiceUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+
     public async Task PutAsync(string key, Stream content, string contentType, CancellationToken ct = default)
         => await client.PutObjectAsync(
             new PutObjectRequest
@@ -68,7 +93,7 @@ internal sealed class S3ObjectStorage(IAmazonS3 client, IOptions<ObjectStorageOp
                 Key = key,
                 InputStream = content,
                 ContentType = contentType,
-                DisablePayloadSigning = true,
+                DisablePayloadSigning = _canSkipPayloadSigning,
             },
             ct);
 
@@ -129,6 +154,58 @@ internal sealed class ObjectStorageHealthCheck(IAmazonS3 client, IOptions<Object
     }
 }
 
+/// <summary>
+/// Creates the bucket on startup if it is not there.
+/// </summary>
+/// <remarks>
+/// <para>
+/// S0 wired storage up and nothing wrote to it, so a missing bucket showed only as an unhealthy probe. S8 is the
+/// first slice that stores anything — an exported report — and "the bucket does not exist" is a first-run
+/// condition rather than an operator error worth failing over.
+/// </para>
+/// <para>
+/// Never fails startup. A storage backend that is down at boot must not take the API with it: activity logging,
+/// the boards and every report except its export work perfectly well without it, and the health check already
+/// says so in a way an operator can alert on.
+/// </para>
+/// </remarks>
+internal sealed class ObjectStorageInitializer(
+    IAmazonS3 client,
+    IOptions<ObjectStorageOptions> options,
+    ILogger<ObjectStorageInitializer> logger) : IHostedService
+{
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        if (!options.Value.CreateBucketOnStartup)
+        {
+            return;
+        }
+
+        var bucket = options.Value.Bucket;
+
+        try
+        {
+            if (await Amazon.S3.Util.AmazonS3Util.DoesS3BucketExistV2Async(client, bucket))
+            {
+                return;
+            }
+
+            await client.PutBucketAsync(new PutBucketRequest { BucketName = bucket }, cancellationToken);
+
+            logger.LogInformation("Created object storage bucket {Bucket}", bucket);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(
+                exception,
+                "Could not ensure object storage bucket {Bucket}. Exports will fail until it exists.",
+                bucket);
+        }
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+}
+
 public static class StorageExtensions
 {
     public static IServiceCollection AddCracraStorage(this IServiceCollection services)
@@ -155,6 +232,8 @@ public static class StorageExtensions
         });
 
         services.AddSingleton<IObjectStorage, S3ObjectStorage>();
+
+        services.AddHostedService<ObjectStorageInitializer>();
 
         services.AddHealthChecks()
             .AddCheck<ObjectStorageHealthCheck>("rustfs", tags: ["ready", "storage"]);

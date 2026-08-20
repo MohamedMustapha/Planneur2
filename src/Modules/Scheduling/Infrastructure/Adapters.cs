@@ -193,6 +193,54 @@ internal sealed class MeetingCalendarOverlays(IMeetingCalendarReader meetings) :
 }
 
 /// <summary>
+/// The RUN load of a unit, for S8's report.
+/// </summary>
+/// <remarks>
+/// Six numbers, computed the same way the board computes them — the coverage count comes from
+/// <c>ShiftCoverage.Check</c> rather than from a second implementation, so a report saying "no gaps" and a board
+/// showing three would be impossible rather than merely unlikely.
+///
+/// Caller-scoped: every query underneath runs in the reader's own RLS session, so a report can only ever count
+/// what its reader was already allowed to see.
+/// </remarks>
+internal sealed class ScheduleLoadReader(
+    IWorkOrderRepository workOrders,
+    IShiftRepository shifts,
+    IDirectoryPort directory) : IScheduleLoadReader
+{
+    public async Task<ScheduleLoad> GetLoadAsync(
+        Guid unitId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
+    {
+        var orders = await workOrders.GetForUnitAsync(unitId, ct);
+        var planned = await shifts.GetForUnitAsync(unitId, from, to, ct);
+
+        var units = await directory.GetUnitsAsync(null, ct);
+        var department = units.FirstOrDefault(unit => unit.Id == unitId)?.DepartmentId;
+
+        var gaps = 0;
+
+        if (department is { } departmentId)
+        {
+            var templates = await directory.GetShiftTemplatesAsync(departmentId, ct);
+
+            gaps = ShiftCoverage.Check(templates, planned, from, to).Count;
+        }
+
+        return new ScheduleLoad(
+            unitId,
+            orders.Count(order => order.State == WorkOrderState.Unassigned),
+            orders.Count(order => order.State == WorkOrderState.Assigned),
+            orders.Sum(order => order.EstimatedHours),
+            planned.Count,
+            planned.Sum(shift => shift.Hours),
+            gaps);
+    }
+}
+
+/// <summary>
 /// The pool's external half, pending S10.
 /// </summary>
 /// <remarks>

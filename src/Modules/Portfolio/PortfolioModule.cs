@@ -26,6 +26,9 @@ public static class PortfolioModule
         // Iteration ranges, drawn as overlays on the S6 project board.
         services.AddScoped<Contracts.IPortfolioIterationReader, PortfolioIterationReader>();
 
+        // The lifecycle board, counted by S8's department and portfolio reports.
+        services.AddScoped<Contracts.IPortfolioBoardReader, PortfolioBoardReader>();
+
         services.AddMediatorHandlersFrom(typeof(PortfolioModule).Assembly);
 
         return services;

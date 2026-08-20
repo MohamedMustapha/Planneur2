@@ -81,3 +81,19 @@ public interface IPortfolioIterationReader
 {
     Task<IReadOnlyList<IterationSummary>> GetForProjectAsync(Guid projectId, CancellationToken ct);
 }
+
+/// <summary>
+/// The lifecycle board, for modules that report on it.
+/// </summary>
+/// <remarks>
+/// Added for S8, whose department and portfolio reports both need "counts by state". The board is already
+/// computed exactly this way for the screen, and a report re-deriving it from the items would be a second
+/// implementation of the lane grouping — which is precisely how a report and a board start disagreeing.
+///
+/// Caller-scoped: the lanes come back narrowed to what this reader may see, so the counts in a report can never
+/// exceed the counts on their own board.
+/// </remarks>
+public interface IPortfolioBoardReader
+{
+    Task<PortfolioBoard> GetBoardAsync(Guid? departmentId, CancellationToken ct);
+}

@@ -27,6 +27,9 @@ public interface IMeetingCalendarService
     /// <summary>Meetings and special days between now and <paramref name="days"/> ahead, in one ordered list.</summary>
     Task<IReadOnlyList<UpcomingEntry>> GetUpcomingAsync(int? days, CancellationToken ct);
 
+    /// <summary>The same list for an arbitrary window rather than from now — what S8's report sections read.</summary>
+    Task<IReadOnlyList<UpcomingEntry>> GetInWindowAsync(DateOnly from, DateOnly to, CancellationToken ct);
+
     /// <summary>Records the caller's own answer, and nobody else's.</summary>
     Task RespondAsync(Guid occurrenceId, string response, CancellationToken ct);
 }
@@ -135,33 +138,43 @@ internal sealed class MeetingCalendarService(
             .Take(50)
             .ToListAsync(ct);
 
-        IEnumerable<UpcomingEntry> entries =
-        [
-            .. meetings.Select(row => new UpcomingEntry(
-                row.occurrence.Id.ToString(),
-                row.series.Kind,
-                row.series.NameKey,
-                row.occurrence.ScopeType,
-                row.occurrence.StartsAt,
-                AllDay: false,
-                Severity: null,
-                row.series.Location,
-                row.series.VideoLink)),
-            .. specialDays.Select(day => new UpcomingEntry(
-                day.Id.ToString(),
-                day.Kind,
-                day.NameKey,
-                day.ScopeType,
-                // Midnight UTC. A special day is a date, not an instant, and AllDay tells the client to render it
-                // as one rather than as "00:00" in whatever zone the browser is in.
-                new DateTimeOffset(day.Date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
-                day.AllDay,
-                day.Severity,
-                Location: null,
-                VideoLink: null)),
-        ];
+        return Merge(meetings.Select(row => (row.occurrence, row.series)), specialDays);
+    }
 
-        return [.. entries.OrderBy(entry => entry.At).ThenBy(entry => entry.NameKey, StringComparer.Ordinal)];
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<UpcomingEntry>> GetInWindowAsync(
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
+    {
+        if (to < from)
+        {
+            throw new DomainRuleViolationException("The end of the window cannot be before its start.");
+        }
+
+        var (start, end) = Window(from, to);
+
+        // Cancelled occurrences are excluded here as they are everywhere else. A report listing a meeting that was
+        // called off would have somebody preparing for it.
+        var meetings = await context.Occurrences
+            .Where(occurrence => occurrence.StartsAt >= start && occurrence.StartsAt < end)
+            .Where(occurrence => occurrence.Status == OccurrenceStatuses.Scheduled)
+            .Join(
+                context.Series,
+                occurrence => occurrence.SeriesId,
+                series => series.Id,
+                (occurrence, series) => new { occurrence, series })
+            .OrderBy(row => row.occurrence.StartsAt)
+            .Take(200)
+            .ToListAsync(ct);
+
+        var specialDays = await context.SpecialDays
+            .Where(day => day.Date >= from && day.Date <= to)
+            .OrderBy(day => day.Date)
+            .Take(200)
+            .ToListAsync(ct);
+
+        return Merge(meetings.Select(row => (row.occurrence, row.series)), specialDays);
     }
 
     public async Task RespondAsync(Guid occurrenceId, string response, CancellationToken ct)
@@ -270,6 +283,47 @@ internal sealed class MeetingCalendarService(
                     day.Date,
                     SeverityColors.GetValueOrDefault(day.Severity, "var(--event-info)"))),
         ];
+    }
+
+    /// <summary>
+    /// Flattens meetings and special days into one ordered list.
+    /// </summary>
+    /// <remarks>
+    /// Shared by the dashboard strip and by S8's report sections, because they are the same question asked over
+    /// different windows. Two copies would drift on exactly the detail that matters — whether a special day is an
+    /// instant or a date — and the report and the strip would then disagree about the same day.
+    /// </remarks>
+    private static IReadOnlyList<UpcomingEntry> Merge(
+        IEnumerable<(MeetingOccurrence Occurrence, MeetingSeries Series)> meetings,
+        IEnumerable<SpecialDay> specialDays)
+    {
+        IEnumerable<UpcomingEntry> entries =
+        [
+            .. meetings.Select(row => new UpcomingEntry(
+                row.Occurrence.Id.ToString(),
+                row.Series.Kind,
+                row.Series.NameKey,
+                row.Occurrence.ScopeType,
+                row.Occurrence.StartsAt,
+                AllDay: false,
+                Severity: null,
+                row.Series.Location,
+                row.Series.VideoLink)),
+            .. specialDays.Select(day => new UpcomingEntry(
+                day.Id.ToString(),
+                day.Kind,
+                day.NameKey,
+                day.ScopeType,
+                // Midnight UTC. A special day is a date, not an instant, and AllDay tells the client to render it
+                // as one rather than as "00:00" in whatever zone the browser is in.
+                new DateTimeOffset(day.Date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                day.AllDay,
+                day.Severity,
+                Location: null,
+                VideoLink: null)),
+        ];
+
+        return [.. entries.OrderBy(entry => entry.At).ThenBy(entry => entry.NameKey, StringComparer.Ordinal)];
     }
 
     /// <summary>

@@ -39,6 +39,8 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Scheduling.Contracts.BoardPayload).Assembly,
         typeof(Cracra.Modules.Meetings.MeetingsModule).Assembly,
         typeof(Cracra.Modules.Meetings.Contracts.MeetingSeriesView).Assembly,
+        typeof(Cracra.Modules.Reporting.ReportingModule).Assembly,
+        typeof(Cracra.Modules.Reporting.Contracts.ReportView).Assembly,
     ];
 
     [Fact]
@@ -264,6 +266,30 @@ public sealed class ArchitectureRules
             .ResideInNamespaceMatching(@"Cracra\.Modules\.\w+\.Endpoints")
             .ShouldNot()
             .HaveDependencyOn("Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue(Describe(result));
+    }
+
+    /// <summary>
+    /// The on-prem model is reached through a port, never directly.
+    /// </summary>
+    /// <remarks>
+    /// S8 asks for this by name, and the reason is not layering purity. The AI client is the one dependency in
+    /// the system that is slow, non-deterministic and impossible to run in CI; a handler that named it could not
+    /// be tested without either a GPU or a mock of an HTTP client. Behind a port, the whole summary path runs
+    /// against the stub through exactly the production code.
+    ///
+    /// Infrastructure is exempt: that is where the adapter lives, and it must name what it adapts.
+    /// </remarks>
+    [Fact]
+    public void The_AI_client_is_reached_only_through_a_port()
+    {
+        var result = Types.InAssemblies(PlatformAssemblies)
+            .That()
+            .ResideInNamespaceMatching(@"Cracra\.Modules\.\w+\.(Application|Domain|Api)")
+            .ShouldNot()
+            .HaveDependencyOn("Cracra.BuildingBlocks.Ai")
             .GetResult();
 
         result.IsSuccessful.ShouldBeTrue(Describe(result));

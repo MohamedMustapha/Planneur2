@@ -294,6 +294,13 @@
       "project-run": "Projet — RUN",
       "quality-of-life": "Qualité de vie",
       "recruitment-admin": "Recrutement & administratif"
+    },
+    "source": {
+      "manual": "Saisie manuelle",
+      "scheduler": "Planification",
+      "integration": "Intégration",
+      "azuredevops": "Azure DevOps",
+      "servicenow": "ServiceNow"
     }
   },
   "boards": {
@@ -413,6 +420,133 @@
       "FR": "Ven",
       "SA": "Sam",
       "SU": "Dim"
+    }
+  },
+  "reports": {
+    "title": "Rapport d’activité",
+    "subtitle": "Le rapport s’adapte à votre rôle.",
+    "export": "Exporter en PDF",
+    "exportReady": "Télécharger le PDF",
+    "exportExpires": "Lien valable quelques minutes.",
+    "periodNav": "Période précédente ou suivante",
+    "project": "Projet",
+    "chooseProject": "Choisir un projet…",
+    "pickProject": "Choisissez un projet pour afficher son rapport.",
+    "sectionEmpty": "Rien sur cette période.",
+    "genericError": "Le rapport n’a pas pu être produit.",
+    "period": {
+      "label": "Période",
+      "week": "Semaine {{week}} · {{year}}",
+      "month": "Mois du {{from}}",
+      "custom": "Période choisie",
+      "weekShort": "Semaine",
+      "monthShort": "Mois"
+    },
+    "summary": {
+      "title": "Synthèse",
+      "disclaimer": "Texte rédigé par un modèle local à partir des chiffres ci-dessous. Les chiffres, eux, sont calculés par la plateforme.",
+      "generate": "Rédiger la synthèse",
+      "regenerate": "Régénérer",
+      "writing": "Rédaction…",
+      "stale": "Chiffres modifiés depuis",
+      "none": "Aucune synthèse pour cette période."
+    },
+    "scope": {
+      "my": "Mon travail",
+      "team": "Mes équipes projet",
+      "unit": "Mon unité",
+      "department": "Mon département",
+      "project": "Projet",
+      "portfolio": "Portefeuille"
+    },
+    "section": {
+      "hours": "Heures",
+      "sources": "Origine des saisies",
+      "agenda": "À l’agenda",
+      "teamActivity": "Activité des projets",
+      "iterations": "Itérations",
+      "members": "Activité de l’unité",
+      "runLoad": "Charge RUN",
+      "qol": "Qualité de vie",
+      "units": "Par unité",
+      "projects": "Projets",
+      "burn": "Avancement",
+      "contribution": "Contribution par département",
+      "cost": "Coût",
+      "states": "États du portefeuille",
+      "archived": "Déphasés",
+      "priority": "Priorités"
+    },
+    "metric": {
+      "targetHours": "Objectif",
+      "actualHours": "Réalisé",
+      "plannedHours": "Planifié",
+      "overtimeHours": "Dépassement",
+      "targetShare": "De l’objectif",
+      "entries": "Saisies",
+      "meetings": "Réunions",
+      "specialDays": "Journées particulières",
+      "projects": "Projets",
+      "headcount": "Effectif",
+      "units": "Unités",
+      "openWorkOrders": "Tickets ouverts",
+      "assignedWorkOrders": "Tickets affectés",
+      "workOrderHours": "Heures estimées",
+      "shiftHours": "Heures de créneaux",
+      "coverageGaps": "Créneaux sous-staffés",
+      "qolHours": "Heures QoL",
+      "kudos": "Kudos",
+      "cost": "Coût",
+      "members": "Membres",
+      "iterationDaysElapsed": "Jours écoulés",
+      "items": "Candidats",
+      "archived": "Déphasés"
+    },
+    "column": {
+      "label": "Libellé",
+      "actualHours": "Réalisé",
+      "plannedHours": "Planifié",
+      "qolHours": "QoL",
+      "entries": "Saisies",
+      "members": "Membres",
+      "headcount": "Effectif",
+      "cost": "Coût",
+      "sequence": "N°",
+      "daysElapsed": "Jours",
+      "share": "Part",
+      "items": "Candidats",
+      "priority": "Priorité",
+      "iterations": "Itérations"
+    },
+    "table": {
+      "hoursByType": "Par type d’activité",
+      "sources": "Par origine",
+      "projectActivity": "Par projet",
+      "iterations": "Itérations",
+      "memberActivity": "Par personne",
+      "unitRollup": "Par unité",
+      "projects": "Projets",
+      "contribution": "Par département",
+      "states": "Par état",
+      "priority": "Les plus prioritaires"
+    },
+    "note": {
+      "overTarget": "Semaine au-dessus de l’objectif.",
+      "overTargetEnforced": "Semaine au-dessus de l’objectif, qui est bloquant dans ce département.",
+      "coverageGaps": "Des créneaux sont sous-staffés.",
+      "noIteration": "Aucune itération en cours sur cette période.",
+      "archived": "Projet déphasé",
+      "agenda": {
+        "meeting": "Réunion",
+        "specialDay": "Journée particulière"
+      },
+      "state": {
+        "considered": "Envisagés",
+        "committed": "Engagés",
+        "active": "Actifs",
+        "dephase": "Déphasés"
+      },
+      "truncated": "Liste tronquée : {{count}} de plus non affichés."
     }
   }
 }

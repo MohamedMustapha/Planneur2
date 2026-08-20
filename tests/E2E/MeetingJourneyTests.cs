@@ -127,6 +127,12 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
+        // The Aspire stack persists between runs, so earlier runs' days accumulate on the same dates — and the
+        // strip shows only the next few. Without this, the assertion below would start failing once enough runs
+        // had piled up, for a reason that looks nothing like its cause. Cleared through the public API so the
+        // arrangement obeys the same policies a head would.
+        await ClearSpecialDaysAsync(page);
+
         var name = $"Patch party {Suffix()}";
 
         var response = await page.APIRequest.PostAsync("/api/meetings/special-days", new APIRequestContextOptions
@@ -149,6 +155,26 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
         response.Status.ShouldBe(201);
 
         return name;
+    }
+
+    /// <summary>Removes every special day this head can see, so each run starts from an empty calendar.</summary>
+    private static async Task ClearSpecialDaysAsync(IPage page)
+    {
+        // The header goes on the GET too: the BFF requires it on every proxied /api call, not only on writes.
+        var existing = await page.APIRequest.GetAsync(
+            "/api/meetings/special-days",
+            new APIRequestContextOptions { Headers = AntiForgery });
+
+        existing.Status.ShouldBe(200);
+
+        foreach (var day in (await existing.JsonAsync())!.Value.EnumerateArray())
+        {
+            var id = day.GetProperty("id").GetString();
+
+            await page.APIRequest.DeleteAsync(
+                $"/api/meetings/special-days/{id}",
+                new APIRequestContextOptions { Headers = AntiForgery });
+        }
     }
 
     private static string Suffix() => Guid.CreateVersion7().ToString("N")[^6..];

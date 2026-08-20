@@ -72,6 +72,10 @@ public sealed class CracraApplicationFactory(string adminConnectionString) : Web
                 ["Cracra:Storage:ServiceUrl"] = "http://localhost:9010",
                 ["Cracra:Storage:AccessKey"] = "test",
                 ["Cracra:Storage:SecretKey"] = "test",
+
+                // Nothing is listening on that port, and a test that needs storage substitutes IObjectStorage
+                // outright. Left on, every host start would pay the AWS SDK's retry budget before giving up.
+                ["Cracra:Storage:CreateBucketOnStartup"] = "false",
                 ["Cracra:Ai:BaseUrl"] = "http://localhost:5200",
                 ["Cracra:Keycloak:Authority"] = "http://localhost:8080/realms/cracra",
 
