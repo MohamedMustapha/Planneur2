@@ -12,6 +12,7 @@
     <ProjectReference Include="../Activities.Contracts/Cracra.Modules.Activities.Contracts.csproj" />
     <ProjectReference Include="../Scheduling.Contracts/Cracra.Modules.Scheduling.Contracts.csproj" />
     <ProjectReference Include="../Meetings.Contracts/Cracra.Modules.Meetings.Contracts.csproj" />
+    <ProjectReference Include="../Kudos.Contracts/Cracra.Modules.Kudos.Contracts.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />

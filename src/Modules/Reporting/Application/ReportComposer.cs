@@ -246,8 +246,9 @@ internal sealed class ReportComposer(
                     "reports.section.qol",
                     [
                         new ReportMetric("qolHours", HoursOf(entries, QualityOfLifeCode), "hours"),
-                        // Zero until S9 lands. Rendered all the same, because a section that appears the week
-                        // kudos ship would look like a new feature rather than a filled-in blank.
+                        // Rendered from S8 onward, zero until S9 gave it something to count — because a section
+                        // that appeared the week kudos shipped would have looked like a new feature rather than a
+                        // blank being filled in.
                         new ReportMetric("kudos", kudoCount, "count"),
                     ],
                     [],

@@ -20,6 +20,7 @@ import { DirectoryStore } from '../../core/directory/directory.store';
 import { ProjectsStore } from '../../core/projects/projects.store';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { BoardTimeline, TimelineMove } from '../../shared/timeline/board-timeline/board-timeline';
+import { KudosMonthly } from '../kudos/kudos-monthly';
 
 /**
  * The board switcher, and the three archetypes around the shared timeline.
@@ -31,7 +32,7 @@ import { BoardTimeline, TimelineMove } from '../../shared/timeline/board-timelin
 @Component({
   selector: 'app-boards',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, FormsModule, PageHeader, BoardTimeline],
+  imports: [TranslocoDirective, FormsModule, PageHeader, BoardTimeline, KudosMonthly],
   templateUrl: './boards.html',
   styleUrl: './boards.scss',
 })
@@ -75,6 +76,21 @@ export class Boards {
     { id: 'project', labelKey: 'boards.project' },
     { id: 'department', labelKey: 'boards.department' },
   ];
+
+  /**
+   * Whether this board carries the kudos counter.
+   *
+   * Team, unit and department only. A project board's rows are a team drawn from several units, and a count of
+   * recognition across them would mix departments whose modes disagree; the personal board is one person, and a
+   * counter of one is not a counter.
+   */
+  protected readonly showsKudos = computed(() =>
+    ['team', 'unit', 'department'].includes(this.scheduling.boardType()),
+  );
+
+  protected readonly kudosScope = computed<'unit' | 'department'>(() =>
+    this.scheduling.boardType() === 'department' ? 'department' : 'unit',
+  );
 
   protected readonly weekLabel = computed(() => {
     const { monday, sunday } = this.scheduling.week();

@@ -124,6 +124,20 @@ public interface IProjectMembershipReader
 {
     /// <summary>True when the person is currently on the project — a past membership does not count.</summary>
     Task<bool> IsActiveMemberAsync(Guid projectId, Guid personId, CancellationToken ct);
+
+    /// <summary>
+    /// Everyone currently sharing an active project with this person.
+    /// </summary>
+    /// <remarks>
+    /// S9's other half of "who may I recognise": a unit peer is Directory's answer, a project teammate is this
+    /// one. Asked of Projects rather than derived from the Access membership projection, because that projection
+    /// exists to answer RLS's question quickly and reading it from another module would couple S9 to Access's
+    /// internals for a fact Projects already owns.
+    ///
+    /// Runs on the caller's connection, so it returns the intersection of "shares a project with them" and "is on
+    /// a project I can see" — which for the caller asking about themselves is the whole answer.
+    /// </remarks>
+    Task<IReadOnlyList<Guid>> GetProjectPeersAsync(Guid personId, CancellationToken ct);
 }
 
 /// <summary>One member of a project team, flattened for a consumer that groups them itself.</summary>

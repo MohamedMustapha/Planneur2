@@ -548,5 +548,84 @@
       },
       "truncated": "List truncated: {{count}} more not shown."
     }
+  },
+  "kudos": {
+    "title": "Kudos",
+    "subtitle": "Recognition between colleagues, in your department's own terms.",
+    "give": "Give a kudo",
+    "giveFailed": "That kudo could not be given.",
+    "genericError": "Kudos could not be loaded.",
+    "recipient": "Colleague",
+    "chooseRecipient": "Choose a colleague…",
+    "noPeers": "Nobody to recognise yet. Kudos go to people you share a unit or a project with.",
+    "categoryLabel": "What for",
+    "message": "Say what they did",
+    "messagePlaceholder": "One or two sentences. This is what they will read, and what a review will show.",
+    "remaining": "{{count}} kudos left this month.",
+    "empty": "No kudos in this period.",
+    "emptyYear": "No kudos received this year.",
+    "someone": "A colleague",
+    "by": "from {{name}}",
+    "totals": "Per person",
+    "rank": "Rank",
+    "person": "Person",
+    "badges": "Badges",
+    "count": "Kudos",
+    "points": "Points",
+    "noLeaderboard": "This department does not rank people.",
+    "annualTotal": "{{count}} kudos this year",
+    "yearNav": "Previous or next year",
+    "tab": {
+      "wall": "Wall",
+      "leaderboard": "Leaderboard",
+      "annual": "My year"
+    },
+    "period": {
+      "label": "Period",
+      "month": "Month",
+      "year": "Year"
+    },
+    "scope": {
+      "label": "Scope",
+      "me": "Mine",
+      "unit": "My unit",
+      "department": "My department"
+    },
+    "direction": {
+      "label": "Direction",
+      "received": "Received",
+      "given": "Given"
+    },
+    "relation": {
+      "unit": "unit",
+      "project": "project",
+      "scope": "department"
+    },
+    "strip": {
+      "total": "This period",
+      "received": "Received",
+      "given": "Given",
+      "remaining": "Left to give"
+    },
+    "monthly": {
+      "title": "Kudos this month",
+      "open": "Open kudos",
+      "thisMonth": "This month",
+      "empty": "Nobody has been recognised this month.",
+      "more": "{{count}} more"
+    },
+    "category": {
+      "cleanup": "Cleanup",
+      "improvement": "Improvement",
+      "initiative": "Initiative",
+      "mentoring": "Mentoring",
+      "above-and-beyond": "Above and beyond"
+    },
+    "badge": {
+      "first-kudo": "First kudo",
+      "helping-hand": "Helping hand",
+      "cornerstone": "Cornerstone",
+      "mentor": "Mentor"
+    }
   }
 }

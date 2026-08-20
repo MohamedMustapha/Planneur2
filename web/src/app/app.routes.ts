@@ -68,7 +68,13 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/reporting/report-view').then((m) => m.ReportView),
   },
-  placeholder('kudos', { titleKey: 'nav.kudos', slice: 'S9', descriptionKey: 'placeholder.kudos' }),
+  {
+    // No scope in the route, for the same reason the report has none: which unit or department somebody's
+    // recognition sits in is a server fact, and a /kudos/unit/<id> URL would be a client-side claim about it.
+    path: 'kudos',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/kudos/kudos-wall').then((m) => m.KudosWall),
+  },
   placeholder('finance', {
     titleKey: 'nav.finance',
     slice: 'S11',

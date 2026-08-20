@@ -96,6 +96,25 @@ internal sealed class ProjectMembershipReader(ProjectsDbContext context) : IProj
     public async Task<bool> IsActiveMemberAsync(Guid projectId, Guid personId, CancellationToken ct) =>
         await context.ProjectMembers.AnyAsync(member =>
             member.ProjectId == projectId && member.PersonId == personId && member.To == null, ct);
+
+    /// <summary>
+    /// A self-join over current memberships.
+    /// </summary>
+    /// <remarks>
+    /// The person themselves is excluded here rather than by the caller: every consumer of this wants "who else",
+    /// and the one that forgot would offer somebody the chance to thank themselves.
+    /// </remarks>
+    public async Task<IReadOnlyList<Guid>> GetProjectPeersAsync(Guid personId, CancellationToken ct) =>
+        await context.ProjectMembers
+            .Where(mine => mine.PersonId == personId && mine.To == null)
+            .Join(
+                context.ProjectMembers.Where(theirs => theirs.To == null),
+                mine => mine.ProjectId,
+                theirs => theirs.ProjectId,
+                (mine, theirs) => theirs.PersonId)
+            .Where(peer => peer != personId)
+            .Distinct()
+            .ToListAsync(ct);
 }
 
 /// <summary>

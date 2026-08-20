@@ -1,0 +1,106 @@
+:host {
+  display: contents;
+}
+
+.panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(440px, calc(100vw - var(--space-4) * 2));
+  max-height: calc(100vh - var(--space-4) * 2);
+  padding: var(--space-4);
+  overflow-y: auto;
+  transform: translate(-50%, -50%);
+}
+
+.panel__title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.panel__section {
+  padding: 0;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.panel__empty {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.panel__error {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-control);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: var(--text-sm);
+}
+
+.panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* --- Categories ------------------------------------------------------------------------------------------ */
+
+/* Radios rather than a select: there are five of them, they are the substance of the kudo, and a dropdown would
+   hide the choice behind a click on the one screen where the choice is the point. */
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.categories__option {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+  font-size: var(--text-base);
+
+  &.is-active {
+    border-color: var(--kudo-border);
+    background: var(--kudo-soft);
+  }
+}
+
+.categories__points {
+  margin-left: auto;
+  color: var(--kudo-ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+/* --- The cap --------------------------------------------------------------------------------------------- */
+
+/* Shown before it bites, never only on refusal. A budget somebody discovers by being turned down has been kept
+   from them rather than given to them. */
+.give__cap {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+
+  &.is-spent {
+    color: var(--warning);
+    font-weight: 500;
+  }
+}

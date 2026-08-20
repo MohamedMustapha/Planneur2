@@ -39,9 +39,50 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Scheduling.Contracts.BoardPayload).Assembly,
         typeof(Cracra.Modules.Meetings.MeetingsModule).Assembly,
         typeof(Cracra.Modules.Meetings.Contracts.MeetingSeriesView).Assembly,
+        typeof(Cracra.Modules.Kudos.KudosModule).Assembly,
+        typeof(Cracra.Modules.Kudos.Contracts.KudoView).Assembly,
         typeof(Cracra.Modules.Reporting.ReportingModule).Assembly,
         typeof(Cracra.Modules.Reporting.Contracts.ReportView).Assembly,
     ];
+
+    /// <summary>
+    /// Every module on disk is in <see cref="PlatformAssemblies"/>.
+    /// </summary>
+    /// <remarks>
+    /// The list above is what every other rule in this file scans, and a module missing from it is not a rule
+    /// failing — it is a rule quietly checking nothing while the build stays green. That is the worst outcome
+    /// available here, because a green tick on a layering rule is read as evidence the layering holds.
+    ///
+    /// Written when the list reached nine modules and adding a tenth was one edit away from being forgotten. It
+    /// reads the source tree rather than the build output on purpose: a module that exists but was never added to
+    /// the solution should fail this too.
+    /// </remarks>
+    [Fact]
+    public void Every_module_in_the_source_tree_is_scanned_by_these_rules()
+    {
+        var directory = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!);
+
+        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "src")))
+        {
+            directory = directory.Parent;
+        }
+
+        directory.ShouldNotBeNull("Could not locate the repository root from the test assembly.");
+
+        var onDisk = Directory
+            .EnumerateDirectories(Path.Combine(directory.FullName, "src", "Modules"))
+            .Select(path => $"Cracra.Modules.{Path.GetFileName(path)}")
+            .ToArray();
+
+        onDisk.ShouldNotBeEmpty("No module directories were found; this rule would pass vacuously.");
+
+        var scanned = PlatformAssemblies
+            .Select(assembly => assembly.GetName().Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+        onDisk.Where(module => !scanned.Contains(module))
+            .ShouldBeEmpty("Every module and contracts assembly must be listed in PlatformAssemblies.");
+    }
 
     [Fact]
     public void Nothing_references_MediatR()

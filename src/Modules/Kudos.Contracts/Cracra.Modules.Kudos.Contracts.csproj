@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The only assembly other modules may reference. Integration events and read DTOs, nothing else: no EF, no
+       entities, no services. Keeping it dependency-free is what makes the module-isolation arch test meaningful. -->
+  <ItemGroup>
+    <ProjectReference Include="../../BuildingBlocks/Messaging/Cracra.BuildingBlocks.Messaging.csproj" />
+  </ItemGroup>
+</Project>

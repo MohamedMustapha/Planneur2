@@ -56,7 +56,11 @@ public sealed class ReportJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
-        var response = await page.APIRequest.GetAsync("/api/reports?scope=department");
+        // With the anti-forgery header, so the 403 below is the API's refusal and not the BFF's. Without it every
+        // proxied request is refused before the API is asked, and this test would pass whatever the report did.
+        var response = await page.APIRequest.GetAsync(
+            "/api/reports?scope=department",
+            new APIRequestContextOptions { Headers = new Dictionary<string, string> { ["X-Cracra-Csrf"] = "1" } });
 
         // 403 rather than an empty department: an empty one would tell Camille her department did nothing.
         response.Status.ShouldBe(403);

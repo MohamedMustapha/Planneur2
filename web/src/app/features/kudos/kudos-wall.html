@@ -1,0 +1,262 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('kudos.title')" [subtitle]="t('kudos.subtitle')">
+    <div slot="tabs" class="tabs">
+      @for (entry of tabs(); track entry) {
+        <button
+          type="button"
+          class="tab"
+          [class.is-active]="tab() === entry"
+          [attr.aria-pressed]="tab() === entry"
+          (click)="select(entry)"
+        >
+          {{ t('kudos.tab.' + entry) }}
+        </button>
+      }
+    </div>
+
+    <div slot="actions" class="kudos__actions">
+      <div class="segmented" role="group" [attr.aria-label]="t('kudos.period.label')">
+        @for (period of periods; track period) {
+          <button
+            type="button"
+            class="segmented__item"
+            [class.is-active]="kudos.period() === period"
+            (click)="setPeriod(period)"
+          >
+            {{ t('kudos.period.' + period) }}
+          </button>
+        }
+      </div>
+
+      <button type="button" class="btn btn--primary" (click)="giving.set(true)">
+        {{ t('kudos.give') }}
+      </button>
+    </div>
+  </app-page-header>
+
+  <div class="kudos">
+    @if (message(); as failure) {
+      <p class="kudos__error card" role="alert">
+        {{ t(failure) === failure ? failure : t(failure) }}
+      </p>
+    }
+
+    <!-- The counter, on every tab and in every mode. It is what a department that configured nothing has, and
+         what a department that configured everything still has underneath the ranking. -->
+    @if (kudos.summary(); as summary) {
+      <section class="strip card">
+        <div class="strip__figure">
+          <span class="strip__value num">{{ summary.total }}</span>
+          <span class="strip__label">{{ t('kudos.strip.total') }}</span>
+        </div>
+        <div class="strip__figure">
+          <span class="strip__value num">{{ summary.myReceived }}</span>
+          <span class="strip__label">{{ t('kudos.strip.received') }}</span>
+        </div>
+        <div class="strip__figure">
+          <span class="strip__value num">{{ summary.myGiven }}</span>
+          <span class="strip__label">{{ t('kudos.strip.given') }}</span>
+        </div>
+        <div class="strip__figure">
+          <span class="strip__value num">{{ kudos.remaining() }}</span>
+          <span class="strip__label">{{ t('kudos.strip.remaining') }}</span>
+        </div>
+      </section>
+    }
+
+    @if (tab() === 'wall') {
+      <div class="kudos__filters">
+        <div class="segmented" role="group" [attr.aria-label]="t('kudos.scope.label')">
+          @for (scope of scopes; track scope) {
+            <button
+              type="button"
+              class="segmented__item"
+              [class.is-active]="kudos.scope() === scope"
+              (click)="setScope(scope)"
+            >
+              {{ t('kudos.scope.' + scope) }}
+            </button>
+          }
+        </div>
+
+        @if (kudos.scope() === 'me') {
+          <div class="segmented" role="group" [attr.aria-label]="t('kudos.direction.label')">
+            @for (direction of directions; track direction) {
+              <button
+                type="button"
+                class="segmented__item"
+                [class.is-active]="kudos.direction() === direction"
+                (click)="setDirection(direction)"
+              >
+                {{ t('kudos.direction.' + direction) }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      @if (kudos.isLoading()) {
+        <p class="kudos__status">{{ t('common.loading') }}</p>
+      } @else if (kudos.wall().length === 0) {
+        <p class="kudos__empty card">{{ t('kudos.empty') }}</p>
+      } @else {
+        <section class="wall">
+          @for (kudo of kudos.wall(); track kudo.id) {
+            <article class="kudo card">
+              <header class="kudo__header">
+                <span class="avatar">{{ initials(kudo.toPersonName) }}</span>
+                <div class="kudo__who">
+                  <span class="kudo__to">{{ kudo.toPersonName ?? t('kudos.someone') }}</span>
+                  <span class="kudo__from">
+                    {{ t('kudos.by', { name: kudo.fromPersonName ?? t('kudos.someone') }) }}
+                  </span>
+                </div>
+
+                <span class="chip">{{ t(kudo.categoryLabelKey) }}</span>
+
+                <!-- Zero everywhere the department only counts, so the badge simply never appears there. -->
+                @if (kudo.points > 0) {
+                  <span class="kudo-badge">
+                    <span class="kudo-badge__star">★</span>
+                    <span class="num">{{ kudo.points }}</span>
+                  </span>
+                }
+              </header>
+
+              <p class="kudo__message">{{ kudo.message }}</p>
+
+              <footer class="kudo__date mono">{{ kudo.createdAt | date: 'yyyy-MM-dd' }}</footer>
+            </article>
+          }
+        </section>
+      }
+
+      @if (totals().length > 0) {
+        <section class="card totals">
+          <header class="card__header">{{ t('kudos.totals') }}</header>
+          <ul class="totals__list">
+            @for (total of totals(); track total.personId) {
+              <li class="totals__row">
+                <span class="avatar">{{ initials(total.personName) }}</span>
+                <span class="totals__name">{{ total.personName ?? t('kudos.someone') }}</span>
+
+                @for (badge of total.badges; track badge.code) {
+                  <span class="chip chip--badge" [title]="badge.earnedAt">{{ t(badge.labelKey) }}</span>
+                }
+
+                <span class="totals__count num">{{ total.count }}</span>
+
+                @if (kudos.showsPoints()) {
+                  <span class="totals__points num">{{ total.points }}</span>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+
+    @if (tab() === 'leaderboard') {
+      @if (leaderboard(); as board) {
+        <section class="card">
+          <header class="card__header">{{ t('kudos.tab.leaderboard') }}</header>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('kudos.rank') }}</th>
+                <th scope="col">{{ t('kudos.person') }}</th>
+                <th scope="col">{{ t('kudos.badges') }}</th>
+                <th scope="col" class="num">{{ t('kudos.count') }}</th>
+                <th scope="col" class="num">{{ t('kudos.points') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of board.rows; track row.personId) {
+                <tr>
+                  <td class="num">{{ row.rank }}</td>
+                  <td>{{ row.personName ?? t('kudos.someone') }}</td>
+                  <td>
+                    @for (badge of row.badges; track badge.code) {
+                      <span class="chip chip--badge" [title]="badge.earnedAt">
+                        {{ t(badge.labelKey) }}
+                      </span>
+                    }
+                  </td>
+                  <td class="num">{{ row.count }}</td>
+                  <td class="num">{{ row.points }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+      } @else {
+        <!-- Reached only by a department switching mode with the tab already open. -->
+        <p class="kudos__empty card">{{ t('kudos.noLeaderboard') }}</p>
+      }
+    }
+
+    @if (tab() === 'annual') {
+      @if (annual(); as claim) {
+        <section class="card annual">
+          <header class="card__header">
+            <div class="pager" role="group" [attr.aria-label]="t('kudos.yearNav')">
+              <button type="button" class="btn btn--ghost" (click)="stepYear(-1)" aria-label="&lt;">
+                &lt;
+              </button>
+              <span class="pager__label mono">{{ claim.year }}</span>
+              <button type="button" class="btn btn--ghost" (click)="stepYear(1)" aria-label="&gt;">
+                &gt;
+              </button>
+            </div>
+
+            <span class="annual__total num">{{ t('kudos.annualTotal', { count: claim.total }) }}</span>
+          </header>
+
+          @if (claim.badges.length > 0) {
+            <p class="annual__badges">
+              @for (badge of claim.badges; track badge.code) {
+                <span class="kudo-badge">
+                  <span class="kudo-badge__star">★</span>
+                  <span>{{ t(badge.labelKey) }}</span>
+                  <span class="mono">{{ badge.earnedAt | date: 'yyyy-MM' }}</span>
+                </span>
+              }
+            </p>
+          }
+
+          @if (claim.byCategory.length === 0) {
+            <p class="kudos__empty">{{ t('kudos.emptyYear') }}</p>
+          }
+
+          @for (group of claim.byCategory; track group.category) {
+            <section class="annual__group">
+              <h3 class="section-label">
+                {{ t(group.labelKey) }} · <span class="num">{{ group.count }}</span>
+              </h3>
+
+              <!-- The messages, in full. A count without the sentence that came with it proves nothing to
+                   whoever is reading the review. -->
+              <ul class="annual__list">
+                @for (kudo of group.kudos; track kudo.id) {
+                  <li class="annual__item">
+                    <span class="mono">{{ kudo.createdAt | date: 'yyyy-MM-dd' }}</span>
+                    <span>{{ kudo.message }}</span>
+                    <span class="annual__author">
+                      {{ t('kudos.by', { name: kudo.fromPersonName ?? t('kudos.someone') }) }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+        </section>
+      } @else {
+        <p class="kudos__status">{{ t('common.loading') }}</p>
+      }
+    }
+  </div>
+
+  @if (giving()) {
+    <app-give-kudo (closed)="giving.set(false)" (given)="refresh()" />
+  }
+</ng-container>

@@ -56,6 +56,24 @@
       "targets": [
         { "expr": "sum by (job) (db_client_connections_usage)", "legendFormat": "{{job}}" }
       ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Kudos given, by department",
+      "description": "Recognition is voluntary, so its absence shows up in no other signal the platform emits — a department going quiet is what this panel is for. Deliberately not broken down by person: a per-person series here would be a leaderboard that the department's own mode cannot switch off.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "sum by (department) (rate(cracra_kudos_given_total[1h]))", "legendFormat": "{{department}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Kudos refused, by reason",
+      "description": "cap / eligibility / self / category. A rate climbing on 'cap' is a department whose monthly limit sits below how much its people actually thank each other, which is the one refusal worth acting on.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        { "expr": "sum by (reason) (rate(cracra_kudos_refused_total[1h]))", "legendFormat": "{{reason}}" }
+      ]
     }
   ]
 }

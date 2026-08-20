@@ -3,6 +3,7 @@ using Cracra.BuildingBlocks.Ai;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
+using Cracra.Modules.Kudos.Contracts;
 using Cracra.Modules.Meetings.Contracts;
 using Cracra.Modules.Portfolio.Contracts;
 using Cracra.Modules.Projects.Contracts;
@@ -135,22 +136,23 @@ internal sealed class ScheduleAdapter(IScheduleLoadReader schedule) : IScheduleQ
 }
 
 /// <summary>
-/// The S9 seam, answering nothing.
+/// The S9 seam, filled.
 /// </summary>
 /// <remarks>
-/// Kudos land in S9. The unit report already asks for the count and already renders it, so that slice becomes a
-/// registration change here rather than a change to the report contract, the PDF renderer and the Angular view —
-/// which is exactly how S6's calendar seam turned into one line when S7 arrived.
+/// This adapter is what the seam was for. The unit report has asked for a kudos count and rendered it since S8,
+/// against a stub that returned zero; S9 changed one registration and the figure started being true. Nothing in
+/// the report contract, the PDF renderer or the Angular view moved — which is exactly how S6's calendar seam
+/// turned into one line when S7 arrived.
 /// </remarks>
-internal sealed class NoKudos : IKudosQueries
+internal sealed class KudosAdapter(IKudosReader kudos) : IKudosQueries
 {
-    public Task<int> CountAsync(
+    public async Task<int> CountAsync(
         Guid? unitId,
         Guid? departmentId,
         DateOnly from,
         DateOnly to,
         CancellationToken ct) =>
-        Task.FromResult(0);
+        await kudos.CountAsync(unitId, departmentId, from, to, ct);
 }
 
 /// <summary>

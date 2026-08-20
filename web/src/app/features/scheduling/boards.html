@@ -196,6 +196,15 @@
         </section>
       }
 
+      <!-- S9's monthly counter, on the boards the spec asks for it: a team or unit is who recognises each other,
+           and a project or a personal board is not a group with a shared count. -->
+      @if (showsKudos()) {
+        <app-kudos-monthly
+          [scope]="kudosScope()"
+          [scopeId]="scheduling.scopeId()"
+        />
+      }
+
       <!-- S7's overlays, named. The canvas paints them as coloured ranges, which shows *when* something is
            happening but not what; this strip says what, with the same colours, so a patch party is legible
            without hovering a column. -->

@@ -548,5 +548,84 @@
       },
       "truncated": "Liste tronquée : {{count}} de plus non affichés."
     }
+  },
+  "kudos": {
+    "title": "Kudos",
+    "subtitle": "La reconnaissance entre collègues, selon les règles de votre département.",
+    "give": "Donner un kudo",
+    "giveFailed": "Ce kudo n'a pas pu être donné.",
+    "genericError": "Les kudos n'ont pas pu être chargés.",
+    "recipient": "Collègue",
+    "chooseRecipient": "Choisir un collègue…",
+    "noPeers": "Personne à remercier pour l'instant. Les kudos vont aux personnes de votre unité ou de vos projets.",
+    "categoryLabel": "Pour quoi",
+    "message": "Dites ce qu'il ou elle a fait",
+    "messagePlaceholder": "Une ou deux phrases. C'est ce qu'il ou elle lira, et ce qu'un entretien annuel montrera.",
+    "remaining": "Il vous reste {{count}} kudos ce mois-ci.",
+    "empty": "Aucun kudo sur cette période.",
+    "emptyYear": "Aucun kudo reçu cette année.",
+    "someone": "Un collègue",
+    "by": "de {{name}}",
+    "totals": "Par personne",
+    "rank": "Rang",
+    "person": "Personne",
+    "badges": "Badges",
+    "count": "Kudos",
+    "points": "Points",
+    "noLeaderboard": "Ce département ne classe pas les personnes.",
+    "annualTotal": "{{count}} kudos cette année",
+    "yearNav": "Année précédente ou suivante",
+    "tab": {
+      "wall": "Mur",
+      "leaderboard": "Classement",
+      "annual": "Mon année"
+    },
+    "period": {
+      "label": "Période",
+      "month": "Mois",
+      "year": "Année"
+    },
+    "scope": {
+      "label": "Portée",
+      "me": "Les miens",
+      "unit": "Mon unité",
+      "department": "Mon département"
+    },
+    "direction": {
+      "label": "Sens",
+      "received": "Reçus",
+      "given": "Donnés"
+    },
+    "relation": {
+      "unit": "unité",
+      "project": "projet",
+      "scope": "département"
+    },
+    "strip": {
+      "total": "Sur la période",
+      "received": "Reçus",
+      "given": "Donnés",
+      "remaining": "Encore à donner"
+    },
+    "monthly": {
+      "title": "Kudos ce mois-ci",
+      "open": "Ouvrir les kudos",
+      "thisMonth": "Ce mois-ci",
+      "empty": "Personne n'a été remercié ce mois-ci.",
+      "more": "{{count}} de plus"
+    },
+    "category": {
+      "cleanup": "Nettoyage",
+      "improvement": "Amélioration",
+      "initiative": "Initiative",
+      "mentoring": "Accompagnement",
+      "above-and-beyond": "Au-delà de l'attendu"
+    },
+    "badge": {
+      "first-kudo": "Premier kudo",
+      "helping-hand": "Coup de main",
+      "cornerstone": "Pilier",
+      "mentor": "Mentor"
+    }
   }
 }

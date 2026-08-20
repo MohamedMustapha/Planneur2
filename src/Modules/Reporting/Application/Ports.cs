@@ -81,15 +81,15 @@ public interface IScheduleQueries
 }
 
 /// <summary>
-/// Kudos in the period — the S9 seam.
+/// Kudos in the period — the seam S9 filled.
 /// </summary>
 /// <remarks>
-/// Declared now and answering nothing until S9 exists, exactly as S6 declared its calendar overlay source before
-/// S7. The unit report already asks the question and already renders whatever comes back, so S9 becomes a
-/// registration change rather than a change to the report's shape and its client template.
+/// Declared in S8 and answering nothing until S9 existed, exactly as S6 declared its calendar overlay source
+/// before S7. The unit report already asked the question and already rendered whatever came back, so S9 cost one
+/// registration rather than a change to the report's shape and its client template.
 ///
-/// The alternative — leaving kudos out entirely and adding the section later — would mean revisiting the report
-/// contract, the PDF renderer and the Angular view at the point where S9's own schedule is tightest.
+/// The alternative — leaving kudos out entirely and adding the section later — would have meant revisiting the
+/// report contract, the PDF renderer and the Angular view at the point where S9's own schedule was tightest.
 /// </remarks>
 public interface IKudosQueries
 {

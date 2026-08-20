@@ -34,9 +34,8 @@ public static class ReportingModule
         services.AddScoped<IMeetingQueries, MeetingAdapter>();
         services.AddScoped<IScheduleQueries, ScheduleAdapter>();
 
-        // The S9 seam. Registered now, answering nothing, so that slice replaces one line rather than the report
-        // contract, the PDF renderer and the Angular view.
-        services.AddScoped<IKudosQueries, NoKudos>();
+        // The S9 seam, filled by that slice — which is the one line it cost, as designed.
+        services.AddScoped<IKudosQueries, KudosAdapter>();
 
         services.AddScoped<IAiSummarizer, AiSummarizer>();
         services.AddScoped<ISummaryStore, SummaryStore>();
