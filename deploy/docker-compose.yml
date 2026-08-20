@@ -127,6 +127,9 @@ services:
       Cracra__Directory__Sync__Realm: cracra
       Cracra__Directory__Sync__ClientId: cracra-sync
       Cracra__Directory__Sync__ClientSecret: ${SYNC_CLIENT_SECRET:?set SYNC_CLIENT_SECRET in .env}
+      # The clock a recurring meeting's local start time is read against. An org outside France changes this one
+      # value; nothing else about S7 is deployment-specific.
+      Cracra__Meetings__DefaultTimeZoneId: ${ORG_TIME_ZONE:-Europe/Paris}
       ConnectionStrings__seq: http://seq:80
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_ENDPOINT:-}
     healthcheck:

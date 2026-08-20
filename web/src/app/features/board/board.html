@@ -2,13 +2,19 @@
   <app-page-header [title]="t('board.title')" [subtitle]="subtitle()">
     <div slot="meter" class="board__meter">
       <div class="board__meter-row">
-        <span class="board__meter-label">{{ t('board.weeklyTarget', { hours: weeklyTargetHours() }) }}</span>
+        <span class="board__meter-label">{{
+          t('board.weeklyTarget', { hours: weeklyTargetHours() })
+        }}</span>
         <span class="board__meter-value num" [style.color]="meterColor()">
           {{ t('board.hoursOfTarget', { logged: loggedHours(), target: weeklyTargetHours() }) }}
         </span>
       </div>
       <div class="meter">
-        <div class="meter__fill" [style.width.%]="meterPercent()" [style.background]="meterColor()"></div>
+        <div
+          class="meter__fill"
+          [style.width.%]="meterPercent()"
+          [style.background]="meterColor()"
+        ></div>
       </div>
       <p class="board__meter-note" [style.color]="meterColor()">
         @if (activities.isOverTarget()) {
@@ -27,7 +33,12 @@
     <div slot="actions" class="board__actions">
       <!-- Importing still needs S10's adapters, so it stays disabled and says so. Quick add is live: the pull
            dropdown lives inside it, which is where a task actually becomes an entry. -->
-      <button type="button" class="btn btn--secondary" disabled [title]="t('board.availableInSlice', { slice: 'S10' })">
+      <button
+        type="button"
+        class="btn btn--secondary"
+        disabled
+        [title]="t('board.availableInSlice', { slice: 'S10' })"
+      >
         {{ t('board.importFromSources') }}
         <span aria-hidden="true">▾</span>
       </button>
@@ -61,10 +72,12 @@
           <span>{{ t('board.timelineTitle') }}</span>
           <div class="board__legend">
             <span class="board__legend-item">
-              <span class="board__legend-swatch board__legend-swatch--planned"></span>{{ t('board.legendPlanned') }}
+              <span class="board__legend-swatch board__legend-swatch--planned"></span
+              >{{ t('board.legendPlanned') }}
             </span>
             <span class="board__legend-item">
-              <span class="board__legend-swatch board__legend-swatch--actual"></span>{{ t('board.legendActual') }}
+              <span class="board__legend-swatch board__legend-swatch--actual"></span
+              >{{ t('board.legendActual') }}
             </span>
             <span>{{ t('board.legendGrid') }}</span>
           </div>
@@ -76,7 +89,9 @@
       <section class="card">
         <header class="card__header">
           <span>{{ t('board.entriesTitle') }}</span>
-          <span class="board__entry-count num">{{ t('board.entryCount', { count: activities.entries().length }) }}</span>
+          <span class="board__entry-count num">{{
+            t('board.entryCount', { count: activities.entries().length })
+          }}</span>
         </header>
 
         @if (activities.isLoading()) {
@@ -104,7 +119,11 @@
                       <span class="entry__badge">{{ t('board.reconciled') }}</span>
                     }
                     <span class="entry__note">{{ entry.note }}</span>
-                    <button type="button" class="btn btn--ghost entry__remove" (click)="remove(entry.id)">
+                    <button
+                      type="button"
+                      class="btn btn--ghost entry__remove"
+                      (click)="remove(entry.id)"
+                    >
                       {{ t('common.delete') }}
                     </button>
                   </li>
@@ -136,7 +155,9 @@
 
       <section class="board__rail-section">
         <h2 class="section-label">{{ t('board.upcoming') }}</h2>
-        <p class="board__empty">{{ t('board.upcomingEmpty') }}</p>
+        <!-- S0 left this as an honest blank rather than inventing meetings. S7 fills it, from the same rows the
+             boards draw their overlays from. -->
+        <app-upcoming-strip />
       </section>
 
       <hr class="board__divider" />
@@ -144,9 +165,18 @@
       <section class="board__rail-section">
         <h2 class="section-label">{{ t('board.shortcuts') }}</h2>
         <dl class="board__shortcuts">
-          <div><dt>{{ t('board.quickAdd') }}</dt><dd class="mono">N</dd></div>
-          <div><dt>{{ t('board.shortcutWeekNav') }}</dt><dd class="mono">← →</dd></div>
-          <div><dt>{{ t('board.shortcutDuplicate') }}</dt><dd class="mono">D</dd></div>
+          <div>
+            <dt>{{ t('board.quickAdd') }}</dt>
+            <dd class="mono">N</dd>
+          </div>
+          <div>
+            <dt>{{ t('board.shortcutWeekNav') }}</dt>
+            <dd class="mono">← →</dd>
+          </div>
+          <div>
+            <dt>{{ t('board.shortcutDuplicate') }}</dt>
+            <dd class="mono">D</dd>
+          </div>
         </dl>
       </section>
     </aside>

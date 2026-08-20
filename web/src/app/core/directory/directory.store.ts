@@ -1,7 +1,13 @@
 import { computed, Injectable, inject } from '@angular/core';
 import { HttpClient, httpResource } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { DepartmentConfig, DepartmentSummary, Me, PersonSummary, UnitSummary } from './directory.models';
+import {
+  DepartmentConfig,
+  DepartmentSummary,
+  Me,
+  PersonSummary,
+  UnitSummary,
+} from './directory.models';
 import { SessionStore } from '../session/session.store';
 
 /**
@@ -41,12 +47,33 @@ export class DirectoryStore {
     return error?.status === 404;
   });
 
-  readonly departments = computed<readonly DepartmentSummary[]>(() => this.departmentsResource.value() ?? []);
+  /**
+   * Every unit the caller may see, not only the ones they belong to.
+   *
+   * Distinct from `units` below and both are needed: `units` answers "where do I work", which is what the scope
+   * switcher shows, while this answers "which units may I target", which is what a head scheduling a stand-up
+   * needs. RLS decides how wide it comes back — a member gets their department's, a head their scope's.
+   */
+  private readonly visibleUnitsResource = httpResource<UnitSummary[]>(() =>
+    this.session.isAuthenticated() ? '/api/directory/units' : undefined,
+  );
+
+  readonly departments = computed<readonly DepartmentSummary[]>(
+    () => this.departmentsResource.value() ?? [],
+  );
+  readonly visibleUnits = computed<readonly UnitSummary[]>(
+    () => this.visibleUnitsResource.value() ?? [],
+  );
   readonly units = computed<readonly UnitSummary[]>(() => this.me()?.units ?? []);
-  readonly functionalRoles = computed<readonly string[]>(() => this.me()?.functionalRoleCodes ?? []);
+  readonly functionalRoles = computed<readonly string[]>(
+    () => this.me()?.functionalRoleCodes ?? [],
+  );
   readonly displayName = computed(() => this.me()?.displayName ?? this.session.displayName());
 
-  async people(filter?: { unitId?: string; departmentId?: string }): Promise<readonly PersonSummary[]> {
+  async people(filter?: {
+    unitId?: string;
+    departmentId?: string;
+  }): Promise<readonly PersonSummary[]> {
     const params: Record<string, string> = {};
 
     if (filter?.unitId) {
@@ -61,10 +88,15 @@ export class DirectoryStore {
   }
 
   async config(departmentId: string): Promise<DepartmentConfig> {
-    return firstValueFrom(this.http.get<DepartmentConfig>(`/api/directory/departments/${departmentId}/config`));
+    return firstValueFrom(
+      this.http.get<DepartmentConfig>(`/api/directory/departments/${departmentId}/config`),
+    );
   }
 
-  async saveConfig(departmentId: string, config: Omit<DepartmentConfig, 'departmentId' | 'version'>) {
+  async saveConfig(
+    departmentId: string,
+    config: Omit<DepartmentConfig, 'departmentId' | 'version'>,
+  ) {
     return firstValueFrom(
       this.http.put<DepartmentConfig>(`/api/directory/departments/${departmentId}/config`, config),
     );
@@ -73,5 +105,6 @@ export class DirectoryStore {
   reload(): void {
     this.meResource.reload();
     this.departmentsResource.reload();
+    this.visibleUnitsResource.reload();
   }
 }

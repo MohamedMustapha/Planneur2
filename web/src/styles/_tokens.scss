@@ -93,6 +93,15 @@
   --kudo-soft: #fffdf5;
   --kudo-border: #ffe082;
 
+  // --- Calendar events (S7) -------------------------------------------------------------------------------------
+  // Backdrops, not foregrounds: these paint whole board columns behind the work drawn on them, so they have to
+  // stay quiet enough to read through. Severity is three levels because it maps onto three colours and nothing
+  // else — a scale finer than the eye can tell apart only invites arguments about whether an audit is a 3 or a 4.
+  --event-meeting: #eceff1;
+  --event-info: #e3f2fd;
+  --event-warning: #fff3e0;
+  --event-critical: #ffebee;
+
   // --- Typography -----------------------------------------------------------------------------------------------
   --font-sans: 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-mono: 'Roboto Mono', 'Cascadia Mono', ui-monospace, monospace;
@@ -193,6 +202,13 @@
 
   --kudo-soft: #33291a;
   --kudo-border: #6b5424;
+
+  // Same reasoning as the soft state fills above: the hue is kept and the luminance inverted, so a patch party
+  // still reads as amber against a dark canvas instead of blanking the column it sits on.
+  --event-meeting: #262b34;
+  --event-info: #16304d;
+  --event-warning: #3a2a16;
+  --event-critical: #3a1f1f;
 
   --shadow-card: 0 1px 3px rgb(0 0 0 / 40%);
   --shadow-menu: 0 6px 18px rgb(0 0 0 / 50%);

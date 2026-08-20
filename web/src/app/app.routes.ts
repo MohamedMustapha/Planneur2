@@ -58,15 +58,34 @@ export const routes: Routes = [
   {
     path: 'portfolio',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/portfolio/portfolio-board').then((m) => m.PortfolioBoard),
+    loadComponent: () =>
+      import('./features/portfolio/portfolio-board').then((m) => m.PortfolioBoard),
   },
-  placeholder('reports', { titleKey: 'nav.reports', slice: 'S8', descriptionKey: 'placeholder.reports' }),
+  placeholder('reports', {
+    titleKey: 'nav.reports',
+    slice: 'S8',
+    descriptionKey: 'placeholder.reports',
+  }),
   placeholder('kudos', { titleKey: 'nav.kudos', slice: 'S9', descriptionKey: 'placeholder.kudos' }),
-  placeholder('finance', { titleKey: 'nav.finance', slice: 'S11', descriptionKey: 'placeholder.finance' }),
+  placeholder('finance', {
+    titleKey: 'nav.finance',
+    slice: 'S11',
+    descriptionKey: 'placeholder.finance',
+  }),
   {
     path: 'settings',
     canActivate: [authGuard],
-    loadComponent: () => import('./features/directory/department-settings').then((m) => m.DepartmentSettings),
+    loadComponent: () =>
+      import('./features/directory/department-settings').then((m) => m.DepartmentSettings),
+  },
+  {
+    // Third tab of the same administration screen. Recurring meetings and special days are configuration of a
+    // scope, which is what this section is for; everybody else meets the same data on the boards and in the
+    // dashboard's "coming up" strip.
+    path: 'settings/meetings',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/meetings/meeting-manager').then((m) => m.MeetingManager),
   },
   {
     // Behind the same nav entry as department settings: the rail is fixed at ten sections by the design, and

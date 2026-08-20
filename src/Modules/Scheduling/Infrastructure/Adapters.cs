@@ -1,5 +1,6 @@
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
+using Cracra.Modules.Meetings.Contracts;
 using Cracra.Modules.Portfolio.Contracts;
 using Cracra.Modules.Projects.Contracts;
 using Cracra.Modules.Scheduling.Application;
@@ -148,22 +149,47 @@ internal sealed class PortfolioAdapter(IPortfolioIterationReader iterations) : I
 }
 
 /// <summary>
-/// The S7 seam, answering nothing.
+/// Meetings and special days, through their contract.
 /// </summary>
 /// <remarks>
-/// Special days, deadlines and meeting bands land in S7. The boards already ask for them and already render
-/// whatever comes back, so that slice becomes a registration change here rather than a change to five board
+/// <para>
+/// The seam S6 left open, now filled. The boards already asked for overlays and already rendered whatever came
+/// back, so S7 landed here as one registration and this translation, rather than as a change to five board
 /// payloads and their client templates.
+/// </para>
+/// <para>
+/// A translation and nothing else. Meetings returns its own <see cref="CalendarOverlay"/> rather than a
+/// <see cref="BoardOverlay"/>, because the dependency runs Scheduling → Meetings and inverting it would make the
+/// calendar unusable by anything that is not a board — Reporting wants the same list for "upcoming deadlines".
+/// Mapping one to the other is this class's whole reason to exist.
+/// </para>
+/// <para>
+/// Caller-scoped like every other adapter here: the reader runs inside the caller's RLS session, so a board
+/// composed for a member cannot pick up a meeting the member may not see.
+/// </para>
 /// </remarks>
-internal sealed class NoCalendarOverlays : ICalendarOverlaySource
+internal sealed class MeetingCalendarOverlays(IMeetingCalendarReader meetings) : ICalendarOverlaySource
 {
-    public Task<IReadOnlyList<BoardOverlay>> GetOverlaysAsync(
+    public async Task<IReadOnlyList<BoardOverlay>> GetOverlaysAsync(
         Guid? unitId,
         Guid? departmentId,
         DateOnly from,
         DateOnly to,
-        CancellationToken ct) =>
-        Task.FromResult<IReadOnlyList<BoardOverlay>>([]);
+        CancellationToken ct)
+    {
+        var overlays = await meetings.GetOverlaysAsync(unitId, departmentId, from, to, ct);
+
+        return
+        [
+            .. overlays.Select(overlay => new BoardOverlay(
+                overlay.Id,
+                overlay.Kind,
+                overlay.Title,
+                overlay.From,
+                overlay.To,
+                overlay.Color)),
+        ];
+    }
 }
 
 /// <summary>

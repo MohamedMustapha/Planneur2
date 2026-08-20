@@ -6,6 +6,7 @@ using Cracra.BuildingBlocks.Web;
 using Cracra.BuildingBlocks.Web.Behaviors;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
+using Cracra.Modules.Meetings;
 using Cracra.Modules.Activities;
 using Cracra.Modules.Portfolio;
 using Cracra.Modules.Projects;
@@ -58,6 +59,7 @@ builder.Services.AddProjectsModule();
 builder.Services.AddPortfolioModule();
 builder.Services.AddActivitiesModule(builder.Configuration);
 builder.Services.AddSchedulingModule(builder.Configuration);
+builder.Services.AddMeetingsModule();
 
 var app = builder.Build();
 

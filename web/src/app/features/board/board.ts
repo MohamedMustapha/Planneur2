@@ -9,6 +9,7 @@ import { ScopeSelector } from '../../shared/ui/scope-selector/scope-selector';
 import { SmokeTimeline } from '../../shared/timeline/smoke-timeline/smoke-timeline';
 import { ActivitiesStore } from '../../core/activities/activities.store';
 import { QuickAdd } from './quick-add';
+import { UpcomingStrip } from '../meetings/upcoming-strip';
 
 type BoardTab = 'week' | 'month' | 'list';
 
@@ -25,7 +26,7 @@ type BoardTab = 'week' | 'month' | 'list';
 @Component({
   selector: 'app-board',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, PageHeader, ScopeSelector, SmokeTimeline, QuickAdd],
+  imports: [TranslocoDirective, PageHeader, ScopeSelector, SmokeTimeline, QuickAdd, UpcomingStrip],
   templateUrl: './board.html',
   styleUrl: './board.scss',
 })

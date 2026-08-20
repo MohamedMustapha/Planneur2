@@ -120,6 +120,9 @@ var api = builder.AddProject<Projects.Cracra_Host>("api")
     // Likewise for the S6 work-order pool: the dev box stands in for ServiceNow so the drag-from-queue journey
     // is exercisable before S10's adapters exist. Samples derive from the unit that asked and never leave it.
     .WithEnvironment("Cracra__Scheduling__Pool__SeedSampleWorkOrders", "true")
+    // The zone a meeting's wall-clock time is read in. A 09:00 stand-up is 09:00 all year, so the series stores
+    // the local time and this says which clock that is — the one knob S7 needs from a deployment.
+    .WithEnvironment("Cracra__Meetings__DefaultTimeZoneId", "Europe/Paris")
     .WithEnvironment("ConnectionStrings__seq", seq.GetEndpoint("http"))
     .WithHttpHealthCheck("/alive")
     // Pinned, not dynamic: Prometheus scrapes /metrics from a static target list, and the Angular dev proxy needs

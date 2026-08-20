@@ -141,7 +141,8 @@
     "iterationPresets": "Durées d'itération",
     "iterationPresetsHint": "Raccourcis proposés à la création d'une itération. Consommé par le lot S4.",
     "tabDepartment": "Département",
-    "tabAccess": "Rôles et habilitations"
+    "tabAccess": "Rôles et habilitations",
+    "tabMeetings": "Réunions & événements"
   },
   "directory": {
     "functionalRole": {
@@ -324,5 +325,94 @@
     "morning": "Matin",
     "afternoon": "Après-midi",
     "on-call": "Astreinte"
+  },
+  "meetings": {
+    "title": "Réunions & événements",
+    "subtitle": "Réunions récurrentes et journées particulières, par périmètre.",
+    "series": "Réunions récurrentes",
+    "specialDays": "Journées particulières",
+    "kind": "Type",
+    "name": "Intitulé",
+    "namePlaceholder": "Point hebdomadaire Infrastructure",
+    "specialDayPlaceholder": "Patch party mensuelle",
+    "scopeType": "Périmètre",
+    "target": "Cible",
+    "chooseTarget": "Choisir…",
+    "frequency": "Fréquence",
+    "every": "Tous les",
+    "weekdays": "Jours",
+    "startsOn": "À partir du",
+    "startTime": "Heure",
+    "duration": "Durée (min)",
+    "location": "Lieu",
+    "videoLink": "Lien visio",
+    "rule": "Règle de récurrence",
+    "date": "Date",
+    "severity": "Gravité",
+    "description": "Description",
+    "addSeries": "Créer la réunion",
+    "addSpecialDay": "Ajouter la journée",
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "join": "Rejoindre",
+    "manage": "Gérer les réunions",
+    "noSeries": "Aucune réunion récurrente sur ce périmètre.",
+    "noSpecialDays": "Aucune journée particulière programmée.",
+    "thisWeek": "Cette semaine",
+    "andMore": "+ {{count}} de plus",
+    "upcomingFailed": "Impossible de charger l’agenda.",
+    "genericError": "L’action a été refusée.",
+    "scope": {
+      "unit": "Unité",
+      "department": "Département",
+      "project": "Projet",
+      "org": "Toute l’organisation"
+    },
+    "kindOption": {
+      "weekly": "Hebdomadaire",
+      "copil": "Copil",
+      "retro": "Rétrospective",
+      "one-on-one": "Entretien individuel",
+      "custom": "Autre"
+    },
+    "specialDayKind": {
+      "patch-party": "Patch party",
+      "audit": "Audit",
+      "go-live": "Mise en production",
+      "deadline": "Échéance",
+      "freeze": "Gel",
+      "holiday": "Jour férié",
+      "custom": "Autre"
+    },
+    "overlayKind": {
+      "meeting": "Réunion",
+      "iteration": "Itération",
+      "patch-party": "Patch party",
+      "audit": "Audit",
+      "go-live": "Mise en production",
+      "deadline": "Échéance",
+      "freeze": "Gel",
+      "holiday": "Jour férié",
+      "custom": "Événement"
+    },
+    "severityOption": {
+      "info": "Information",
+      "warning": "Vigilance",
+      "critical": "Critique"
+    },
+    "frequencyOption": {
+      "daily": "Quotidienne",
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuelle"
+    },
+    "weekday": {
+      "MO": "Lun",
+      "TU": "Mar",
+      "WE": "Mer",
+      "TH": "Jeu",
+      "FR": "Ven",
+      "SA": "Sam",
+      "SU": "Dim"
+    }
   }
 }

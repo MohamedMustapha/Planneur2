@@ -1,6 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
   BoardType,
   SchedulingStore,
@@ -32,6 +40,7 @@ export class Boards {
   protected readonly session = inject(SessionStore);
   protected readonly directory = inject(DirectoryStore);
   protected readonly projects = inject(ProjectsStore);
+  private readonly transloco = inject(TranslocoService);
 
   /**
    * Which board this route names, bound from the route's data by withComponentInputBinding.
@@ -87,7 +96,9 @@ export class Boards {
   protected readonly needsProjectScope = computed(() => this.scheduling.boardType() === 'project');
 
   /** True while the project board is showing but no project has been picked. */
-  protected readonly awaitingProject = computed(() => this.needsProjectScope() && !this.scheduling.scopeId());
+  protected readonly awaitingProject = computed(
+    () => this.needsProjectScope() && !this.scheduling.scopeId(),
+  );
 
   /** Whatever went wrong: an action's refusal, or the board itself failing to load. */
   protected readonly message = computed(() => {
@@ -97,9 +108,12 @@ export class Boards {
       return refused;
     }
 
-    const failure = this.scheduling.error() as { error?: { detail?: string; title?: string } } | undefined;
+    const failure = this.scheduling.error() as
+      { error?: { detail?: string; title?: string } } | undefined;
 
-    return failure ? (failure.error?.detail ?? failure.error?.title ?? 'boards.genericError') : null;
+    return failure
+      ? (failure.error?.detail ?? failure.error?.title ?? 'boards.genericError')
+      : null;
   });
 
   constructor() {
@@ -115,6 +129,19 @@ export class Boards {
         void this.loadTemplates();
       }
     });
+  }
+
+  /**
+   * The overlay's kind, as a label.
+   *
+   * Kinds are extensible per department (S7), so an unmapped one renders as its own code rather than as a blank
+   * chip — the same fallback the timeline already uses for bucket names.
+   */
+  protected overlayLabel(kind: string): string {
+    const key = `meetings.overlayKind.${kind}`;
+    const translated = this.transloco.translate(key);
+
+    return translated === key ? kind : translated;
   }
 
   protected selectProject(projectId: string): void {
@@ -178,7 +205,11 @@ export class Boards {
     }
 
     await this.run(() =>
-      this.scheduling.planShift(this.rosterPerson(), this.rosterTemplate(), new Date(this.rosterDay())),
+      this.scheduling.planShift(
+        this.rosterPerson(),
+        this.rosterTemplate(),
+        new Date(this.rosterDay()),
+      ),
     );
   }
 

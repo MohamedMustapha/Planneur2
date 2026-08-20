@@ -141,7 +141,8 @@
     "iterationPresets": "Iteration presets",
     "iterationPresetsHint": "Quick lengths offered when creating an iteration. Consumed by slice S4.",
     "tabDepartment": "Department",
-    "tabAccess": "Roles and permissions"
+    "tabAccess": "Roles and permissions",
+    "tabMeetings": "Meetings & events"
   },
   "directory": {
     "functionalRole": {
@@ -324,5 +325,94 @@
     "morning": "Morning",
     "afternoon": "Afternoon",
     "on-call": "On call"
+  },
+  "meetings": {
+    "title": "Meetings & events",
+    "subtitle": "Recurring meetings and special days, by scope.",
+    "series": "Recurring meetings",
+    "specialDays": "Special days",
+    "kind": "Kind",
+    "name": "Name",
+    "namePlaceholder": "Infrastructure weekly stand-up",
+    "specialDayPlaceholder": "Monthly patch party",
+    "scopeType": "Scope",
+    "target": "Target",
+    "chooseTarget": "Choose…",
+    "frequency": "Frequency",
+    "every": "Every",
+    "weekdays": "Days",
+    "startsOn": "Starts on",
+    "startTime": "Time",
+    "duration": "Duration (min)",
+    "location": "Location",
+    "videoLink": "Video link",
+    "rule": "Recurrence rule",
+    "date": "Date",
+    "severity": "Severity",
+    "description": "Description",
+    "addSeries": "Create meeting",
+    "addSpecialDay": "Add day",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "join": "Join",
+    "manage": "Manage meetings",
+    "noSeries": "No recurring meeting in this scope.",
+    "noSpecialDays": "No special day scheduled.",
+    "thisWeek": "This week",
+    "andMore": "+{{count}} more",
+    "upcomingFailed": "The calendar could not be loaded.",
+    "genericError": "The action was refused.",
+    "scope": {
+      "unit": "Unit",
+      "department": "Department",
+      "project": "Project",
+      "org": "Whole organization"
+    },
+    "kindOption": {
+      "weekly": "Weekly",
+      "copil": "Steering",
+      "retro": "Retrospective",
+      "one-on-one": "One-on-one",
+      "custom": "Other"
+    },
+    "specialDayKind": {
+      "patch-party": "Patch party",
+      "audit": "Audit",
+      "go-live": "Go-live",
+      "deadline": "Deadline",
+      "freeze": "Freeze",
+      "holiday": "Holiday",
+      "custom": "Other"
+    },
+    "overlayKind": {
+      "meeting": "Meeting",
+      "iteration": "Iteration",
+      "patch-party": "Patch party",
+      "audit": "Audit",
+      "go-live": "Go-live",
+      "deadline": "Deadline",
+      "freeze": "Freeze",
+      "holiday": "Holiday",
+      "custom": "Event"
+    },
+    "severityOption": {
+      "info": "Information",
+      "warning": "Watch out",
+      "critical": "Critical"
+    },
+    "frequencyOption": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "weekday": {
+      "MO": "Mon",
+      "TU": "Tue",
+      "WE": "Wed",
+      "TH": "Thu",
+      "FR": "Fri",
+      "SA": "Sat",
+      "SU": "Sun"
+    }
   }
 }

@@ -37,6 +37,8 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Activities.Contracts.ActivityEntryView).Assembly,
         typeof(Cracra.Modules.Scheduling.SchedulingModule).Assembly,
         typeof(Cracra.Modules.Scheduling.Contracts.BoardPayload).Assembly,
+        typeof(Cracra.Modules.Meetings.MeetingsModule).Assembly,
+        typeof(Cracra.Modules.Meetings.Contracts.MeetingSeriesView).Assembly,
     ];
 
     [Fact]
@@ -211,6 +213,67 @@ public sealed class ArchitectureRules
                 $"{name} may reference other modules' contracts only, but references: {string.Join(", ", forbidden)}");
         }
     }
+
+    /// <summary>
+    /// A 2-layer module is two layers: an endpoint and a service.
+    /// </summary>
+    /// <remarks>
+    /// conventions.md §2 gives two archetypes and a decision rule, and the failure mode it guards against is a
+    /// module that quietly becomes both — an Endpoints folder next to an Application folder, half its writes
+    /// going through a service and half through a command, and nobody able to say which is the way in.
+    ///
+    /// Expressed on namespaces because that is what the archetype is: the folder layout in each archetype's
+    /// listing is the whole of the rule.
+    /// </remarks>
+    [Fact]
+    public void A_module_picks_one_archetype_and_keeps_to_it()
+    {
+        foreach (var assembly in ModuleAssemblies())
+        {
+            var namespaces = assembly.GetTypes()
+                .Select(type => type.Namespace)
+                .Where(space => space is not null)
+                .Distinct()
+                .ToArray();
+
+            var twoLayer = namespaces.Any(space => space!.Contains(".Endpoints", StringComparison.Ordinal));
+            var ddd = namespaces.Any(space =>
+                space!.Contains(".Application", StringComparison.Ordinal)
+                || space.Contains(".Api", StringComparison.Ordinal));
+
+            (twoLayer && ddd).ShouldBeFalse(
+                $"{assembly.GetName().Name} has both an Endpoints namespace and an Application/Api one. "
+                + "A module is 2-layer or DDD (conventions.md §2), never halfway.");
+        }
+    }
+
+    /// <summary>
+    /// In a 2-layer module the endpoint calls a service; it does not open the DbContext itself.
+    /// </summary>
+    /// <remarks>
+    /// The DDD rule above says the same thing about an Api namespace, and this is deliberately not the same rule
+    /// with a wider net: there, the point is that the domain must not be bypassed. Here there is no domain to
+    /// bypass, and the point is that a module's data access stays in one layer — otherwise the RLS-scoped query,
+    /// the validation and the outbox enqueue end up in three different places depending on which endpoint ran.
+    /// </remarks>
+    [Fact]
+    public void Two_layer_endpoints_go_through_a_service()
+    {
+        var result = Types.InAssemblies(PlatformAssemblies)
+            .That()
+            .ResideInNamespaceMatching(@"Cracra\.Modules\.\w+\.Endpoints")
+            .ShouldNot()
+            .HaveDependencyOn("Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue(Describe(result));
+    }
+
+    private static IEnumerable<Assembly> ModuleAssemblies() =>
+        PlatformAssemblies.Where(assembly =>
+            assembly.GetName().Name is { } name
+            && name.StartsWith("Cracra.Modules.", StringComparison.Ordinal)
+            && !name.EndsWith(".Contracts", StringComparison.Ordinal));
 
     private static bool IsRequestInterface(Type type) =>
         type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IRequest<>);

@@ -88,6 +88,12 @@ public sealed class CracraApplicationFactory(string adminConnectionString) : Web
                 ["Cracra:Directory:Sync:ClientSecret"] = "test-sync-secret",
                 ["Cracra:Directory:Sync:SyncOnStartup"] = "false",
                 ["Cracra:Directory:Sync:Interval"] = "00:00:00",
+
+                // The meeting horizon sweeper, for the same reason: it materializes occurrences under the system
+                // context, and a pass firing mid-assertion would add rows the test did not ask for. Tests that
+                // care about the sweep resolve IMeetingHorizonSweeper and run it themselves.
+                ["Cracra:Meetings:SweepOnStartup"] = "false",
+                ["Cracra:Meetings:SweepInterval"] = "00:00:00",
             });
 
             if (Settings is { Count: > 0 } overrides)

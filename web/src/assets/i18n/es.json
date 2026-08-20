@@ -141,7 +141,8 @@
     "iterationPresets": "Duraciones de iteración",
     "iterationPresetsHint": "Atajos ofrecidos al crear una iteración. Lo consume el lote S4.",
     "tabDepartment": "Departamento",
-    "tabAccess": "Roles y permisos"
+    "tabAccess": "Roles y permisos",
+    "tabMeetings": "Reuniones y eventos"
   },
   "directory": {
     "functionalRole": {
@@ -324,5 +325,94 @@
     "morning": "Mañana",
     "afternoon": "Tarde",
     "on-call": "Guardia"
+  },
+  "meetings": {
+    "title": "Reuniones y eventos",
+    "subtitle": "Reuniones periódicas y días señalados, por ámbito.",
+    "series": "Reuniones periódicas",
+    "specialDays": "Días señalados",
+    "kind": "Tipo",
+    "name": "Nombre",
+    "namePlaceholder": "Reunión semanal de Infraestructura",
+    "specialDayPlaceholder": "Patch party mensual",
+    "scopeType": "Ámbito",
+    "target": "Destinatario",
+    "chooseTarget": "Elegir…",
+    "frequency": "Frecuencia",
+    "every": "Cada",
+    "weekdays": "Días",
+    "startsOn": "Desde el",
+    "startTime": "Hora",
+    "duration": "Duración (min)",
+    "location": "Lugar",
+    "videoLink": "Enlace de vídeo",
+    "rule": "Regla de recurrencia",
+    "date": "Fecha",
+    "severity": "Gravedad",
+    "description": "Descripción",
+    "addSeries": "Crear reunión",
+    "addSpecialDay": "Añadir día",
+    "deactivate": "Desactivar",
+    "reactivate": "Reactivar",
+    "join": "Unirse",
+    "manage": "Gestionar reuniones",
+    "noSeries": "No hay reuniones periódicas en este ámbito.",
+    "noSpecialDays": "No hay días señalados programados.",
+    "thisWeek": "Esta semana",
+    "andMore": "+{{count}} más",
+    "upcomingFailed": "No se ha podido cargar la agenda.",
+    "genericError": "La acción ha sido rechazada.",
+    "scope": {
+      "unit": "Unidad",
+      "department": "Departamento",
+      "project": "Proyecto",
+      "org": "Toda la organización"
+    },
+    "kindOption": {
+      "weekly": "Semanal",
+      "copil": "Comité de dirección",
+      "retro": "Retrospectiva",
+      "one-on-one": "Reunión individual",
+      "custom": "Otro"
+    },
+    "specialDayKind": {
+      "patch-party": "Patch party",
+      "audit": "Auditoría",
+      "go-live": "Puesta en producción",
+      "deadline": "Fecha límite",
+      "freeze": "Congelación",
+      "holiday": "Festivo",
+      "custom": "Otro"
+    },
+    "overlayKind": {
+      "meeting": "Reunión",
+      "iteration": "Iteración",
+      "patch-party": "Patch party",
+      "audit": "Auditoría",
+      "go-live": "Puesta en producción",
+      "deadline": "Fecha límite",
+      "freeze": "Congelación",
+      "holiday": "Festivo",
+      "custom": "Evento"
+    },
+    "severityOption": {
+      "info": "Información",
+      "warning": "Atención",
+      "critical": "Crítico"
+    },
+    "frequencyOption": {
+      "daily": "Diaria",
+      "weekly": "Semanal",
+      "monthly": "Mensual"
+    },
+    "weekday": {
+      "MO": "Lun",
+      "TU": "Mar",
+      "WE": "Mié",
+      "TH": "Jue",
+      "FR": "Vie",
+      "SA": "Sáb",
+      "SU": "Dom"
+    }
   }
 }

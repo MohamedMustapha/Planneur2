@@ -31,9 +31,9 @@ public static class SchedulingModule
         services.AddScoped<IActivitiesPort, ActivitiesAdapter>();
         services.AddScoped<IPortfolioPort, PortfolioAdapter>();
 
-        // The S7 seam. Registered now, answering nothing, so that slice replaces one line rather than five board
-        // payloads and their templates.
-        services.AddScoped<ICalendarOverlaySource, NoCalendarOverlays>();
+        // The S7 seam, filled. This is the one line the S6 comment promised would change: the boards' payload
+        // shape, the composer and every client template stayed exactly as they were.
+        services.AddScoped<ICalendarOverlaySource, MeetingCalendarOverlays>();
 
         // The composer is the read side in one class. Scoped rather than transient because every board it builds
         // runs several caller-scoped queries that must share the one RLS session.

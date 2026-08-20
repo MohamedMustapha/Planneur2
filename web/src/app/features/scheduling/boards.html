@@ -16,9 +16,23 @@
 
     <div slot="actions" class="boards__actions">
       <div class="pager" role="group" [attr.aria-label]="t('boards.weekNav')">
-        <button type="button" class="btn btn--ghost" (click)="scheduling.stepWeek(-1)" aria-label="&lt;">&lt;</button>
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="scheduling.stepWeek(-1)"
+          aria-label="&lt;"
+        >
+          &lt;
+        </button>
         <span class="pager__label mono">{{ weekLabel() }}</span>
-        <button type="button" class="btn btn--ghost" (click)="scheduling.stepWeek(1)" aria-label="&gt;">&gt;</button>
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="scheduling.stepWeek(1)"
+          aria-label="&gt;"
+        >
+          &gt;
+        </button>
       </div>
     </div>
   </app-page-header>
@@ -59,7 +73,12 @@
             <div class="pool__tools">
               <span class="pool__count num">{{ scheduling.pool().length }}</span>
               @if (scheduling.canAssign()) {
-                <button type="button" class="btn btn--ghost" [disabled]="busy()" (click)="refreshPool()">
+                <button
+                  type="button"
+                  class="btn btn--ghost"
+                  [disabled]="busy()"
+                  (click)="refreshPool()"
+                >
                   {{ t('boards.refreshPool') }}
                 </button>
               }
@@ -92,7 +111,9 @@
 
           @if (heldOrder(); as held) {
             <footer class="pool__drop">
-              <span class="pool__holding">{{ t('boards.assigning', { ref: held.reference }) }}</span>
+              <span class="pool__holding">{{
+                t('boards.assigning', { ref: held.reference })
+              }}</span>
               @for (person of people(); track person.id) {
                 <button
                   type="button"
@@ -116,7 +137,11 @@
           <div class="roster__form">
             <label class="field">
               <span>{{ t('boards.person') }}</span>
-              <select class="select" [ngModel]="rosterPerson()" (ngModelChange)="rosterPerson.set($event)">
+              <select
+                class="select"
+                [ngModel]="rosterPerson()"
+                (ngModelChange)="rosterPerson.set($event)"
+              >
                 <option value="">{{ t('boards.choosePerson') }}</option>
                 @for (person of people(); track person.id) {
                   <option [value]="person.id">{{ person.name }}</option>
@@ -140,7 +165,12 @@
 
             <label class="field">
               <span>{{ t('boards.day') }}</span>
-              <input class="input" type="date" [ngModel]="rosterDay()" (ngModelChange)="rosterDay.set($event)" />
+              <input
+                class="input"
+                type="date"
+                [ngModel]="rosterDay()"
+                (ngModelChange)="rosterDay.set($event)"
+              />
             </label>
 
             <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="roster()">
@@ -156,11 +186,33 @@
                 <li class="coverage__item">
                   <span class="mono">{{ warning.day }}</span>
                   {{ t('shift.' + warning.slotCode) }}
-                  <span class="coverage__counts num">{{ warning.scheduled }}/{{ warning.required }}</span>
+                  <span class="coverage__counts num"
+                    >{{ warning.scheduled }}/{{ warning.required }}</span
+                  >
                 </li>
               }
             </ul>
           }
+        </section>
+      }
+
+      <!-- S7's overlays, named. The canvas paints them as coloured ranges, which shows *when* something is
+           happening but not what; this strip says what, with the same colours, so a patch party is legible
+           without hovering a column. -->
+      @if (scheduling.overlays().length > 0) {
+        <section class="card events" [attr.aria-label]="t('meetings.thisWeek')">
+          <header class="card__header">{{ t('meetings.thisWeek') }}</header>
+          <ul class="events__list">
+            @for (overlay of scheduling.overlays(); track overlay.id) {
+              <li class="events__item" [style.background]="overlay.color">
+                <span class="events__kind">{{ overlayLabel(overlay.kind) }}</span>
+                <span class="events__title">{{
+                  t(overlay.title) === overlay.title ? overlay.title : t(overlay.title)
+                }}</span>
+                <span class="events__date mono">{{ overlay.from }}</span>
+              </li>
+            }
+          </ul>
         </section>
       }
 
@@ -169,10 +221,12 @@
           <span>{{ t(scheduling.board()?.title ?? 'boards.title') }}</span>
           <div class="boards__legend">
             <span class="boards__legend-item">
-              <span class="boards__legend-swatch boards__legend-swatch--planned"></span>{{ t('board.legendPlanned') }}
+              <span class="boards__legend-swatch boards__legend-swatch--planned"></span
+              >{{ t('board.legendPlanned') }}
             </span>
             <span class="boards__legend-item">
-              <span class="boards__legend-swatch boards__legend-swatch--actual"></span>{{ t('board.legendActual') }}
+              <span class="boards__legend-swatch boards__legend-swatch--actual"></span
+              >{{ t('board.legendActual') }}
             </span>
           </div>
         </header>
