@@ -1,0 +1,202 @@
+:host {
+  display: contents;
+}
+
+.reports {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.reports__actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.reports__error {
+  margin: 0;
+  padding: var(--space-3);
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.reports__export {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.reports__export-note,
+.reports__empty,
+.reports__status {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.reports__empty {
+  margin: 0;
+  padding: var(--space-4);
+  text-align: center;
+}
+
+/* --- The period switch ---------------------------------------------------------------------------------- */
+
+.segmented {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+}
+
+.segmented__item {
+  padding: var(--space-1) var(--space-3);
+  border: none;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+
+  &.is-active {
+    background: var(--primary-soft);
+    color: var(--ink);
+    font-weight: 500;
+  }
+}
+
+/* --- The machine-written half --------------------------------------------------------------------------- */
+
+/* Visually distinct from every other card on purpose: a reader skimming this screen has to be able to tell at a
+   glance which half a model wrote. */
+.summary {
+  border-left: 3px solid var(--primary);
+}
+
+.summary__tools {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.summary__model {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.summary__stale {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.summary__disclaimer {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-style: italic;
+}
+
+.summary__text {
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* --- Figures -------------------------------------------------------------------------------------------- */
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.metric__value {
+  font-size: var(--text-xl);
+  font-weight: 500;
+}
+
+/* A table wider than the panel scrolls inside it rather than pushing the page sideways. */
+.reports__table-wrap {
+  overflow-x: auto;
+  padding: 0 var(--space-4) var(--space-3);
+}
+
+.reports__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-base);
+
+  caption {
+    padding-bottom: var(--space-2);
+    text-align: left;
+  }
+
+  th,
+  td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+  }
+
+  th[scope='row'] {
+    font-weight: 400;
+  }
+
+  /* Figures only line up if their right edges do, and a column of left-aligned numbers cannot be read down. */
+  td.num,
+  th.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  thead th {
+    color: var(--ink-2);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+}
+
+/* --- Notes ---------------------------------------------------------------------------------------------- */
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-3);
+  list-style: none;
+}
+
+.note {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--event-info);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  font-size: var(--text-sm);
+}
+
+.note--warning {
+  border-left-color: var(--warning);
+}
+
+.note--critical {
+  border-left-color: var(--danger);
+}
+
+.note__detail {
+  color: var(--ink-2);
+}

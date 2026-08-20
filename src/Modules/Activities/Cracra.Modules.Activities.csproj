@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Activities.Contracts/Cracra.Modules.Activities.Contracts.csproj" />
+    <!-- Contracts only: Activities reads the department taxonomy and checks project membership without ever
+         referencing either implementation. The iteration link to S4 is likewise by contract. -->
+    <ProjectReference Include="../Directory.Contracts/Cracra.Modules.Directory.Contracts.csproj" />
+    <!-- The dropdown reads S10's mirror through its contract. Read-only in the strong sense: the contract
+         exposes no write, so there is nothing here that could push an hour back into a ticket. -->
+    <ProjectReference Include="../Integrations.Contracts/Cracra.Modules.Integrations.Contracts.csproj" />
+    <ProjectReference Include="../Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />
+    <ProjectReference Include="../Portfolio.Contracts/Cracra.Modules.Portfolio.Contracts.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Cracra.Tests.Unit" />
+    <InternalsVisibleTo Include="Cracra.Tests.Integration" />
+  </ItemGroup>
+</Project>

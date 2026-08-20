@@ -1,0 +1,729 @@
+{
+  "realm": "cracra",
+  "displayName": "Cracra — Activité & Portefeuille",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "fr",
+    "en",
+    "es"
+  ],
+  "defaultLocale": "fr",
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 28800,
+  "clients": [
+    {
+      "clientId": "cracra-bff",
+      "name": "Cracra BFF",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "secret": "cracra-bff-dev-secret",
+      "redirectUris": [
+        "http://localhost:5000/*",
+        "http://localhost:4400/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5000",
+        "http://localhost:4400"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5000/*##http://localhost:4400/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "unit_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "unit_id",
+            "claim.name": "unit_id",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "false",
+            "aggregate.attrs": "false"
+          }
+        },
+        {
+          "name": "dept_ids",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "dept_ids",
+            "claim.name": "dept_ids",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "true",
+            "aggregate.attrs": "true"
+          }
+        },
+        {
+          "name": "contextual_roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "contextual_roles",
+            "claim.name": "contextual_roles",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "true",
+            "aggregate.attrs": "true"
+          }
+        },
+        {
+          "name": "functional_role",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "functional_role",
+            "claim.name": "functional_role",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "false",
+            "aggregate.attrs": "false"
+          }
+        },
+        {
+          "name": "locale",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "locale",
+            "claim.name": "locale",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "false",
+            "aggregate.attrs": "false"
+          }
+        },
+        {
+          "name": "audience-cracra-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "cracra-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "cracra-sync",
+      "name": "Cracra directory sync",
+      "description": "Service account the Directory module reads people and groups with (S1).",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "cracra-sync-dev-secret"
+    },
+    {
+      "clientId": "cracra-api",
+      "name": "Cracra API",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    }
+  ],
+  "groups": [
+    {
+      "name": "dsi",
+      "path": "/dsi",
+      "attributes": {
+        "department_id": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "department_name": [
+          "Direction des Systèmes d'Information"
+        ]
+      },
+      "realmRoles": [],
+      "subGroups": [
+        {
+          "name": "infra",
+          "path": "/dsi/infra",
+          "attributes": {
+            "unit_id": [
+              "aaaaaaaa-0000-0000-0000-000000000001"
+            ],
+            "unit_name": [
+              "Infrastructure & Réseaux"
+            ]
+          },
+          "realmRoles": [],
+          "subGroups": []
+        },
+        {
+          "name": "etudes",
+          "path": "/dsi/etudes",
+          "attributes": {
+            "unit_id": [
+              "aaaaaaaa-0000-0000-0000-000000000002"
+            ],
+            "unit_name": [
+              "Études & Développement"
+            ]
+          },
+          "realmRoles": [],
+          "subGroups": []
+        }
+      ]
+    },
+    {
+      "name": "daf",
+      "path": "/daf",
+      "attributes": {
+        "department_id": [
+          "22222222-2222-2222-2222-222222222222"
+        ],
+        "department_name": [
+          "Direction Financière"
+        ]
+      },
+      "realmRoles": [],
+      "subGroups": [
+        {
+          "name": "compta",
+          "path": "/daf/compta",
+          "attributes": {
+            "unit_id": [
+              "bbbbbbbb-0000-0000-0000-000000000001"
+            ],
+            "unit_name": [
+              "Comptabilité"
+            ]
+          },
+          "realmRoles": [],
+          "subGroups": []
+        },
+        {
+          "name": "controle",
+          "path": "/daf/controle",
+          "attributes": {
+            "unit_id": [
+              "bbbbbbbb-0000-0000-0000-000000000002"
+            ],
+            "unit_name": [
+              "Contrôle de gestion"
+            ]
+          },
+          "realmRoles": [],
+          "subGroups": []
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "c0000000-0000-0000-0000-000000000001",
+      "username": "camille.villeneuve",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Camille",
+      "lastName": "Villeneuve",
+      "email": "camille.villeneuve@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "architecte"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/infra"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000002",
+      "username": "mehdi.sadaoui",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Mehdi",
+      "lastName": "Sadaoui",
+      "email": "mehdi.sadaoui@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "dev"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/infra"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000003",
+      "username": "anais.lefevre",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Anaïs",
+      "lastName": "Lefèvre",
+      "email": "anais.lefevre@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "dev"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/infra"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000004",
+      "username": "thomas.berthier",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Thomas",
+      "lastName": "Berthier",
+      "email": "thomas.berthier@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "unit-head"
+        ],
+        "functional_role": [
+          "tech-lead"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/infra"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000005",
+      "username": "julie.ondracek",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Julie",
+      "lastName": "Ondracek",
+      "email": "julie.ondracek@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000002"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "dev"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/etudes"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000006",
+      "username": "olivier.marchand",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Olivier",
+      "lastName": "Marchand",
+      "email": "olivier.marchand@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000002"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "dept-head"
+        ],
+        "functional_role": [
+          "chef-de-pole"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/etudes"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000007",
+      "username": "sofia.navarro",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Sofia",
+      "lastName": "Navarro",
+      "email": "sofia.navarro@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "bbbbbbbb-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "22222222-2222-2222-2222-222222222222"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "comptable"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/daf/compta"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000008",
+      "username": "laurent.bouchard",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Laurent",
+      "lastName": "Bouchard",
+      "email": "laurent.bouchard@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "bbbbbbbb-0000-0000-0000-000000000002"
+        ],
+        "dept_ids": [
+          "22222222-2222-2222-2222-222222222222"
+        ],
+        "contextual_roles": [
+          "member",
+          "dept-head"
+        ],
+        "functional_role": [
+          "expert-comptable"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/daf/controle"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000009",
+      "username": "nadia.kessler",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Nadia",
+      "lastName": "Kessler",
+      "email": "nadia.kessler@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000002"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "pmo"
+        ],
+        "functional_role": [
+          "chef-de-pole"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/etudes"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-00000000000a",
+      "username": "pierre.dubois",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Pierre",
+      "lastName": "Dubois",
+      "email": "pierre.dubois@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000002"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "project-lead"
+        ],
+        "functional_role": [
+          "tech-lead"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/etudes"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "username": "service-account-cracra-sync",
+      "enabled": true,
+      "serviceAccountClientId": "cracra-sync",
+      "clientRoles": {
+        "realm-management": [
+          "view-users",
+          "query-users",
+          "query-groups"
+        ]
+      }
+    }
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}}, {\"name\": \"email\", \"displayName\": \"${email}\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}}], \"unmanagedAttributePolicy\": \"ENABLED\"}"
+          ]
+        }
+      }
+    ],
+    "org.keycloak.storage.UserStorageProvider": [
+      {
+        "name": "ldap-directory",
+        "providerId": "ldap",
+        "config": {
+          "enabled": [
+            "false"
+          ],
+          "priority": [
+            "0"
+          ],
+          "importEnabled": [
+            "true"
+          ],
+          "editMode": [
+            "READ_ONLY"
+          ],
+          "syncRegistrations": [
+            "false"
+          ],
+          "vendor": [
+            "other"
+          ],
+          "usernameLDAPAttribute": [
+            "uid"
+          ],
+          "rdnLDAPAttribute": [
+            "uid"
+          ],
+          "uuidLDAPAttribute": [
+            "entryUUID"
+          ],
+          "userObjectClasses": [
+            "inetOrgPerson, organizationalPerson"
+          ],
+          "connectionUrl": [
+            "ldap://ldap.internal:389"
+          ],
+          "usersDn": [
+            "ou=people,dc=cracra,dc=local"
+          ],
+          "authType": [
+            "simple"
+          ],
+          "bindDn": [
+            "cn=readonly,dc=cracra,dc=local"
+          ],
+          "searchScope": [
+            "2"
+          ],
+          "fullSyncPeriod": [
+            "3600"
+          ],
+          "changedSyncPeriod": [
+            "600"
+          ]
+        }
+      }
+    ]
+  }
+}

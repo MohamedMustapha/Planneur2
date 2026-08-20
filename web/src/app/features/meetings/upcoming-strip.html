@@ -1,0 +1,38 @@
+<ng-container *transloco="let t">
+  @if (failed()) {
+    <!-- A strip that could not load is not the same as a quiet fortnight, and rendering it as one would leave
+         somebody planning around meetings they were never shown. -->
+    <p class="upcoming__error" role="alert">{{ t('meetings.upcomingFailed') }}</p>
+  } @else if (entries().length === 0) {
+    <p class="board__empty">{{ t('board.upcomingEmpty') }}</p>
+  } @else {
+    <ul class="upcoming">
+      @for (entry of entries(); track entry.id) {
+        <li class="upcoming__item">
+          <span class="upcoming__dot" [class]="'upcoming__dot ' + severityClass(entry)"></span>
+          <span class="upcoming__body">
+            <span class="upcoming__name">{{ label(entry) }}</span>
+            <span class="upcoming__when mono">{{ when(entry) }}</span>
+          </span>
+          @if (entry.videoLink) {
+            <a
+              class="upcoming__join"
+              [href]="entry.videoLink"
+              rel="noopener noreferrer"
+              target="_blank"
+              >{{ t('meetings.join') }}</a
+            >
+          }
+        </li>
+      }
+    </ul>
+
+    @if (overflow() > 0) {
+      <p class="upcoming__more">{{ t('meetings.andMore', { count: overflow() }) }}</p>
+    }
+  }
+
+  @if (canManage()) {
+    <a class="upcoming__manage" routerLink="/settings/meetings">{{ t('meetings.manage') }}</a>
+  }
+</ng-container>

@@ -1,0 +1,38 @@
+.smoke-timeline {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+// Mobiscroll's Material theme has its own palette; these bring it onto our tokens so it does not read as a
+// third-party widget dropped into the page.
+.smoke-timeline ::ng-deep {
+  .mbsc-timeline,
+  .mbsc-eventcalendar {
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+  }
+
+  .mbsc-timeline-header,
+  .mbsc-timeline-resource-header {
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: var(--text-xs);
+  }
+
+  .mbsc-timeline-row,
+  .mbsc-timeline-header-column,
+  .mbsc-timeline-resource {
+    border-color: var(--line);
+  }
+}
+
+.smoke-timeline__note {
+  margin: 0;
+  padding: var(--space-3);
+  border-top: 1px solid var(--line);
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}

@@ -1,0 +1,192 @@
+<ng-container *transloco="let t">
+  @if (project(); as detail) {
+    <app-page-header [title]="detail.name" [subtitle]="detail.code">
+      <div slot="actions" class="project__header-facts">
+        <span class="chip" [class]="'chip chip--' + (detail.classification === 'run' ? 'run' : 'build')">
+          <span class="chip__swatch" aria-hidden="true"></span>
+          {{ t('projects.filter.' + detail.classification) }}
+        </span>
+
+        <span class="project__fact">
+          <span class="project__fact-label">{{ t('projects.cost') }}</span>
+          <span class="num project__fact-value">
+            {{ detail.costAmount | number: '1.0-0' }} {{ detail.costCurrency }}
+          </span>
+        </span>
+
+        <span class="project__fact">
+          <span class="project__fact-label">{{ t('projects.leadDepartment') }}</span>
+          <span class="project__fact-value">{{ t(leadDepartment()?.nameKey ?? '') }}</span>
+        </span>
+      </div>
+    </app-page-header>
+  } @else {
+    <app-page-header [title]="t('projects.title')" />
+  }
+
+  <div class="project">
+    @if (errorMessage(); as message) {
+      <p class="project__error" role="alert">{{ t(message) === message ? message : t(message) }}</p>
+    }
+
+    @if (!project()) {
+      <p class="project__status card">{{ t('common.loading') }}</p>
+    } @else {
+      <div class="project__body">
+        <section class="project__team">
+          @if (team(); as roster) {
+            <section class="card">
+              <header class="card__header">
+                <span>{{ t('projects.teamPanel') }}</span>
+                <span class="num project__count">{{ t('projects.memberCount', { count: roster.totalMembers }) }}</span>
+              </header>
+
+              <!-- One group per contributing department, functional sub-groups inside. This is the "members
+                   divided by their department" view the design calls for. -->
+              @for (department of roster.departments; track department.departmentId) {
+                <section class="project__dept">
+                  <button
+                    type="button"
+                    class="project__dept-header"
+                    [attr.aria-expanded]="!isCollapsed(department.departmentId)"
+                    (click)="toggle(department.departmentId)"
+                  >
+                    <span class="project__dept-caret" aria-hidden="true">
+                      {{ isCollapsed(department.departmentId) ? '▸' : '▾' }}
+                    </span>
+                    <span class="project__dept-name">{{ t(department.nameKey) }}</span>
+                    @if (department.departmentId === leadDepartment()?.departmentId) {
+                      <span class="pill pill--committed">{{ t('projects.lead') }}</span>
+                    }
+                  </button>
+
+                  @if (!isCollapsed(department.departmentId)) {
+                    @for (fn of department.functions; track fn.functionalRoleId) {
+                      <div class="project__function">
+                        <span class="project__function-label">
+                          {{ t('directory.functionalRole.' + fn.code) }}
+                        </span>
+
+                        <ul class="project__members">
+                          @for (member of fn.members; track member.personId) {
+                            <li class="project__member">
+                              <span class="avatar">{{ initials(member.displayName) }}</span>
+                              <span class="project__member-name">
+                                <!-- A person RLS hid still occupies a seat; naming them would leak, omitting them
+                                     would misreport the team's size. -->
+                                {{ member.displayName ?? t('projects.hiddenMember') }}
+                              </span>
+                              @if (member.allocationPercent) {
+                                <span class="num project__member-allocation">{{ member.allocationPercent }}%</span>
+                              }
+                              @if (canEdit() && member.displayName) {
+                                <button
+                                  type="button"
+                                  class="btn btn--ghost project__member-remove"
+                                  (click)="removeMember(member.personId)"
+                                >
+                                  {{ t('projects.remove') }}
+                                </button>
+                              }
+                            </li>
+                          }
+                        </ul>
+                      </div>
+                    }
+                  }
+                </section>
+              } @empty {
+                <p class="project__status">{{ t('projects.noMembers') }}</p>
+              }
+            </section>
+
+            @if (canEdit()) {
+              <section class="card">
+                <header class="card__header">{{ t('projects.addMember') }}</header>
+                <div class="card__body project__add">
+                  <label class="field">
+                    <span class="field__label">{{ t('projects.person') }}</span>
+                    <select
+                      class="select"
+                      [ngModel]="selectedCandidate()"
+                      (ngModelChange)="selectedCandidate.set($event)"
+                    >
+                      <option value="">{{ t('projects.choosePerson') }}</option>
+                      @for (candidate of candidates(); track candidate.personId) {
+                        <option [value]="candidate.personId">{{ candidate.displayName }}</option>
+                      }
+                    </select>
+                  </label>
+
+                  <label class="field">
+                    <span class="field__label">{{ t('projects.function') }}</span>
+                    <select class="select" [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)">
+                      <option value="">{{ t('projects.chooseFunction') }}</option>
+                      <option value="f0000000-0000-0000-0000-000000000001">{{ t('directory.functionalRole.dev') }}</option>
+                      <option value="f0000000-0000-0000-0000-000000000002">{{ t('directory.functionalRole.tech-lead') }}</option>
+                      <option value="f0000000-0000-0000-0000-000000000003">{{ t('directory.functionalRole.architecte') }}</option>
+                      <option value="f0000000-0000-0000-0000-000000000005">{{ t('directory.functionalRole.comptable') }}</option>
+                    </select>
+                  </label>
+
+                  <label class="field">
+                    <span class="field__label">{{ t('projects.allocation') }}</span>
+                    <input
+                      class="input num"
+                      type="number"
+                      min="1"
+                      max="100"
+                      [ngModel]="allocation()"
+                      (ngModelChange)="allocation.set($event)"
+                    />
+                  </label>
+
+                  <div class="project__add-actions">
+                    <button
+                      type="button"
+                      class="btn btn--primary"
+                      [disabled]="!selectedCandidate() || !selectedRole()"
+                      (click)="addMember()"
+                    >
+                      {{ t('projects.add') }}
+                    </button>
+                  </div>
+                </div>
+              </section>
+            }
+          }
+        </section>
+
+        <aside class="project__rail">
+          <section class="card">
+            <header class="card__header">{{ t('projects.departments') }}</header>
+            <div class="card__body">
+              @for (department of project()!.departments; track department.departmentId) {
+                <div class="project__dept-row">
+                  <span>{{ t(department.nameKey) }}</span>
+                  @if (department.isLead) {
+                    <span class="pill pill--committed">{{ t('projects.lead') }}</span>
+                  }
+                </div>
+              }
+            </div>
+          </section>
+
+          @if (project()!.description) {
+            <section class="card">
+              <header class="card__header">{{ t('projects.description') }}</header>
+              <div class="card__body project__description">{{ project()!.description }}</div>
+            </section>
+          }
+
+          @if (project()!.costNotes) {
+            <section class="card">
+              <header class="card__header">{{ t('projects.costNotes') }}</header>
+              <div class="card__body project__description">{{ project()!.costNotes }}</div>
+            </section>
+          }
+        </aside>
+      </div>
+    }
+  </div>
+</ng-container>

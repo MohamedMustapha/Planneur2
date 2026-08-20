@@ -1,0 +1,15 @@
+<div class="scope" role="group" *transloco="let t" [attr.aria-label]="t('scope.ariaLabel')">
+  <span class="scope__label">{{ t('scope.label') }}</span>
+
+  @for (option of options(); track option.id) {
+    <button
+      type="button"
+      class="scope__option"
+      [class.is-active]="effectiveScope() === option.id"
+      [attr.aria-pressed]="effectiveScope() === option.id"
+      (click)="select(option.id)"
+    >
+      {{ t(option.labelKey) }}
+    </button>
+  }
+</div>

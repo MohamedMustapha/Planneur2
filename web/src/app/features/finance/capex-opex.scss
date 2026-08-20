@@ -1,0 +1,124 @@
+:host {
+  display: contents;
+}
+
+.finance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.finance__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.finance__error {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-control);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.finance__export {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--primary-soft);
+}
+
+.finance__status,
+.finance__hint {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.finance__filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.finance__totals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.finance__figure {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  border-left: 3px solid var(--ink-muted);
+}
+
+/* Capex and opex are the two halves of one number, so they are told apart by colour as well as by label — the
+   figure a head is looking for is nearly always one of the two. */
+.finance__figure--capex {
+  border-left-color: var(--primary);
+}
+
+.finance__figure--opex {
+  border-left-color: var(--warning);
+}
+
+.finance__figure-label {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.finance__figure-value {
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.finance__figure-meta {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+/* One bar, two colours: the split as a proportion, which is the shape of the question "how much of what we spent
+   was investment". Deliberately not a chart library — this is a ratio, and a ratio is a div. */
+.finance__bar {
+  display: flex;
+  height: 10px;
+  margin-bottom: var(--space-3);
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--warning);
+}
+
+.finance__bar-capex {
+  height: 100%;
+  background: var(--primary);
+}
+
+/* An unvalued remainder, or a cost in another currency. Muted because it is a caveat on a number rather than a
+   number, and loud enough to be noticed by somebody reconciling. */
+.finance__gap {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.finance__rules,
+.finance__rate-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.finance__rate-form {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}

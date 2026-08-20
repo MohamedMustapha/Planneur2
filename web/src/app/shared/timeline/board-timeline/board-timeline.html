@@ -1,0 +1,11 @@
+<div class="board-timeline">
+  <mbsc-eventcalendar
+    [options]="options()"
+    [data]="mbscEvents()"
+    [resources]="mbscResources()"
+    [colors]="mbscColors()"
+    [selectedDate]="selectedDate()"
+    (onEventUpdate)="onEventUpdate($event)"
+    (onEventCreate)="onEventCreate($event)"
+  />
+</div>

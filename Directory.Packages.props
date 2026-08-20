@@ -1,0 +1,92 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Shared version variables">
+    <AspireVersion>13.4.6</AspireVersion>
+    <EfCoreVersion>10.0.11</EfCoreVersion>
+    <NpgsqlVersion>10.0.3</NpgsqlVersion>
+    <AspNetCoreVersion>10.0.11</AspNetCoreVersion>
+    <FastEndpointsVersion>8.2.0</FastEndpointsVersion>
+    <FluentValidationVersion>12.1.1</FluentValidationVersion>
+    <OpenTelemetryVersion>1.17.0</OpenTelemetryVersion>
+    <OpenTelemetryBetaVersion>1.17.0-beta.1</OpenTelemetryBetaVersion>
+    <MicrosoftExtensionsVersion>10.9.0</MicrosoftExtensionsVersion>
+    <XunitVersion>3.2.2</XunitVersion>
+  </PropertyGroup>
+
+  <ItemGroup Label="Aspire — orchestration (dev box)">
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.Seq" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="$(AspireVersion)" />
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="$(AspireVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Aspire — client integrations">
+    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(AspireVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Web / API">
+    <PackageVersion Include="FastEndpoints" Version="$(FastEndpointsVersion)" />
+    <PackageVersion Include="FastEndpoints.Swagger" Version="$(FastEndpointsVersion)" />
+    <PackageVersion Include="FluentValidation" Version="$(FluentValidationVersion)" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="$(FluentValidationVersion)" />
+    <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(AspNetCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Persistence">
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(NpgsqlVersion)" />
+    <PackageVersion Include="Npgsql.OpenTelemetry" Version="$(NpgsqlVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EfCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EfCoreVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Composition / DI">
+    <PackageVersion Include="Scrutor" Version="7.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="$(MicrosoftExtensionsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Label="Observability">
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Seq" Version="9.1.0" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="$(OpenTelemetryBetaVersion)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryVersion)" />
+    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Storage / AI">
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.102.2" />
+  </ItemGroup>
+
+  <ItemGroup Label="Testing">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageVersion Include="xunit.v3" Version="$(XunitVersion)" />
+    <!-- The shared fixture library is consumed BY test projects; it is not one itself, so it takes the
+         extensibility package rather than the runner. -->
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="$(XunitVersion)" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="NSubstitute" Version="6.2.0" />
+    <PackageVersion Include="Bogus" Version="35.6.5" />
+    <PackageVersion Include="Respawn" Version="7.0.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="NetArchTest.Rules" Version="1.3.2" />
+    <PackageVersion Include="Microsoft.Playwright" Version="1.62.0" />
+  </ItemGroup>
+
+</Project>

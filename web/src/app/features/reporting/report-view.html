@@ -1,0 +1,207 @@
+<ng-container *transloco="let t">
+  <app-page-header
+    [title]="t('reports.title')"
+    [subtitle]="reporting.report()?.scopeLabel ?? t('reports.subtitle')"
+  >
+    <div slot="tabs" class="tabs">
+      <!-- Drawn from what the server says this viewer may ask for, never from role names on the client. The
+           widening rule lives in one place and this is downstream of it. -->
+      @for (scope of reporting.availableScopes(); track scope) {
+        <button
+          type="button"
+          class="tab"
+          [class.is-active]="reporting.report()?.scope === scope"
+          [attr.aria-pressed]="reporting.report()?.scope === scope"
+          (click)="select(scope)"
+        >
+          {{ t('reports.scope.' + scope) }}
+        </button>
+      }
+    </div>
+
+    <div slot="actions" class="reports__actions">
+      <div class="segmented" role="group" [attr.aria-label]="t('reports.period.label')">
+        @for (period of periods; track period) {
+          <button
+            type="button"
+            class="segmented__item"
+            [class.is-active]="reporting.period() === period"
+            (click)="setPeriod(period)"
+          >
+            {{ t('reports.period.' + period + 'Short') }}
+          </button>
+        }
+      </div>
+
+      <div class="pager" role="group" [attr.aria-label]="t('reports.periodNav')">
+        <button type="button" class="btn btn--ghost" (click)="step(-1)" aria-label="&lt;">
+          &lt;
+        </button>
+        <span class="pager__label mono">{{ periodLabel() }}</span>
+        <button type="button" class="btn btn--ghost" (click)="step(1)" aria-label="&gt;">
+          &gt;
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="btn btn--neutral"
+        [disabled]="busy() || !reporting.report()"
+        (click)="export()"
+      >
+        {{ t('reports.export') }}
+      </button>
+    </div>
+  </app-page-header>
+
+  <div class="reports">
+    @if (message(); as failure) {
+      <p class="reports__error card" role="alert">
+        {{ t(failure) === failure ? failure : t(failure) }}
+      </p>
+    }
+
+    @if (exportUrl(); as url) {
+      <!-- Shown rather than followed automatically: the link is short-lived, and a download that starts by
+           itself gives the reader nothing to copy when they wanted to send it to somebody. -->
+      <p class="reports__export card">
+        <a [href]="url" rel="noopener noreferrer" target="_blank">{{ t('reports.exportReady') }}</a>
+        <span class="reports__export-note">{{ t('reports.exportExpires') }}</span>
+      </p>
+    }
+
+    @if (needsProject()) {
+      <section class="card scope">
+        <label class="field">
+          <span class="field__label">{{ t('reports.project') }}</span>
+          <select
+            class="select"
+            [ngModel]="reporting.scopeId() ?? ''"
+            (ngModelChange)="selectProject($event)"
+          >
+            <option value="">{{ t('reports.chooseProject') }}</option>
+            @for (project of projects.projects(); track project.id) {
+              <option [value]="project.id">{{ project.code }} — {{ project.name }}</option>
+            }
+          </select>
+        </label>
+      </section>
+    }
+
+    @if (awaitingProject()) {
+      <p class="reports__empty card">{{ t('reports.pickProject') }}</p>
+    } @else if (reporting.isLoading()) {
+      <p class="reports__status">{{ t('common.loading') }}</p>
+    } @else {
+      <!-- ------------------------------------------------------------------ The machine-written narrative -->
+      <section class="card summary">
+        <header class="card__header">
+          <span>{{ t('reports.summary.title') }}</span>
+          <div class="summary__tools">
+            @if (reporting.summary(); as summary) {
+              <span class="summary__model mono">{{ summary.model }}</span>
+              @if (summary.stale) {
+                <span class="chip summary__stale">{{ t('reports.summary.stale') }}</span>
+              }
+            }
+            <button
+              type="button"
+              class="btn btn--ghost"
+              [disabled]="reporting.generating()"
+              (click)="generate(reporting.summary() !== null)"
+            >
+              {{
+                reporting.generating()
+                  ? t('reports.summary.writing')
+                  : reporting.summary()
+                    ? t('reports.summary.regenerate')
+                    : t('reports.summary.generate')
+              }}
+            </button>
+          </div>
+        </header>
+
+        <div class="card__body">
+          <!-- Labelled on the screen and again in the exported PDF. A reader who forwards either one has to be
+               able to tell that a model wrote this part. -->
+          <p class="summary__disclaimer">{{ t('reports.summary.disclaimer') }}</p>
+
+          @if (reporting.summaryText(); as text) {
+            <p class="summary__text">{{ text }}</p>
+          } @else {
+            <p class="reports__empty">{{ t('reports.summary.none') }}</p>
+          }
+        </div>
+      </section>
+
+      <!-- ------------------------------------------------------------------ The deterministic half -->
+      @for (section of reporting.sections(); track section.key) {
+        <section class="card">
+          <header class="card__header">{{ t(section.titleKey) }}</header>
+
+          @if (section.metrics.length > 0) {
+            <div class="metrics">
+              @for (metric of section.metrics; track metric.key) {
+                <article class="metric">
+                  <span class="section-label">{{ t('reports.metric.' + metric.key) }}</span>
+                  <span class="metric__value num">{{ format(metric) }}</span>
+                </article>
+              }
+            </div>
+          }
+
+          @for (table of section.tables; track table.titleKey) {
+            @if (table.rows.length > 0) {
+              <div class="reports__table-wrap">
+                <table class="reports__table">
+                  <caption class="section-label">
+                    {{
+                      t(table.titleKey)
+                    }}
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">{{ t('reports.column.label') }}</th>
+                      @for (column of table.columnKeys; track column) {
+                        <th scope="col" class="num">{{ t(column) }}</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of table.rows; track row.key) {
+                      <tr>
+                        <th scope="row">{{ label(row.label) }}</th>
+                        @for (value of row.values; track $index) {
+                          <td class="num">{{ number(value) }}</td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+
+          @if (section.notes.length > 0) {
+            <ul class="notes">
+              @for (note of section.notes; track note.key + (note.text ?? '')) {
+                <li class="note" [class]="'note note--' + (note.severity ?? 'info')">
+                  <span>{{ t(note.key) }}</span>
+                  @if (note.text) {
+                    <span class="note__detail">{{ note.text }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+
+          @if (isEmpty(section)) {
+            <!-- A section that renders nothing at all looks like a failure. Saying "nothing this period" is
+                 both true and the answer somebody was looking for. -->
+            <p class="reports__empty">{{ t('reports.sectionEmpty') }}</p>
+          }
+        </section>
+      }
+    }
+  </div>
+</ng-container>

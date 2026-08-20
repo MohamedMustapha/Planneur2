@@ -1,0 +1,19 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.4.6">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UserSecretsId>cracra-apphost-8f3a</UserSecretsId>
+    <IsAspireHost>true</IsAspireHost>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Host/Cracra.Host.csproj" />
+    <ProjectReference Include="../Bff/Cracra.Bff.csproj" />
+    <ProjectReference Include="../Tools/LlmStub/Cracra.Tools.LlmStub.csproj" />
+    <ProjectReference Include="../Tools/ProviderStub/Cracra.Tools.ProviderStub.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.Seq" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" />
+  </ItemGroup>
+</Project>

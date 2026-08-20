@@ -1,0 +1,114 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/AppHost/">
+    <Project Path="src/AppHost/Cracra.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/src/Bff/">
+    <Project Path="src/Bff/Cracra.Bff.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/" />
+  <Folder Name="/src/BuildingBlocks/Abstractions/">
+    <Project Path="src/BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Ai/">
+    <Project Path="src/BuildingBlocks/Ai/Cracra.BuildingBlocks.Ai.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Documents/">
+    <Project Path="src/BuildingBlocks/Documents/Cracra.BuildingBlocks.Documents.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Mediator/">
+    <Project Path="src/BuildingBlocks/Mediator/Cracra.BuildingBlocks.Mediator.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Messaging/">
+    <Project Path="src/BuildingBlocks/Messaging/Cracra.BuildingBlocks.Messaging.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Observability/">
+    <Project Path="src/BuildingBlocks/Observability/Cracra.BuildingBlocks.Observability.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Persistence/">
+    <Project Path="src/BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Storage/">
+    <Project Path="src/BuildingBlocks/Storage/Cracra.BuildingBlocks.Storage.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Testing/">
+    <Project Path="src/BuildingBlocks/Testing/Cracra.BuildingBlocks.Testing.csproj" />
+  </Folder>
+  <Folder Name="/src/BuildingBlocks/Web/">
+    <Project Path="src/BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/Host/">
+    <Project Path="src/Host/Cracra.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Access.Contracts/">
+    <Project Path="src/Modules/Access.Contracts/Cracra.Modules.Access.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Access/">
+    <Project Path="src/Modules/Access/Cracra.Modules.Access.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Directory.Contracts/">
+    <Project Path="src/Modules/Directory.Contracts/Cracra.Modules.Directory.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Directory/">
+    <Project Path="src/Modules/Directory/Cracra.Modules.Directory.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Portfolio.Contracts/">
+    <Project Path="src/Modules/Portfolio.Contracts/Cracra.Modules.Portfolio.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Portfolio/">
+    <Project Path="src/Modules/Portfolio/Cracra.Modules.Portfolio.csproj" />
+    <Project Path="src/Modules/Activities.Contracts/Cracra.Modules.Activities.Contracts.csproj" />
+    <Project Path="src/Modules/Activities/Cracra.Modules.Activities.csproj" />
+    <Project Path="src/Modules/Scheduling.Contracts/Cracra.Modules.Scheduling.Contracts.csproj" />
+    <Project Path="src/Modules/Scheduling/Cracra.Modules.Scheduling.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Finance/">
+    <Project Path="src/Modules/Finance/Cracra.Modules.Finance.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Integrations/">
+    <Project Path="src/Modules/Integrations.Contracts/Cracra.Modules.Integrations.Contracts.csproj" />
+    <Project Path="src/Modules/Integrations/Cracra.Modules.Integrations.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Kudos/">
+    <Project Path="src/Modules/Kudos.Contracts/Cracra.Modules.Kudos.Contracts.csproj" />
+    <Project Path="src/Modules/Kudos/Cracra.Modules.Kudos.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Meetings/">
+    <Project Path="src/Modules/Meetings.Contracts/Cracra.Modules.Meetings.Contracts.csproj" />
+    <Project Path="src/Modules/Meetings/Cracra.Modules.Meetings.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Reporting/">
+    <Project Path="src/Modules/Reporting.Contracts/Cracra.Modules.Reporting.Contracts.csproj" />
+    <Project Path="src/Modules/Reporting/Cracra.Modules.Reporting.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Projects.Contracts/">
+    <Project Path="src/Modules/Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Projects/">
+    <Project Path="src/Modules/Projects/Cracra.Modules.Projects.csproj" />
+  </Folder>
+  <Folder Name="/src/ServiceDefaults/">
+    <Project Path="src/ServiceDefaults/Cracra.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/" />
+  <Folder Name="/src/Tools/LlmStub/">
+    <Project Path="src/Tools/LlmStub/Cracra.Tools.LlmStub.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/ProviderStub/">
+    <Project Path="src/Tools/ProviderStub/Cracra.Tools.ProviderStub.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Architecture/">
+    <Project Path="tests/Architecture/Cracra.Tests.Architecture.csproj" />
+  </Folder>
+  <Folder Name="/tests/E2E/">
+    <Project Path="tests/E2E/Cracra.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/tests/Integration/">
+    <Project Path="tests/Integration/Cracra.Tests.Integration.csproj" />
+  </Folder>
+  <Folder Name="/tests/Unit/">
+    <Project Path="tests/Unit/Cracra.Tests.Unit.csproj" />
+  </Folder>
+</Solution>

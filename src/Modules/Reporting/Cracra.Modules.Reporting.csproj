@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Reporting.Contracts/Cracra.Modules.Reporting.Contracts.csproj" />
+    <!-- Contracts only. Reporting reads six modules and reaches into none of their schemas: every figure in a
+         report arrives through a port over one of these, inside the caller's own RLS session. -->
+    <ProjectReference Include="../Directory.Contracts/Cracra.Modules.Directory.Contracts.csproj" />
+    <ProjectReference Include="../Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />
+    <ProjectReference Include="../Portfolio.Contracts/Cracra.Modules.Portfolio.Contracts.csproj" />
+    <ProjectReference Include="../Activities.Contracts/Cracra.Modules.Activities.Contracts.csproj" />
+    <ProjectReference Include="../Scheduling.Contracts/Cracra.Modules.Scheduling.Contracts.csproj" />
+    <ProjectReference Include="../Meetings.Contracts/Cracra.Modules.Meetings.Contracts.csproj" />
+    <ProjectReference Include="../Kudos.Contracts/Cracra.Modules.Kudos.Contracts.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Observability/Cracra.BuildingBlocks.Observability.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Ai/Cracra.BuildingBlocks.Ai.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Storage/Cracra.BuildingBlocks.Storage.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Documents/Cracra.BuildingBlocks.Documents.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Cracra.Tests.Unit" />
+    <InternalsVisibleTo Include="Cracra.Tests.Integration" />
+  </ItemGroup>
+</Project>

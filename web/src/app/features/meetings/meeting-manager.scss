@@ -1,0 +1,159 @@
+:host {
+  display: contents;
+}
+
+.meetings {
+  padding: var(--space-4);
+}
+
+.meetings__error {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Two columns where there is room, stacked where there is not. The two halves are independent, so a narrow
+   window loses nothing by putting one under the other. */
+.meetings__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.meetings__form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.meetings__wide {
+  grid-column: 1 / -1;
+}
+
+.meetings__days {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.meetings__day-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.meetings__day {
+  min-width: 2.75rem;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--primary);
+  }
+
+  &.is-selected {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--ink);
+    font-weight: 500;
+  }
+}
+
+.meetings__rule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.meetings__rule code {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+  font-size: var(--text-sm);
+}
+
+.meetings__empty {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-2);
+  text-align: center;
+}
+
+.meetings__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.meetings__item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+
+  /* Kept visible rather than hidden: a series that ran and stopped is history somebody asks about, and it has
+     to be reactivatable from the same list. */
+  &.is-inactive {
+    opacity: 0.55;
+  }
+}
+
+.meetings__item-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+.meetings__item-name {
+  font-weight: 500;
+}
+
+.meetings__item-rule {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+
+.meetings__item-meta {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.meetings__link {
+  color: var(--primary);
+}
+
+/* The severity dot. The same three tokens the board overlays use, so a critical audit reads the same colour on
+   the manager and on the canvas. */
+.meetings__severity {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--event-info);
+}
+
+.meetings__severity--warning {
+  background: var(--event-warning);
+}
+
+.meetings__severity--critical {
+  background: var(--event-critical);
+}

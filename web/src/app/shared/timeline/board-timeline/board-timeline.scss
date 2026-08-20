@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.board-timeline {
+  min-height: 320px;
+}
+
+// --- Row templates ------------------------------------------------------------------------------------------------
+// The payload's `kind` becomes a class, so a unit row and a project line beneath it read differently without the
+// component branching on type in markup.
+:host ::ng-deep .row--unit,
+:host ::ng-deep .row--department {
+  font-weight: 600;
+  background: var(--surface-2);
+}
+
+:host ::ng-deep .row--project-line {
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+:host ::ng-deep .row--lane {
+  font-weight: 500;
+}
+
+// --- Events -------------------------------------------------------------------------------------------------------
+// Planned reads as an outline, actual as a solid fill — the same distinction the board header's legend has shown
+// since S0, so the two views teach each other rather than each inventing their own convention.
+:host ::ng-deep .event--planned {
+  background: transparent !important;
+  border: 1px dashed currentColor;
+  opacity: 0.85;
+}
+
+:host ::ng-deep .event--actual {
+  border: 1px solid transparent;
+}
+
+:host ::ng-deep .shift {
+  font-size: var(--text-2xs);
+  font-weight: 500;
+}
+
+:host ::ng-deep .shift--on-call {
+  background: var(--activity-leave-bg) !important;
+  color: var(--activity-leave-ink) !important;
+}

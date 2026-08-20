@@ -1,0 +1,262 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('boards.title')" [subtitle]="t('boards.subtitle')">
+    <div slot="tabs" class="tabs">
+      @for (board of boards; track board.id) {
+        <button
+          type="button"
+          class="tab"
+          [class.is-active]="scheduling.boardType() === board.id"
+          [attr.aria-pressed]="scheduling.boardType() === board.id"
+          (click)="select(board.id)"
+        >
+          {{ t(board.labelKey) }}
+        </button>
+      }
+    </div>
+
+    <div slot="actions" class="boards__actions">
+      <div class="pager" role="group" [attr.aria-label]="t('boards.weekNav')">
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="scheduling.stepWeek(-1)"
+          aria-label="&lt;"
+        >
+          &lt;
+        </button>
+        <span class="pager__label mono">{{ weekLabel() }}</span>
+        <button
+          type="button"
+          class="btn btn--ghost"
+          (click)="scheduling.stepWeek(1)"
+          aria-label="&gt;"
+        >
+          &gt;
+        </button>
+      </div>
+    </div>
+  </app-page-header>
+
+  <div class="boards">
+    @if (message(); as failure) {
+      <!-- Both kinds of failure land here: an action the server refused, and the board itself failing to load. A
+           board that could not load rendering as an empty canvas is indistinguishable from a quiet week. -->
+      <p class="boards__error card" role="alert">{{ failure }}</p>
+    }
+
+    @if (needsProjectScope()) {
+      <section class="card scope">
+        <label class="field">
+          <span>{{ t('boards.project') }}</span>
+          <select
+            class="select"
+            [ngModel]="scheduling.scopeId() ?? ''"
+            (ngModelChange)="selectProject($event)"
+          >
+            <option value="">{{ t('boards.chooseProject') }}</option>
+            @for (project of projects.projects(); track project.id) {
+              <option [value]="project.id">{{ project.code }} — {{ project.name }}</option>
+            }
+          </select>
+        </label>
+      </section>
+    }
+
+    @if (scheduling.isLoading()) {
+      <p class="boards__status">{{ t('common.loading') }}</p>
+    } @else {
+      <!-- 6a: the unassigned pool as a fixed top row. Present only where the department's layout asks for it. -->
+      @if (scheduling.archetype() === 'work-orders') {
+        <section class="card pool">
+          <header class="card__header">
+            <span>{{ t('boards.pool') }}</span>
+            <div class="pool__tools">
+              <span class="pool__count num">{{ scheduling.pool().length }}</span>
+              @if (scheduling.canAssign()) {
+                <button
+                  type="button"
+                  class="btn btn--ghost"
+                  [disabled]="busy()"
+                  (click)="refreshPool()"
+                >
+                  {{ t('boards.refreshPool') }}
+                </button>
+              }
+            </div>
+          </header>
+
+          @if (scheduling.pool().length === 0) {
+            <p class="boards__empty">{{ t('boards.poolEmpty') }}</p>
+          } @else {
+            <ul class="pool__list">
+              @for (order of scheduling.pool(); track order.id) {
+                <li>
+                  <!-- Pick up, then choose a row. A two-step gesture rather than a drag, because a drag that
+                       silently does nothing when the server refuses is worse than a click that says why. -->
+                  <button
+                    type="button"
+                    class="pool__card"
+                    [class.is-held]="heldOrder()?.id === order.id"
+                    [disabled]="!scheduling.canAssign()"
+                    (click)="hold(order)"
+                  >
+                    <span class="pool__ref mono">{{ order.reference }}</span>
+                    <span class="pool__title">{{ order.title }}</span>
+                    <span class="pool__estimate num">{{ order.estimatedHours }}h</span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (heldOrder(); as held) {
+            <footer class="pool__drop">
+              <span class="pool__holding">{{
+                t('boards.assigning', { ref: held.reference })
+              }}</span>
+              @for (person of people(); track person.id) {
+                <button
+                  type="button"
+                  class="btn btn--secondary"
+                  [disabled]="busy()"
+                  (click)="dropOn(person.id)"
+                >
+                  {{ person.name }}
+                </button>
+              }
+            </footer>
+          }
+        </section>
+      }
+
+      <!-- 6b: the shift editor and its coverage warnings. -->
+      @if (scheduling.archetype() === 'shifts' && scheduling.canAssign()) {
+        <section class="card roster">
+          <header class="card__header">{{ t('boards.roster') }}</header>
+
+          <div class="roster__form">
+            <label class="field">
+              <span>{{ t('boards.person') }}</span>
+              <select
+                class="select"
+                [ngModel]="rosterPerson()"
+                (ngModelChange)="rosterPerson.set($event)"
+              >
+                <option value="">{{ t('boards.choosePerson') }}</option>
+                @for (person of people(); track person.id) {
+                  <option [value]="person.id">{{ person.name }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="field">
+              <span>{{ t('boards.shift') }}</span>
+              <select
+                class="select"
+                [ngModel]="rosterTemplate()"
+                (ngModelChange)="rosterTemplate.set($event)"
+              >
+                <option value="">{{ t('boards.chooseShift') }}</option>
+                @for (template of templates(); track template.code) {
+                  <option [value]="template.code">{{ t(template.labelKey) }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="field">
+              <span>{{ t('boards.day') }}</span>
+              <input
+                class="input"
+                type="date"
+                [ngModel]="rosterDay()"
+                (ngModelChange)="rosterDay.set($event)"
+              />
+            </label>
+
+            <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="roster()">
+              {{ t('boards.addShift') }}
+            </button>
+          </div>
+
+          @if (scheduling.coverage().length > 0) {
+            <!-- Warnings, never refusals. A thin Tuesday is sometimes genuinely fine, and a scheduler that
+                 refused to record it would be a scheduler people stopped using. -->
+            <ul class="coverage">
+              @for (warning of scheduling.coverage(); track warning.day + warning.slotCode) {
+                <li class="coverage__item">
+                  <span class="mono">{{ warning.day }}</span>
+                  {{ t('shift.' + warning.slotCode) }}
+                  <span class="coverage__counts num"
+                    >{{ warning.scheduled }}/{{ warning.required }}</span
+                  >
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      }
+
+      <!-- S9's monthly counter, on the boards the spec asks for it: a team or unit is who recognises each other,
+           and a project or a personal board is not a group with a shared count. -->
+      @if (showsKudos()) {
+        <app-kudos-monthly
+          [scope]="kudosScope()"
+          [scopeId]="scheduling.scopeId()"
+        />
+      }
+
+      <!-- S7's overlays, named. The canvas paints them as coloured ranges, which shows *when* something is
+           happening but not what; this strip says what, with the same colours, so a patch party is legible
+           without hovering a column. -->
+      @if (scheduling.overlays().length > 0) {
+        <section class="card events" [attr.aria-label]="t('meetings.thisWeek')">
+          <header class="card__header">{{ t('meetings.thisWeek') }}</header>
+          <ul class="events__list">
+            @for (overlay of scheduling.overlays(); track overlay.id) {
+              <li class="events__item" [style.background]="overlay.color">
+                <span class="events__kind">{{ overlayLabel(overlay.kind) }}</span>
+                <span class="events__title">{{
+                  t(overlay.title) === overlay.title ? overlay.title : t(overlay.title)
+                }}</span>
+                <span class="events__date mono">{{ overlay.from }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <section class="card">
+        <header class="card__header">
+          <span>{{ t(scheduling.board()?.title ?? 'boards.title') }}</span>
+          <div class="boards__legend">
+            <span class="boards__legend-item">
+              <span class="boards__legend-swatch boards__legend-swatch--planned"></span
+              >{{ t('board.legendPlanned') }}
+            </span>
+            <span class="boards__legend-item">
+              <span class="boards__legend-swatch boards__legend-swatch--actual"></span
+              >{{ t('board.legendActual') }}
+            </span>
+          </div>
+        </header>
+
+        @if (awaitingProject()) {
+          <p class="boards__empty">{{ t('boards.pickProject') }}</p>
+        } @else if (scheduling.resources().length === 0) {
+          <p class="boards__empty">{{ t('boards.empty') }}</p>
+        } @else {
+          <app-board-timeline
+            [archetype]="scheduling.archetype()"
+            [resources]="scheduling.resources()"
+            [events]="scheduling.events()"
+            [overlays]="scheduling.overlays()"
+            [from]="scheduling.board()!.from"
+            [to]="scheduling.board()!.to"
+            [editable]="scheduling.canAssign()"
+            (moved)="onMoved($event)"
+          />
+        }
+      </section>
+    }
+  </div>
+</ng-container>

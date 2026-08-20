@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../BuildingBlocks/Messaging/Cracra.BuildingBlocks.Messaging.csproj" />
+  </ItemGroup>
+</Project>

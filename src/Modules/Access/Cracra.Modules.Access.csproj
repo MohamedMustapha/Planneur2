@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Access.Contracts/Cracra.Modules.Access.Contracts.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Cracra.Tests.Unit" />
+    <InternalsVisibleTo Include="Cracra.Tests.Integration" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,79 @@
+<ng-container *transloco="let t">
+  <aside class="panel card" role="dialog" [attr.aria-label]="t('kudos.give')">
+    <h2 class="panel__title">{{ t('kudos.give') }}</h2>
+
+    @if (error(); as failure) {
+      <p class="panel__error" role="alert">{{ t(failure) === failure ? failure : t(failure) }}</p>
+    }
+
+    <label class="field">
+      <span>{{ t('kudos.recipient') }}</span>
+      <select
+        class="select"
+        [ngModel]="toPersonId()"
+        (ngModelChange)="choose($event)"
+        [attr.aria-label]="t('kudos.recipient')"
+      >
+        <option value="">{{ t('kudos.chooseRecipient') }}</option>
+        @for (peer of peers(); track peer.personId) {
+          <option [value]="peer.personId">
+            {{ peer.displayName }} — {{ t(relationLabel(peer)) }}
+          </option>
+        }
+      </select>
+    </label>
+
+    @if (peers().length === 0) {
+      <!-- Not an error. Somebody in a unit of one, on no project, genuinely has nobody to thank yet. -->
+      <p class="panel__empty">{{ t('kudos.noPeers') }}</p>
+    }
+
+    @if (rules(); as rules) {
+      <fieldset class="categories">
+        <legend class="panel__section">{{ t('kudos.categoryLabel') }}</legend>
+
+        @for (option of rules.categories; track option.code) {
+          <label class="categories__option" [class.is-active]="category() === option.code">
+            <input
+              type="radio"
+              name="kudo-category"
+              [value]="option.code"
+              [ngModel]="category()"
+              (ngModelChange)="category.set($event)"
+            />
+            <span>{{ t(option.labelKey) }}</span>
+
+            <!-- Points only where the department asked for them. In counter mode the server sends zero and the
+                 chip is simply not drawn, so the mode is honoured without the template knowing about modes. -->
+            @if (rules.showsPoints) {
+              <span class="categories__points num">+{{ option.points }}</span>
+            }
+          </label>
+        }
+      </fieldset>
+    }
+
+    <label class="field">
+      <span>{{ t('kudos.message') }}</span>
+      <textarea
+        class="textarea"
+        rows="3"
+        maxlength="1000"
+        [placeholder]="t('kudos.messagePlaceholder')"
+        [ngModel]="message()"
+        (ngModelChange)="message.set($event)"
+      ></textarea>
+    </label>
+
+    <p class="give__cap" [class.is-spent]="capReached()">
+      {{ t('kudos.remaining', { count: remaining() }) }}
+    </p>
+
+    <footer class="panel__actions">
+      <button type="button" class="btn btn--ghost" (click)="close()">{{ t('common.cancel') }}</button>
+      <button type="button" class="btn btn--primary" [disabled]="busy() || !canGive()" (click)="give()">
+        {{ t('kudos.give') }}
+      </button>
+    </footer>
+  </aside>
+</ng-container>

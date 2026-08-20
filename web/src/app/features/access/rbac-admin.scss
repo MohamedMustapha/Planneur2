@@ -1,0 +1,117 @@
+:host {
+  display: contents;
+}
+
+.rbac {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--space-4);
+  align-items: start;
+  padding: var(--space-4);
+}
+
+.rbac__search {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+}
+
+.rbac__search .input {
+  width: 100%;
+}
+
+.rbac__list {
+  max-height: 60vh;
+  margin: 0;
+  padding: 0 var(--space-2) var(--space-2);
+  overflow: auto;
+  list-style: none;
+}
+
+.rbac__person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2);
+  border: none;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--ink);
+  font-size: var(--text-base);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  &.is-active {
+    background: var(--primary-soft);
+    font-weight: 500;
+  }
+}
+
+.rbac__detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rbac__role {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 var(--space-3) var(--space-2) 0;
+}
+
+.rbac__role-meta {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.rbac__form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.rbac__form-wide {
+  grid-column: 1 / -1;
+}
+
+.rbac__form-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
+// A revoked or expired override stays in the table rather than vanishing — the trail is the point — but it should
+// not read as something still in force.
+.rbac__inactive {
+  opacity: 0.5;
+}
+
+.rbac__status {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.rbac__error {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-control);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 900px) {
+  .rbac {
+    grid-template-columns: 1fr;
+  }
+}

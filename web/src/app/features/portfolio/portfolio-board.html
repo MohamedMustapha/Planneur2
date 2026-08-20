@@ -1,0 +1,292 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('portfolio.title')" [subtitle]="t('portfolio.subtitle')">
+    <div slot="tabs" class="tabs">
+      @for (option of scopes; track option) {
+        <button
+          type="button"
+          class="tab"
+          [class.is-active]="portfolio.scope() === option"
+          [attr.aria-pressed]="portfolio.scope() === option"
+          (click)="selectScope(option)"
+        >
+          {{ t('portfolio.scope.' + option) }}
+        </button>
+      }
+    </div>
+
+    <div slot="actions" class="board-actions">
+      @if (canPropose()) {
+        <button type="button" class="btn btn--primary" (click)="startComposing()">
+          {{ t('portfolio.propose') }}
+        </button>
+      }
+    </div>
+  </app-page-header>
+
+  <div class="portfolio">
+    @if (error(); as message) {
+      <p class="portfolio__error card" role="alert">{{ message }}</p>
+    }
+
+    @if (portfolio.isLoading()) {
+      <p class="portfolio__status">{{ t('common.loading') }}</p>
+    } @else {
+      <div class="lanes">
+        @for (lane of portfolio.lanes(); track lane.state) {
+          <section class="lane" [class]="'lane lane--' + lane.state">
+            <header class="lane__header">
+              <h2 class="lane__title">{{ t('portfolio.state.' + lane.state) }}</h2>
+              <span class="lane__count num">{{ lane.items.length }}</span>
+            </header>
+
+            @if (lane.items.length === 0) {
+              <!-- Empty lanes stay: a board missing its considered column reads as broken, and it is where new
+                   candidates land. -->
+              <p class="lane__empty">{{ t('portfolio.laneEmpty') }}</p>
+            }
+
+            @for (item of lane.items; track item.id) {
+              <article class="item-card">
+                <header class="item-card__header">
+                  <button type="button" class="item-card__name" (click)="open(item)">{{ item.name }}</button>
+                  @if (item.classification) {
+                    <span
+                      class="chip"
+                      [class]="'chip chip--' + (item.classification === 'run' ? 'run' : 'build')"
+                    >
+                      <span class="chip__swatch" aria-hidden="true"></span>
+                      {{ t('projects.filter.' + item.classification) }}
+                    </span>
+                  }
+                </header>
+
+                <p class="item-card__meta">
+                  {{ t(item.departmentNameKey) }}
+                  @if (item.costAmount !== null) {
+                    <span class="num">· {{ item.costAmount | number: '1.0-0' }} {{ item.costCurrency }}</span>
+                  }
+                </p>
+
+                @if (item.currentIteration; as iteration) {
+                  <!-- The iteration strip: what is running now, and how far through it we are. -->
+                  <div class="iteration" [class.is-active]="iteration.state === 'active'">
+                    <span class="iteration__name">{{ iteration.name }}</span>
+                    <span class="iteration__dates mono">{{ iteration.startsOn }} → {{ iteration.endsOn }}</span>
+                    <span class="iteration__index num">{{ iteration.sequence }}/{{ item.iterationCount }}</span>
+                  </div>
+                }
+
+                <footer class="item-card__actions">
+                  @if (item.projectId) {
+                    <a class="btn btn--ghost" [routerLink]="['/projects', item.projectId]">
+                      {{ t('portfolio.openProject') }}
+                    </a>
+                  }
+
+                  @if (item.state === 'committed' || item.state === 'active') {
+                    <button type="button" class="btn btn--ghost" (click)="startPlanning(item)">
+                      {{ t('portfolio.addIteration') }}
+                    </button>
+                  }
+
+                  @if (item.state === 'active' && item.currentIteration) {
+                    <button
+                      type="button"
+                      class="btn btn--ghost"
+                      [disabled]="busy()"
+                      (click)="closeIteration(item)"
+                    >
+                      {{ t('portfolio.closeIteration') }}
+                    </button>
+                  }
+
+                  @if (actionFor(item.state) === 'commit' && canDecide()) {
+                    <button type="button" class="btn btn--primary" (click)="startDeciding(item)">
+                      {{ t('portfolio.commit') }}
+                    </button>
+                  }
+
+                  @if (actionFor(item.state) === 'activate' && canPropose()) {
+                    <button
+                      type="button"
+                      class="btn btn--primary"
+                      [disabled]="busy()"
+                      (click)="activate(item)"
+                    >
+                      {{ t('portfolio.activate') }}
+                    </button>
+                  }
+
+                  @if (actionFor(item.state) === 'archive' && canDecide()) {
+                    <button type="button" class="btn btn--ghost" (click)="startDeciding(item)">
+                      {{ t('portfolio.archive') }}
+                    </button>
+                  }
+                </footer>
+              </article>
+            }
+          </section>
+        }
+      </div>
+    }
+  </div>
+
+  @if (composing()) {
+    <aside class="panel card" role="dialog" [attr.aria-label]="t('portfolio.propose')">
+      <h2 class="panel__title">{{ t('portfolio.propose') }}</h2>
+
+      <label class="field">
+        <span>{{ t('portfolio.candidateName') }}</span>
+        <input type="text" [ngModel]="candidateName()" (ngModelChange)="candidateName.set($event)" />
+      </label>
+
+      <label class="field">
+        <span>{{ t('portfolio.priority') }}</span>
+        <input
+          type="number"
+          min="1"
+          max="999"
+          [ngModel]="candidatePriority()"
+          (ngModelChange)="candidatePriority.set($event)"
+        />
+      </label>
+
+      <label class="field">
+        <span>{{ t('portfolio.notes') }}</span>
+        <textarea rows="3" [ngModel]="decisionNotes()" (ngModelChange)="decisionNotes.set($event)"></textarea>
+      </label>
+
+      <footer class="panel__actions">
+        <button type="button" class="btn btn--ghost" (click)="close()">{{ t('common.cancel') }}</button>
+        <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="propose()">
+          {{ t('portfolio.propose') }}
+        </button>
+      </footer>
+    </aside>
+  }
+
+  @if (deciding(); as item) {
+    <aside class="panel card" role="dialog" [attr.aria-label]="t('portfolio.decision')">
+      <h2 class="panel__title">{{ item.name }}</h2>
+
+      @if (item.state === 'considered') {
+        <label class="field">
+          <span>{{ t('portfolio.projectCode') }}</span>
+          <input type="text" [ngModel]="projectCode()" (ngModelChange)="projectCode.set($event)" />
+        </label>
+      }
+
+      <label class="field">
+        <!-- Mandatory on the server too. "Who decided this, and why" is the question the portfolio exists to keep
+             answerable, and a blank field makes the trail complete and useless. -->
+        <span>{{ t('portfolio.decisionNotes') }}</span>
+        <textarea rows="3" [ngModel]="decisionNotes()" (ngModelChange)="decisionNotes.set($event)"></textarea>
+      </label>
+
+      <footer class="panel__actions">
+        <button type="button" class="btn btn--ghost" (click)="close()">{{ t('common.cancel') }}</button>
+
+        @if (item.state === 'considered') {
+          <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="commit()">
+            {{ t('portfolio.commit') }}
+          </button>
+        } @else {
+          <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="archive()">
+            {{ t('portfolio.archive') }}
+          </button>
+        }
+      </footer>
+    </aside>
+  }
+
+  @if (planning(); as item) {
+    <aside class="panel card" role="dialog" [attr.aria-label]="t('portfolio.addIteration')">
+      <h2 class="panel__title">{{ t('portfolio.addIteration') }}</h2>
+
+      <label class="field">
+        <span>{{ t('portfolio.iterationName') }}</span>
+        <input type="text" [ngModel]="iterationName()" (ngModelChange)="iterationName.set($event)" />
+      </label>
+
+      <fieldset class="field">
+        <legend>{{ t('portfolio.length') }}</legend>
+        <div class="tabs">
+          @for (option of lengths; track option) {
+            <!-- The quick selectors. They pre-fill the end date; they never constrain it — an iteration is a
+                 free-length phase, and the presets only spare the three most common cases a date picker. -->
+            <button
+              type="button"
+              class="tab"
+              [class.is-active]="iterationLength() === option"
+              [attr.aria-pressed]="iterationLength() === option"
+              (click)="iterationLength.set(option)"
+            >
+              {{ t('portfolio.lengthOption.' + option) }}
+            </button>
+          }
+        </div>
+      </fieldset>
+
+      <label class="field">
+        <span>{{ t('portfolio.startsOn') }}</span>
+        <input type="date" [ngModel]="iterationStart()" (ngModelChange)="iterationStart.set($event)" />
+      </label>
+
+      @if (iterationLength() === 'custom') {
+        <label class="field">
+          <span>{{ t('portfolio.endsOn') }}</span>
+          <input type="date" [ngModel]="iterationEnd()" (ngModelChange)="iterationEnd.set($event)" />
+        </label>
+      } @else {
+        <p class="field__hint mono">{{ t('portfolio.endsOn') }}: {{ impliedEnd() }}</p>
+      }
+
+      <footer class="panel__actions">
+        <button type="button" class="btn btn--ghost" (click)="close()">{{ t('common.cancel') }}</button>
+        <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="plan()">
+          {{ t('portfolio.addIteration') }}
+        </button>
+      </footer>
+    </aside>
+  }
+
+  @if (selected(); as detail) {
+    <aside class="panel panel--wide card" role="dialog" [attr.aria-label]="detail.item.name">
+      <h2 class="panel__title">{{ detail.item.name }}</h2>
+
+      <h3 class="panel__section">{{ t('portfolio.iterations') }}</h3>
+
+      @if (detail.iterations.length === 0) {
+        <p class="panel__empty">{{ t('portfolio.noIterations') }}</p>
+      } @else {
+        <ul class="strip">
+          @for (iteration of detail.iterations; track iteration.id) {
+            <li class="strip__item" [class]="'strip__item is-' + iteration.state">
+              <span class="strip__name">{{ iteration.sequence }}. {{ iteration.name }}</span>
+              <span class="strip__dates mono">{{ iteration.startsOn }} → {{ iteration.endsOn }}</span>
+            </li>
+          }
+        </ul>
+      }
+
+      <h3 class="panel__section">{{ t('portfolio.history') }}</h3>
+
+      <ul class="history">
+        @for (record of detail.history; track record.decidedAt) {
+          <li class="history__entry" [class.is-reversal]="record.isReversal">
+            <span class="history__states mono">
+              {{ record.fromState ? t('portfolio.state.' + record.fromState) : '—' }} →
+              {{ t('portfolio.state.' + record.toState) }}
+            </span>
+            <span class="history__reason">{{ record.reason }}</span>
+            <span class="history__when mono">{{ record.decidedAt }}</span>
+          </li>
+        }
+      </ul>
+
+      <footer class="panel__actions">
+        <button type="button" class="btn btn--ghost" (click)="close()">{{ t('common.close') }}</button>
+      </footer>
+    </aside>
+  }
+</ng-container>

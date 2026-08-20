@@ -1,0 +1,129 @@
+<ng-container *transloco="let t">
+  <aside class="quick-add card" role="dialog" [attr.aria-label]="t('activity.logTitle')">
+    <header class="quick-add__header">
+      <h2 class="quick-add__title">{{ t('activity.logTitle') }}</h2>
+      <button type="button" class="btn btn--ghost" (click)="cancel()">{{ t('common.close') }}</button>
+    </header>
+
+    @if (error(); as message) {
+      <p class="quick-add__error" role="alert">{{ message }}</p>
+    }
+
+    <!-- Mode two: pull a task from a source. Collapsed until asked for, because most entries are typed in and an
+         always-open list of tickets would bury the form under things nobody picked. -->
+    <section class="quick-add__pull">
+      @if (!tasksLoaded()) {
+        <button type="button" class="btn btn--secondary" (click)="loadTasks()">
+          {{ t('activity.pullFromSources') }}
+        </button>
+      } @else if (tasks().length === 0) {
+        <p class="quick-add__hint">{{ t('activity.noAssignableTasks') }}</p>
+      } @else {
+        <ul class="task-list">
+          @for (task of tasks(); track task.externalRef) {
+            <li>
+              <button
+                type="button"
+                class="task"
+                [class.is-selected]="externalRef() === task.externalRef"
+                (click)="pick(task)"
+              >
+                <span class="task__ref mono">{{ task.externalRef }}</span>
+                <span class="task__title">{{ task.title }}</span>
+                @if (task.state) {
+                  <span class="task__state">{{ task.state }}</span>
+                }
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      @if (externalRef(); as reference) {
+        <p class="quick-add__linked">
+          {{ t('activity.linkedTo', { ref: reference }) }}
+          <button type="button" class="btn btn--ghost" (click)="clearSource()">{{ t('activity.unlink') }}</button>
+        </p>
+      }
+    </section>
+
+    <div class="quick-add__form">
+      <fieldset class="field">
+        <legend>{{ t('activity.kind') }}</legend>
+        <div class="tabs">
+          <button
+            type="button"
+            class="tab"
+            [class.is-active]="kind() === 'actual'"
+            [attr.aria-pressed]="kind() === 'actual'"
+            (click)="kind.set('actual')"
+          >
+            {{ t('activity.kindActual') }}
+          </button>
+          <button
+            type="button"
+            class="tab"
+            [class.is-active]="kind() === 'planned'"
+            [attr.aria-pressed]="kind() === 'planned'"
+            (click)="kind.set('planned')"
+          >
+            {{ t('activity.kindPlanned') }}
+          </button>
+        </div>
+      </fieldset>
+
+      <label class="field">
+        <span>{{ t('activity.typeLabel') }}</span>
+        <!-- Options come from the department taxonomy, so an HR user sees payroll-run and a dev does not. -->
+        <select class="select" [ngModel]="typeCode()" (ngModelChange)="typeCode.set($event)">
+          <option value="">{{ t('activity.chooseType') }}</option>
+          @for (type of types(); track type.code) {
+            <option [value]="type.code">{{ t(type.labelKey) }}</option>
+          }
+        </select>
+      </label>
+
+      @if (requiresProject()) {
+        <label class="field">
+          <span>{{ t('activity.project') }}</span>
+          <select class="select" [ngModel]="projectId()" (ngModelChange)="projectId.set($event)">
+            <option value="">{{ t('activity.chooseProject') }}</option>
+            @for (project of projects.projects(); track project.id) {
+              <option [value]="project.id">{{ project.code }} — {{ project.name }}</option>
+            }
+          </select>
+        </label>
+      }
+
+      <label class="field">
+        <span>{{ t('activity.startTime') }}</span>
+        <input class="input" type="time" [ngModel]="startTime()" (ngModelChange)="startTime.set($event)" />
+      </label>
+
+      <label class="field">
+        <span>{{ t('activity.hours') }}</span>
+        <input
+          class="input num"
+          type="number"
+          min="0.25"
+          max="24"
+          step="0.25"
+          [ngModel]="hours()"
+          (ngModelChange)="hours.set($event)"
+        />
+      </label>
+
+      <label class="field quick-add__note">
+        <span>{{ t('activity.note') }}</span>
+        <input class="input" type="text" [ngModel]="note()" (ngModelChange)="note.set($event)" />
+      </label>
+    </div>
+
+    <footer class="quick-add__actions">
+      <button type="button" class="btn btn--ghost" (click)="cancel()">{{ t('common.cancel') }}</button>
+      <button type="button" class="btn btn--primary" [disabled]="!canSubmit() || busy()" (click)="submit()">
+        {{ t('activity.log') }}
+      </button>
+    </footer>
+  </aside>
+</ng-container>

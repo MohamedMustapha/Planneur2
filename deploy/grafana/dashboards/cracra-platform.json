@@ -1,0 +1,98 @@
+{
+  "title": "Cracra — platform baseline",
+  "uid": "cracra-platform",
+  "schemaVersion": 39,
+  "editable": true,
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "30s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP requests / s",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "sum by (job) (rate(http_server_request_duration_seconds_count[5m]))", "legendFormat": "{{job}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Request duration p95",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        { "expr": "histogram_quantile(0.95, sum by (le, job) (rate(http_server_request_duration_seconds_bucket[5m])))", "legendFormat": "{{job}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Outbox — published vs failed",
+      "description": "A rising failure line with a flat published line means a consumer is down; both flat at zero is normal until a module starts publishing.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        { "expr": "sum(rate(cracra_outbox_published_total[5m]))", "legendFormat": "published" },
+        { "expr": "sum(rate(cracra_outbox_failures_total[5m]))", "legendFormat": "failed" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "RLS-denied queries",
+      "description": "Queries that returned nothing because row-level security excluded every row. A sustained rise usually means a role mapping broke and a whole department has gone blind.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        { "expr": "sum(rate(cracra_rls_denied_queries_total[5m]))", "legendFormat": "denied" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Managed memory",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        { "expr": "sum by (job) (dotnet_gc_heap_total_allocated_bytes)", "legendFormat": "{{job}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Npgsql connection pool",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        { "expr": "sum by (job) (db_client_connections_usage)", "legendFormat": "{{job}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Kudos given, by department",
+      "description": "Recognition is voluntary, so its absence shows up in no other signal the platform emits — a department going quiet is what this panel is for. Deliberately not broken down by person: a per-person series here would be a leaderboard that the department's own mode cannot switch off.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        { "expr": "sum by (department) (rate(cracra_kudos_given_total[1h]))", "legendFormat": "{{department}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Kudos refused, by reason",
+      "description": "cap / eligibility / self / category. A rate climbing on 'cap' is a department whose monthly limit sits below how much its people actually thank each other, which is the one refusal worth acting on.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        { "expr": "sum by (reason) (rate(cracra_kudos_refused_total[1h]))", "legendFormat": "{{reason}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Integration mirror staleness, by connection",
+      "description": "Seconds since each connection last pulled successfully. The signal S10 is most exposed to: a sync that has quietly stopped looks exactly like a quiet sprint — the dropdown still answers, the pool still renders, and everything in them is weeks old. Per connection rather than per provider, because two DevOps connections fail independently and an aggregate would stay healthy while one was dead.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "targets": [
+        { "expr": "max by (connection, provider) (cracra_integrations_sync_age_seconds)", "legendFormat": "{{provider}} {{connection}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Integration pulls — failures and p95",
+      "description": "A failed pull is recorded on its own connection where an administrator reads the reason; this is the same fact at the operator level. Duration sits beside it because the shape of an outage is usually a provider getting slower first, not one that stops answering.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "targets": [
+        { "expr": "sum by (provider) (rate(cracra_integrations_sync_failures_total[15m]))", "legendFormat": "failures {{provider}}" },
+        { "expr": "histogram_quantile(0.95, sum by (le, provider) (rate(cracra_integrations_sync_duration_milliseconds_bucket[15m])))", "legendFormat": "p95 {{provider}}" }
+      ]
+    }
+  ]
+}

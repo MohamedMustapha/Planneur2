@@ -1,0 +1,66 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('projects.title')" [subtitle]="t('projects.subtitle')">
+    <div slot="tabs" class="tabs">
+      @for (option of filters; track option) {
+        <button
+          type="button"
+          class="tab"
+          [class.is-active]="filter() === option"
+          [attr.aria-pressed]="filter() === option"
+          (click)="select(option)"
+        >
+          {{ t('projects.filter.' + option) }}
+        </button>
+      }
+    </div>
+  </app-page-header>
+
+  <div class="project-list">
+    @if (projects.isLoading()) {
+      <p class="project-list__status">{{ t('common.loading') }}</p>
+    } @else if (visible().length === 0) {
+      <p class="project-list__status card">{{ t('projects.empty') }}</p>
+    } @else {
+      <section class="card">
+        <header class="card__header">
+          <span>{{ t('projects.count', { count: visible().length }) }}</span>
+          <span class="num project-list__total">{{ totalCost() | number: '1.0-0' }} €</span>
+        </header>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ t('projects.code') }}</th>
+              <th>{{ t('projects.name') }}</th>
+              <th>{{ t('projects.classification') }}</th>
+              <th class="is-numeric">{{ t('projects.team') }}</th>
+              <th class="is-numeric">{{ t('projects.cost') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (project of visible(); track project.id) {
+              <tr>
+                <td>
+                  <a class="mono" [routerLink]="['/projects', project.id]">{{ project.code }}</a>
+                </td>
+                <td>{{ project.name }}</td>
+                <td>
+                  <!-- Colour comes from the activity-type tokens, so BUILD reads the same indigo here as it does
+                       on every timeline block. -->
+                  <span class="chip" [class]="'chip chip--' + (project.classification === 'run' ? 'run' : 'build')">
+                    <span class="chip__swatch" aria-hidden="true"></span>
+                    {{ t('projects.filter.' + project.classification) }}
+                  </span>
+                </td>
+                <td class="is-numeric">{{ project.activeMemberCount }}</td>
+                <td class="is-numeric">
+                  {{ project.costAmount | number: '1.0-0' }} {{ project.costCurrency }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+  </div>
+</ng-container>

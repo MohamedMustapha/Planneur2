@@ -1,0 +1,19 @@
+# Multi-stage: restore and publish on the SDK image, run on the runtime image. Only the published output crosses
+# the boundary, so the deployed container carries no compiler and no source.
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy the build configuration first so a source-only change does not invalidate the restore layer.
+COPY global.json Directory.Build.props Directory.Packages.props ./
+COPY src/ src/
+RUN dotnet restore src/Host/Cracra.Host.csproj
+RUN dotnet publish src/Host/Cracra.Host.csproj -c Release -o /app --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=build /app .
+
+# Non-root: nothing in the API needs to write to its own filesystem.
+USER $APP_UID
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Cracra.Host.dll"]

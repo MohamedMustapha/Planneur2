@@ -1,0 +1,348 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('meetings.title')" [subtitle]="t('meetings.subtitle')">
+    <app-settings-tabs slot="tabs" />
+  </app-page-header>
+
+  <div class="meetings">
+    @if (error(); as failure) {
+      <!-- The server's own sentence, not a generic apology: it says which rule refused and what would fix it. -->
+      <p class="meetings__error card" role="alert">
+        {{ t(failure) === failure ? failure : t(failure) }}
+      </p>
+    }
+
+    <div class="meetings__columns">
+      <!-- ---------------------------------------------------------------- Recurring meetings -->
+      <section class="card">
+        <header class="card__header">{{ t('meetings.series') }}</header>
+
+        <div class="card__body meetings__form">
+          <label class="field">
+            <span class="field__label">{{ t('meetings.kind') }}</span>
+            <select class="select" [ngModel]="kind()" (ngModelChange)="kind.set($event)">
+              @for (option of kinds; track option) {
+                <option [value]="option">{{ t('meetings.kindOption.' + option) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.name') }}</span>
+            <input
+              class="input"
+              type="text"
+              [ngModel]="name()"
+              (ngModelChange)="name.set($event)"
+              [placeholder]="t('meetings.namePlaceholder')"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.scopeType') }}</span>
+            <select class="select" [ngModel]="scopeType()" (ngModelChange)="scopeType.set($event)">
+              <option value="unit">{{ t('meetings.scope.unit') }}</option>
+              <option value="department">{{ t('meetings.scope.department') }}</option>
+              <option value="org">{{ t('meetings.scope.org') }}</option>
+            </select>
+          </label>
+
+          @if (needsScopeId()) {
+            <label class="field">
+              <span class="field__label">{{ t('meetings.target') }}</span>
+              <select class="select" [ngModel]="scopeId()" (ngModelChange)="scopeId.set($event)">
+                <option value="">{{ t('meetings.chooseTarget') }}</option>
+                @for (option of scopeOptions(); track option.id) {
+                  <option [value]="option.id">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+          }
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.frequency') }}</span>
+            <select class="select" [ngModel]="frequency()" (ngModelChange)="frequency.set($event)">
+              <option value="DAILY">{{ t('meetings.frequencyOption.daily') }}</option>
+              <option value="WEEKLY">{{ t('meetings.frequencyOption.weekly') }}</option>
+              <option value="MONTHLY">{{ t('meetings.frequencyOption.monthly') }}</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.every') }}</span>
+            <input
+              class="input num"
+              type="number"
+              min="1"
+              max="12"
+              [ngModel]="interval()"
+              (ngModelChange)="interval.set(+$event)"
+            />
+          </label>
+
+          @if (weekdaysApply()) {
+            <fieldset class="field meetings__days">
+              <legend class="field__label">{{ t('meetings.weekdays') }}</legend>
+              <div class="meetings__day-row">
+                @for (day of weekdays; track day) {
+                  <button
+                    type="button"
+                    class="meetings__day"
+                    [class.is-selected]="selectedDays().includes(day)"
+                    [attr.aria-pressed]="selectedDays().includes(day)"
+                    (click)="toggleDay(day)"
+                  >
+                    {{ t('meetings.weekday.' + day) }}
+                  </button>
+                }
+              </div>
+            </fieldset>
+          }
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.startsOn') }}</span>
+            <input
+              class="input"
+              type="date"
+              [ngModel]="startsOn()"
+              (ngModelChange)="startsOn.set($event)"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.startTime') }}</span>
+            <input
+              class="input"
+              type="time"
+              [ngModel]="startTime()"
+              (ngModelChange)="startTime.set($event)"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.duration') }}</span>
+            <input
+              class="input num"
+              type="number"
+              min="5"
+              max="1440"
+              step="5"
+              [ngModel]="durationMinutes()"
+              (ngModelChange)="durationMinutes.set(+$event)"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.location') }}</span>
+            <input
+              class="input"
+              type="text"
+              [ngModel]="location()"
+              (ngModelChange)="location.set($event)"
+            />
+          </label>
+
+          <label class="field meetings__wide">
+            <span class="field__label">{{ t('meetings.videoLink') }}</span>
+            <input
+              class="input"
+              type="url"
+              [ngModel]="videoLink()"
+              (ngModelChange)="videoLink.set($event)"
+            />
+          </label>
+
+          <p class="meetings__rule meetings__wide">
+            <!-- The composed rule, shown as it is built: somebody who reads RRULE should be able to check the
+                 form rather than saving and re-opening to find out what it meant. -->
+            <span class="field__label">{{ t('meetings.rule') }}</span>
+            <code class="mono">{{ recurrenceRule() }}</code>
+          </p>
+
+          <div class="meetings__wide">
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="busy()"
+              (click)="createSeries()"
+            >
+              {{ t('meetings.addSeries') }}
+            </button>
+          </div>
+        </div>
+
+        @if (meetings.series().length === 0) {
+          <p class="meetings__empty">{{ t('meetings.noSeries') }}</p>
+        } @else {
+          <ul class="meetings__list">
+            @for (series of meetings.series(); track series.id) {
+              <li class="meetings__item" [class.is-inactive]="!series.active">
+                <div class="meetings__item-main">
+                  <span class="meetings__item-name">{{
+                    t(series.nameKey) === series.nameKey ? series.nameKey : t(series.nameKey)
+                  }}</span>
+                  <span class="chip">{{ t('meetings.kindOption.' + series.kind) }}</span>
+                  <code class="mono meetings__item-rule">{{ series.recurrenceRule }}</code>
+                </div>
+                <div class="meetings__item-meta">
+                  <span>{{ t('meetings.scope.' + series.scopeType) }}</span>
+                  <span class="num">{{ series.startTime.slice(0, 5) }}</span>
+                  <span class="num">{{ series.durationMinutes }}′</span>
+                  @if (series.videoLink) {
+                    <a
+                      class="meetings__link"
+                      [href]="series.videoLink"
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      >{{ t('meetings.join') }}</a
+                    >
+                  }
+                </div>
+                <button
+                  type="button"
+                  class="btn btn--ghost"
+                  [disabled]="busy()"
+                  (click)="deactivate(series)"
+                >
+                  {{ series.active ? t('meetings.deactivate') : t('meetings.reactivate') }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <!-- ---------------------------------------------------------------- Special days -->
+      <section class="card">
+        <header class="card__header">{{ t('meetings.specialDays') }}</header>
+
+        <div class="card__body meetings__form">
+          <label class="field">
+            <span class="field__label">{{ t('meetings.kind') }}</span>
+            <select class="select" [ngModel]="dayKind()" (ngModelChange)="dayKind.set($event)">
+              @for (option of specialDayKinds; track option) {
+                <option [value]="option">{{ t('meetings.specialDayKind.' + option) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.name') }}</span>
+            <input
+              class="input"
+              type="text"
+              [ngModel]="dayName()"
+              (ngModelChange)="dayName.set($event)"
+              [placeholder]="t('meetings.specialDayPlaceholder')"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.scopeType') }}</span>
+            <select
+              class="select"
+              [ngModel]="dayScopeType()"
+              (ngModelChange)="dayScopeType.set($event)"
+            >
+              <option value="unit">{{ t('meetings.scope.unit') }}</option>
+              <option value="department">{{ t('meetings.scope.department') }}</option>
+              <option value="org">{{ t('meetings.scope.org') }}</option>
+            </select>
+          </label>
+
+          @if (dayNeedsScopeId()) {
+            <label class="field">
+              <span class="field__label">{{ t('meetings.target') }}</span>
+              <select
+                class="select"
+                [ngModel]="dayScopeId()"
+                (ngModelChange)="dayScopeId.set($event)"
+              >
+                <option value="">{{ t('meetings.chooseTarget') }}</option>
+                @for (option of dayScopeOptions(); track option.id) {
+                  <option [value]="option.id">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+          }
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.date') }}</span>
+            <input
+              class="input"
+              type="date"
+              [ngModel]="dayDate()"
+              (ngModelChange)="dayDate.set($event)"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('meetings.severity') }}</span>
+            <select
+              class="select"
+              [ngModel]="daySeverity()"
+              (ngModelChange)="daySeverity.set($event)"
+            >
+              @for (option of severities; track option) {
+                <option [value]="option">{{ t('meetings.severityOption.' + option) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field meetings__wide">
+            <span class="field__label">{{ t('meetings.description') }}</span>
+            <input
+              class="input"
+              type="text"
+              [ngModel]="dayDescription()"
+              (ngModelChange)="dayDescription.set($event)"
+            />
+          </label>
+
+          <div class="meetings__wide">
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="busy()"
+              (click)="createSpecialDay()"
+            >
+              {{ t('meetings.addSpecialDay') }}
+            </button>
+          </div>
+        </div>
+
+        @if (meetings.specialDays().length === 0) {
+          <p class="meetings__empty">{{ t('meetings.noSpecialDays') }}</p>
+        } @else {
+          <ul class="meetings__list">
+            @for (day of meetings.specialDays(); track day.id) {
+              <li class="meetings__item">
+                <div class="meetings__item-main">
+                  <span
+                    class="meetings__severity"
+                    [class]="'meetings__severity--' + day.severity"
+                  ></span>
+                  <span class="meetings__item-name">{{
+                    t(day.nameKey) === day.nameKey ? day.nameKey : t(day.nameKey)
+                  }}</span>
+                  <span class="chip">{{ t('meetings.specialDayKind.' + day.kind) }}</span>
+                </div>
+                <div class="meetings__item-meta">
+                  <span class="mono">{{ day.date }}</span>
+                  <span>{{ t('meetings.scope.' + day.scopeType) }}</span>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn--ghost"
+                  [disabled]="busy()"
+                  (click)="deleteSpecialDay(day.id)"
+                >
+                  {{ t('common.delete') }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+  </div>
+</ng-container>

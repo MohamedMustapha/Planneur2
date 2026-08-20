@@ -1,0 +1,44 @@
+/* Angular + TypeScript configuration.
+   The @mobiscroll/angular path maps to the vendored bundle under src/lib: the package is licensed and shipped as
+   a zip rather than published to a registry, so it is committed and resolved by path instead of installed.
+
+   It points at the ESM build, not the UMD one. The UMD wrapper does a dynamic require("@angular/core"), which
+   esbuild rewrites during ng build but cannot satisfy under ng serve — so the UMD build works in production and
+   throws "Dynamic require is not supported" the moment a developer loads the page locally. */
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve",
+    "paths": {
+      "@mobiscroll/angular": [
+        "./src/lib/mobiscroll/esm5/mobiscroll.angular.min"
+      ]
+    },
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ]
+}

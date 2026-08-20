@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Contracts only, and no contracts assembly of its own: Finance is a leaf. It reads four modules and is read
+         by none, so it has nothing to publish — and an empty contracts project nobody references would be a
+         convention observed rather than a boundary drawn. -->
+    <ProjectReference Include="../Activities.Contracts/Cracra.Modules.Activities.Contracts.csproj" />
+    <ProjectReference Include="../Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />
+    <ProjectReference Include="../Directory.Contracts/Cracra.Modules.Directory.Contracts.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Documents/Cracra.BuildingBlocks.Documents.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Storage/Cracra.BuildingBlocks.Storage.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Cracra.Tests.Unit" />
+    <InternalsVisibleTo Include="Cracra.Tests.Integration" />
+  </ItemGroup>
+</Project>

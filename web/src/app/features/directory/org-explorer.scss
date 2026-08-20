@@ -1,0 +1,78 @@
+:host {
+  display: contents;
+}
+
+.org {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--space-4);
+  align-items: start;
+  padding: var(--space-4);
+}
+
+.org__units {
+  margin: 0;
+  padding: var(--space-2);
+  list-style: none;
+}
+
+.org__unit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) 10px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--ink);
+  font-size: var(--text-base);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  &.is-active {
+    background: var(--primary-soft);
+    color: var(--primary-ink);
+    font-weight: 500;
+  }
+}
+
+.org__unit-kind {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.org__count {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.org__person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.org__status,
+.org__empty {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-3);
+  font-size: var(--text-sm);
+}
+
+.data-table .pill + .pill {
+  margin-left: var(--space-1);
+}
+
+@media (max-width: 900px) {
+  .org {
+    grid-template-columns: 1fr;
+  }
+}

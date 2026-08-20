@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Deliberately no references at all — not even a FrameworkReference. This is what a module's Domain layer is
+       allowed to depend on, and the value of that guarantee is exactly the length of this ItemGroup. -->
+</Project>

@@ -1,0 +1,24 @@
+# The BFF ships the Angular bundle inside it: same origin means no CORS, and the HttpOnly session cookie works
+# without any cross-site relaxation.
+FROM node:24-alpine AS web
+WORKDIR /web
+COPY web/package.json web/package-lock.json ./
+RUN npm ci
+COPY web/ ./
+RUN npm run build
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY global.json Directory.Build.props Directory.Packages.props ./
+COPY src/ src/
+RUN dotnet restore src/Bff/Cracra.Bff.csproj
+RUN dotnet publish src/Bff/Cracra.Bff.csproj -c Release -o /app --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=build /app .
+COPY --from=web /web/dist/web/browser ./wwwroot
+
+USER $APP_UID
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Cracra.Bff.dll"]

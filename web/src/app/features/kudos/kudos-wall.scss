@@ -1,0 +1,246 @@
+:host {
+  display: contents;
+}
+
+.kudos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.kudos__actions,
+.kudos__filters {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.kudos__error {
+  margin: 0;
+  padding: var(--space-3);
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.kudos__empty,
+.kudos__status {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* --- The period and scope switches ------------------------------------------------------------------------ */
+
+.segmented {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-control);
+}
+
+.segmented__item {
+  padding: var(--space-1) var(--space-3);
+  border: none;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  cursor: pointer;
+
+  &.is-active {
+    background: var(--primary-soft);
+    color: var(--ink);
+    font-weight: 500;
+  }
+}
+
+.pager {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.pager__label {
+  min-width: 64px;
+  text-align: center;
+}
+
+/* --- The counter strip ------------------------------------------------------------------------------------ */
+
+.strip {
+  display: flex;
+  gap: var(--space-8);
+  padding: var(--space-3) var(--space-4);
+}
+
+.strip__figure {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.strip__value {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip__label {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- The wall --------------------------------------------------------------------------------------------- */
+
+/* Cards rather than table rows. A kudo is a sentence somebody wrote about a colleague, and a table would render
+   it as a record — which is exactly the tone the design asks this screen not to take. */
+.wall {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.kudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-left: 3px solid var(--kudo);
+}
+
+.kudo__header {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.kudo__who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kudo__to {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kudo__from {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+
+.kudo__header .chip {
+  margin-left: auto;
+}
+
+.kudo__message {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+.kudo__date {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+/* --- Per-person totals ------------------------------------------------------------------------------------ */
+
+.totals__list {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  list-style: none;
+}
+
+.totals__row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-1) 0;
+}
+
+.totals__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.totals__count,
+.totals__points {
+  min-width: 32px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.totals__points {
+  color: var(--kudo-ink);
+  font-weight: 600;
+}
+
+.chip--badge {
+  border-color: var(--kudo-border);
+  background: var(--kudo-soft);
+  color: var(--kudo-ink);
+}
+
+/* --- The annual claim -------------------------------------------------------------------------------------- */
+
+.annual {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.annual__total {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.annual__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0 var(--space-4);
+}
+
+.annual__group {
+  padding: 0 var(--space-4);
+}
+
+.annual__list {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.annual__item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-1) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--text-base);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.annual__author {
+  margin-left: auto;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}

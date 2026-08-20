@@ -1,0 +1,37 @@
+<ng-container *transloco="let t">
+  <section class="card kudos-monthly">
+    <header class="card__header">
+      <span>{{ t('kudos.monthly.title') }}</span>
+      <a class="btn btn--ghost" routerLink="/kudos">{{ t('kudos.monthly.open') }}</a>
+    </header>
+
+    <div class="kudos-monthly__body">
+      <div class="kudos-monthly__figure">
+        <span class="kudos-monthly__value num">{{ total() }}</span>
+        <span class="kudos-monthly__label">{{ t('kudos.monthly.thisMonth') }}</span>
+      </div>
+
+      @if (people().length === 0) {
+        <!-- A quiet month is a real answer, and the widget says so rather than disappearing: an absent strip
+             reads as a broken board, and a department nobody is thanking anybody in is worth noticing. -->
+        <p class="kudos-monthly__empty">{{ t('kudos.monthly.empty') }}</p>
+      } @else {
+        <ul class="kudos-monthly__list">
+          @for (person of people(); track person.personId) {
+            <li class="kudos-monthly__row">
+              <span class="kudos-monthly__name">{{ person.personName ?? t('kudos.someone') }}</span>
+              <span class="num">{{ person.count }}</span>
+              @if (showsPoints()) {
+                <span class="kudos-monthly__points num">{{ person.points }}</span>
+              }
+            </li>
+          }
+        </ul>
+
+        @if (hidden() > 0) {
+          <p class="kudos-monthly__more">{{ t('kudos.monthly.more', { count: hidden() }) }}</p>
+        }
+      }
+    </div>
+  </section>
+</ng-container>
