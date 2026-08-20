@@ -4,19 +4,16 @@ using Cracra.BuildingBlocks.Persistence.Behaviors;
 using Cracra.Modules.Activities.Application;
 using Cracra.Modules.Activities.Infrastructure;
 using Contracts = Cracra.Modules.Activities.Contracts;
+using Cracra.BuildingBlocks.Web.Users;
+using Cracra.Modules.Integrations.Contracts;
 using FluentValidation;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Cracra.Modules.Activities;
 
 public static class ActivitiesModule
 {
-    public static IServiceCollection AddActivitiesModule(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddActivitiesModule(this IServiceCollection services)
     {
         services.AddModuleDbContext<ActivitiesDbContext>(ActivitiesDbContext.SchemaName);
 
@@ -32,17 +29,14 @@ public static class ActivitiesModule
         // so RLS answers "may this lead plan for this person" exactly as it does for the API.
         services.AddScoped<Contracts.IActivityScheduler, ActivityScheduler>();
 
-        // --- The S10 seam -----------------------------------------------------------------------------------
-        // Registered as a collection because the dropdown may ask for one source or for all of them, and because
-        // S10 replaces these registrations wholesale rather than wrapping them.
-        services.Configure<AssignableTaskOptions>(configuration.GetSection(AssignableTaskOptions.SectionName));
-        services.AddScoped<IProjectCatalogue, ProjectCatalogue>();
-
+        // --- The S10 seam, filled ---------------------------------------------------------------------------
+        // The one line S5's comment promised would change. The dropdown, its query, the pre-fill and every test
+        // around them stayed exactly as they were; what moved is where the tasks come from — a mirror table
+        // instead of a stand-in. Still a collection, because the dropdown may ask for one source or for all.
         services.AddScoped<IEnumerable<IAssignableTaskSource>>(provider =>
             AssignableTaskRegistration.Build(
-                provider.GetRequiredService<IOptions<AssignableTaskOptions>>(),
-                provider.GetRequiredService<IProjectCatalogue>(),
-                provider.GetRequiredService<ILogger<UnconfiguredTaskSource>>()));
+                provider.GetRequiredService<IExternalWorkItemReader>(),
+                provider.GetRequiredService<IUserContext>()));
 
         services.AddMediatorHandlersFrom(typeof(ActivitiesModule).Assembly);
 

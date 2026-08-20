@@ -97,6 +97,13 @@ public sealed class ActivityJourneyTests(AspireStackFixture stack)
         // have staffed Camille, and a test that passes only in a particular order is not evidence of anything.
         var projectId = await ProjectWithCamilleAsync();
 
+        // And since S10 the dropdown reads a mirror rather than a sample source, so something has to have been
+        // pulled into it. Configured and pulled here, as the head would, for the same reason: a journey that
+        // depends on S10's own having run first is not evidence either.
+        var head = await stack.SignInAsync("olivier.marchand");
+
+        await ExternalConnections.DevOpsAsync(stack, head, projectId);
+
         var page = await stack.SignInAsync("camille.villeneuve");
 
         await page.GotoAsync("/board");
@@ -109,7 +116,9 @@ public sealed class ActivityJourneyTests(AspireStackFixture stack)
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Importer une tâche assignée" })
             .ClickAsync(new() { Timeout = TimeoutMs });
 
-        var task = dialog.GetByRole(AriaRole.Button, new() { Name = "Sprint task", Exact = false }).First;
+        // Named for what the stub reports, which is what a DevOps collection would report: a real work item with
+        // a title somebody wrote, not a fixture string.
+        var task = dialog.GetByRole(AriaRole.Button, new() { Name = "Migrer le socle", Exact = false }).First;
 
         await Expect(task).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
@@ -131,7 +140,7 @@ public sealed class ActivityJourneyTests(AspireStackFixture stack)
 
         // The entry keeps its reference back to the work item, which is what makes a pulled hour auditable rather
         // than merely convenient to type.
-        await Expect(page.GetByText(new System.Text.RegularExpressions.Regex(@"AB-\d+")).First)
+        await Expect(page.GetByText(new System.Text.RegularExpressions.Regex(@"AB#\d+")).First)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 

@@ -7,6 +7,9 @@
     <!-- Contracts only: Activities reads the department taxonomy and checks project membership without ever
          referencing either implementation. The iteration link to S4 is likewise by contract. -->
     <ProjectReference Include="../Directory.Contracts/Cracra.Modules.Directory.Contracts.csproj" />
+    <!-- The dropdown reads S10's mirror through its contract. Read-only in the strong sense: the contract
+         exposes no write, so there is nothing here that could push an hour back into a ticket. -->
+    <ProjectReference Include="../Integrations.Contracts/Cracra.Modules.Integrations.Contracts.csproj" />
     <ProjectReference Include="../Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />
     <ProjectReference Include="../Portfolio.Contracts/Cracra.Modules.Portfolio.Contracts.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />

@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Persistence;
 using NetArchTest.Rules;
@@ -43,6 +45,8 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Kudos.Contracts.KudoView).Assembly,
         typeof(Cracra.Modules.Reporting.ReportingModule).Assembly,
         typeof(Cracra.Modules.Reporting.Contracts.ReportView).Assembly,
+        typeof(Cracra.Modules.Integrations.IntegrationsModule).Assembly,
+        typeof(Cracra.Modules.Integrations.Contracts.ExternalWorkItemView).Assembly,
     ];
 
     /// <summary>
@@ -335,6 +339,85 @@ public sealed class ArchitectureRules
 
         result.IsSuccessful.ShouldBeTrue(Describe(result));
     }
+
+    /// <summary>
+    /// Nothing in the Integrations module can write to an external system.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// S10's acceptance criteria end with "no write-back path exists (proven by architecture test)", and this is
+    /// that proof. It reads the compiled assembly's metadata rather than its source, because the claim is about
+    /// what the code <em>does</em>: a member reference to <c>HttpClient.PutAsync</c> is in the metadata whether it
+    /// was written as a method call, reached through a helper, or arrived from a generated partial.
+    /// </para>
+    /// <para>
+    /// It is the third of three guards and the only one that fails at build time. The provider interface has no
+    /// write method, so a design cannot drift into one; <c>ReadOnlyHttpHandler</c> refuses a mutating request at
+    /// the socket, so a hand-rolled <c>HttpRequestMessage</c> cannot get out. Both of those can be edited by
+    /// somebody with a deadline. This one makes the edit fail the build on the commit that made it, which is the
+    /// only moment the conversation is cheap.
+    /// </para>
+    /// <para>
+    /// POST is not forbidden. Azure DevOps models a work-item query as a POST because the query does not fit in
+    /// a URL, and ServiceNow does the same for aggregates — so POST is checked by the handler's path allow-list
+    /// instead, where the distinction between "a query" and "a change" can actually be made.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void The_integrations_module_never_writes_to_an_external_system()
+    {
+        var assembly = typeof(Cracra.Modules.Integrations.IntegrationsModule).Assembly;
+
+        // The mutating half of the HTTP surface, as it appears in metadata: the convenience methods, and the
+        // property getters behind `HttpMethod.Put` and friends.
+        string[] forbidden =
+        [
+            "PutAsync", "PutAsJsonAsync", "PatchAsync", "PatchAsJsonAsync", "DeleteAsync", "DeleteFromJsonAsync",
+            "get_Put", "get_Patch", "get_Delete",
+        ];
+
+        using var stream = File.OpenRead(assembly.Location);
+        using var reader = new PEReader(stream);
+
+        var metadata = reader.GetMetadataReader();
+
+        var offenders = new List<string>();
+
+        foreach (var handle in metadata.MemberReferences)
+        {
+            var member = metadata.GetMemberReference(handle);
+            var name = metadata.GetString(member.Name);
+
+            if (!forbidden.Contains(name, StringComparer.Ordinal))
+            {
+                continue;
+            }
+
+            var parent = DescribeParent(metadata, member.Parent);
+
+            // Narrowed to the HTTP types. "DeleteAsync" is also what a repository calls its own delete, and a
+            // rule that flagged those would be a rule somebody suppresses rather than reads.
+            if (parent.Contains("Http", StringComparison.Ordinal))
+            {
+                offenders.Add($"{parent}.{name}");
+            }
+        }
+
+        offenders.ShouldBeEmpty(
+            "Integrations are read-only (S10). The module must not reference a mutating HTTP member: "
+            + string.Join(", ", offenders.Distinct()));
+    }
+
+    private static string DescribeParent(MetadataReader metadata,
+        EntityHandle parent) =>
+        parent.Kind switch
+        {
+            HandleKind.TypeReference => metadata.GetString(
+                metadata.GetTypeReference((TypeReferenceHandle)parent).Name),
+            HandleKind.TypeDefinition => metadata.GetString(
+                metadata.GetTypeDefinition((TypeDefinitionHandle)parent).Name),
+            _ => string.Empty,
+        };
 
     private static IEnumerable<Assembly> ModuleAssemblies() =>
         PlatformAssemblies.Where(assembly =>

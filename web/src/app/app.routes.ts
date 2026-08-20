@@ -96,6 +96,15 @@ export const routes: Routes = [
       import('./features/meetings/meeting-manager').then((m) => m.MeetingManager),
   },
   {
+    // Fourth tab of the same administration screen. Which DevOps project or ServiceNow queue a department pulls
+    // from is configuration of that department, and it is the department head who owns the relationship — so it
+    // sits beside the other things they configure rather than under a platform-admin section nobody has.
+    path: 'settings/integrations',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/integrations/integrations-admin').then((m) => m.IntegrationsAdmin),
+  },
+  {
     // Behind the same nav entry as department settings: the rail is fixed at ten sections by the design, and
     // both screens are the same job from an administrator's point of view.
     path: 'settings/access',

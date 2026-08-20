@@ -5,6 +5,7 @@ using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Directory.Sync;
 using Cracra.Modules.Scheduling.Contracts;
 using Cracra.Tests.Integration.Directory;
+using Cracra.Tests.Integration.Integrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -337,7 +338,18 @@ public sealed class BoardTests(PostgresFixture postgres)
     [Fact]
     public async Task Refreshing_the_pool_is_idempotent()
     {
-        await using var factory = await SeededAsync(seedPool: true);
+        await using var factory = await SeededAsync();
+
+        // Since S10 the pool's external half is the mirror, so this places three unassigned tickets in the
+        // Infrastructure queue rather than turning on a sample source. What is under test is unchanged: pulling
+        // twice must not duplicate the pool.
+        await ExternalMirrorSeed.SeedAsync(
+            factory,
+            "servicenow",
+            SeedOrganisation.Departments.InformationSystems,
+            new ExternalMirrorSeed.Item("0010023", "Poste bloqué", UnitId: SeedOrganisation.Units.Infrastructure),
+            new ExternalMirrorSeed.Item("0010024", "Imprimante HS", UnitId: SeedOrganisation.Units.Infrastructure),
+            new ExternalMirrorSeed.Item("0010025", "Accès VPN", UnitId: SeedOrganisation.Units.Infrastructure));
 
         factory.AsUser(SeedOrganisation.Thomas);
         var client = factory.CreateClient();
@@ -660,7 +672,6 @@ public sealed class BoardTests(PostgresFixture postgres)
     }
 
     private async Task<CracraApplicationFactory> SeededAsync(
-        bool seedPool = false,
         string? boardLayout = null,
         string? shiftTemplates = null)
     {
@@ -671,12 +682,6 @@ public sealed class BoardTests(PostgresFixture postgres)
 
         var factory = new CracraApplicationFactory(postgres.AdminConnectionString)
         {
-            Settings = seedPool
-                ? new Dictionary<string, string?>
-                {
-                    ["Cracra:Scheduling:Pool:SeedSampleWorkOrders"] = "true",
-                }
-                : null,
             ConfigureAdditionalServices = services =>
             {
                 services.RemoveAll<IKeycloakDirectoryClient>();

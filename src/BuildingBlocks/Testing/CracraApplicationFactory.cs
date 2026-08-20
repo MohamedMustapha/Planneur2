@@ -98,6 +98,13 @@ public sealed class CracraApplicationFactory(string adminConnectionString) : Web
                 // care about the sweep resolve IMeetingHorizonSweeper and run it themselves.
                 ["Cracra:Meetings:SweepOnStartup"] = "false",
                 ["Cracra:Meetings:SweepInterval"] = "00:00:00",
+
+                // The integrations scheduler, for the third time and the same reason: it pulls under the system
+                // context, and a pass firing mid-assertion would mirror rows a test did not ask for. Tests that
+                // care about a pull resolve IExternalWorkItemSynchronizer and run it themselves, against a
+                // provider they substituted.
+                ["Cracra:Integrations:SyncOnStartup"] = "false",
+                ["Cracra:Integrations:SchedulerInterval"] = "00:00:00",
             });
 
             if (Settings is { Count: > 0 } overrides)

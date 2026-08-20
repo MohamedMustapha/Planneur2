@@ -1,155 +1,97 @@
+using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Application;
 using Cracra.Modules.Activities.Contracts;
-using Cracra.Modules.Projects.Contracts;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using Cracra.Modules.Integrations.Contracts;
 
 namespace Cracra.Modules.Activities.Infrastructure;
 
 /// <summary>
-/// How the dropdown behaves before S10 lands.
+/// The dropdown, answered from S10's mirror.
 /// </summary>
 /// <remarks>
 /// <para>
-/// The seam is real from S5 onward, and this is what sits in it until the adapters exist. Off by default, in which
-/// case every source returns nothing and the dropdown is simply empty — which is also the correct behaviour in a
-/// deployment that never connects the external systems at all.
+/// The seam S5 declared, now filled. What stands here used to be a pair of stand-ins — one that returned nothing
+/// and one that invented plausible tasks for the dev box — and S10 replaces them rather than sitting behind them,
+/// exactly as the note on the old file promised. A deployment with no DevOps connection now shows an empty
+/// dropdown because the mirror is empty, which is the same honest answer arrived at for a better reason.
 /// </para>
 /// <para>
-/// <c>SeedSampleTasks</c> turns on the sample data the dev box and the E2E suite need in order to exercise the
-/// pull-and-prefill flow end to end. It is not a fallback for a misconfigured integration: S10's real adapters
-/// replace these registrations rather than sitting behind them, so a production instance with a broken DevOps
-/// connection shows an empty dropdown rather than invented tickets.
+/// Nothing is fetched from Azure DevOps or ServiceNow here. The mirror is a table, so opening the dropdown is one
+/// indexed query against Postgres under the caller's own RLS session — not a round trip whose latency and
+/// availability belong to somebody else's server, and not a credential this module would otherwise have to hold.
 /// </para>
 /// </remarks>
-public sealed class AssignableTaskOptions
-{
-    public const string SectionName = "Cracra:Activities:AssignableTasks";
-
-    public bool SeedSampleTasks { get; set; }
-}
-
-/// <summary>
-/// Returns nothing, for a source that is declared but not connected.
-/// </summary>
-/// <remarks>
-/// Logs at debug rather than warning: an unconnected source is a deployment choice, not a fault, and a warning per
-/// dropdown open would be noise in every instance that never intends to integrate.
-/// </remarks>
-internal sealed class UnconfiguredTaskSource(string source, ILogger<UnconfiguredTaskSource> logger)
-    : IAssignableTaskSource
-{
-    public string Source => source;
-
-    public Task<IReadOnlyList<AssignableTask>> GetAssignableAsync(Guid personId, CancellationToken ct)
-    {
-        logger.LogDebug("No adapter is configured for {Source}; returning no assignable tasks", source);
-
-        return Task.FromResult<IReadOnlyList<AssignableTask>>([]);
-    }
-}
-
-/// <summary>
-/// Sample tasks for the dev box and the E2E suite.
-/// </summary>
-/// <remarks>
-/// <para>
-/// Derived from the caller's own projects rather than invented from nothing, so what the dropdown offers is
-/// plausible: a developer sees sprint items against projects they are actually on, and picking one pre-fills a
-/// project they are allowed to book against. A hard-coded list would pre-fill projects the guardrail then rejects,
-/// and the flow would look broken for the wrong reason.
-/// </para>
-/// <para>
-/// Deterministic, with no clock and no randomness, so an E2E assertion on a title stays true across runs.
-/// </para>
-/// </remarks>
-internal sealed class SampleTaskSource(
+internal sealed class MirrorTaskSource(
     string source,
     string suggestedTypeCode,
-    string titlePrefix,
-    IProjectCatalogue projects) : IAssignableTaskSource
+    IExternalWorkItemReader mirror,
+    IUserContext user) : IAssignableTaskSource
 {
     public string Source => source;
 
     public async Task<IReadOnlyList<AssignableTask>> GetAssignableAsync(Guid personId, CancellationToken ct)
     {
-        var mine = await projects.GetMyProjectsAsync(personId, ct);
-
-        return
-        [
-            .. mine.SelectMany((project, index) => new[]
-            {
-                new AssignableTask(
-                    source,
-                    $"{Prefix(source)}-{1000 + index * 2}",
-                    $"{titlePrefix} — {project.Code}",
-                    "Active",
-                    project.Id,
-                    suggestedTypeCode),
-                new AssignableTask(
-                    source,
-                    $"{Prefix(source)}-{1001 + index * 2}",
-                    $"{titlePrefix} (suite) — {project.Code}",
-                    "New",
-                    project.Id,
-                    suggestedTypeCode),
-            }),
-        ];
-    }
-
-    private static string Prefix(string source) => source == "servicenow" ? "INC" : "AB";
-}
-
-/// <summary>The caller's own projects, which is all the sample source needs and all it should be given.</summary>
-public interface IProjectCatalogue
-{
-    Task<IReadOnlyList<(Guid Id, string Code)>> GetMyProjectsAsync(Guid personId, CancellationToken ct);
-}
-
-internal sealed class ProjectCatalogue(IProjectMembershipReader members, IProjectProvisioner projects)
-    : IProjectCatalogue
-{
-    public async Task<IReadOnlyList<(Guid Id, string Code)>> GetMyProjectsAsync(
-        Guid personId,
-        CancellationToken ct)
-    {
-        // Everything RLS lets the caller read, narrowed to what they are actually on. The membership check is what
-        // keeps a head from being offered sprint tasks for every project in their department.
-        var visible = await projects.GetVisibleProjectIdsAsync(ct);
-
-        var mine = new List<Guid>();
-
-        foreach (var projectId in visible)
+        // The port takes a person and the mirror answers for the session. They are the same person by
+        // construction — S5's endpoint resolves the caller and passes them — and this is what keeps that true if
+        // a future caller ever forgets: an empty list, rather than somebody else's assigned tickets.
+        if (personId != user.UserId)
         {
-            if (await members.IsActiveMemberAsync(projectId, personId, ct))
-            {
-                mine.Add(projectId);
-            }
+            return [];
         }
 
-        var summaries = await projects.GetSummariesAsync(mine, ct);
+        // S5 asks for two things: "assigned to me" and "on the current sprint". They are different questions —
+        // an unassigned task on this sprint is available work, and a task assigned to me from three sprints ago
+        // is still mine — so both are asked and the answers merged, rather than one being approximated with the
+        // other. RLS answers the second: the sprint items a caller can see are the ones on their projects.
+        var mine = await mirror.QueryAsync(
+            new ExternalWorkItemQuery { Provider = source, AssignedToMe = true },
+            ct);
 
-        return [.. summaries.Values.OrderBy(summary => summary.Code, StringComparer.Ordinal)
-            .Select(summary => (summary.Id, summary.Code))];
+        var sprint = await mirror.QueryAsync(
+            new ExternalWorkItemQuery { Provider = source, CurrentSprint = true },
+            ct);
+
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var tasks = new List<AssignableTask>(mine.Count + sprint.Count);
+
+        foreach (var item in mine.Concat(sprint))
+        {
+            // On the reference, not the external id: an id is only unique inside the connection that issued it,
+            // so two connections covering the same DevOps project would otherwise offer the same task twice —
+            // and the reference is what lands in the entry either way.
+            if (!seen.Add(item.Reference))
+            {
+                continue;
+            }
+
+            tasks.Add(new AssignableTask(
+                item.Provider,
+
+                // The reference the source shows its own users — AB#4312, INC0010023 — rather than the internal
+                // id. It is what lands in the entry's external_ref, and what somebody reading a report a year
+                // later has to be able to paste into the other system's search box.
+                item.Reference,
+                item.Title,
+                item.State,
+                item.ProjectId,
+                suggestedTypeCode));
+        }
+
+        return tasks;
     }
 }
 
-/// <summary>Wires whichever sources this deployment has.</summary>
+/// <summary>Wires one source per provider.</summary>
+/// <remarks>
+/// Two registrations of one class rather than two classes: the difference between them is a provider code and
+/// which activity type a pulled task pre-fills, and neither is behaviour. BUILD work suggests project-build, RUN
+/// work suggests project-run — the taxonomy's own split, applied at the point a task becomes an entry.
+/// </remarks>
 internal static class AssignableTaskRegistration
 {
-    public static IReadOnlyList<IAssignableTaskSource> Build(
-        IOptions<AssignableTaskOptions> options,
-        IProjectCatalogue projects,
-        ILogger<UnconfiguredTaskSource> logger) =>
-        options.Value.SeedSampleTasks
-            ?
-            [
-                new SampleTaskSource("azure-devops", "project-build", "Sprint task", projects),
-                new SampleTaskSource("servicenow", "project-run", "Incident", projects),
-            ]
-            :
-            [
-                new UnconfiguredTaskSource("azure-devops", logger),
-                new UnconfiguredTaskSource("servicenow", logger),
-            ];
+    public static IReadOnlyList<IAssignableTaskSource> Build(IExternalWorkItemReader mirror, IUserContext user) =>
+    [
+        new MirrorTaskSource(ExternalProviders.AzureDevOps, "project-build", mirror, user),
+        new MirrorTaskSource(ExternalProviders.ServiceNow, "project-run", mirror, user),
+    ];
 }

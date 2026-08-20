@@ -6,6 +6,7 @@ using Cracra.BuildingBlocks.Web;
 using Cracra.BuildingBlocks.Web.Behaviors;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
+using Cracra.Modules.Integrations;
 using Cracra.Modules.Kudos;
 using Cracra.Modules.Meetings;
 using Cracra.Modules.Activities;
@@ -59,11 +60,12 @@ builder.Services.AddAccessModule();
 builder.Services.AddDirectoryModule();
 builder.Services.AddProjectsModule();
 builder.Services.AddPortfolioModule();
-builder.Services.AddActivitiesModule(builder.Configuration);
-builder.Services.AddSchedulingModule(builder.Configuration);
+builder.Services.AddActivitiesModule();
+builder.Services.AddSchedulingModule();
 builder.Services.AddMeetingsModule();
 builder.Services.AddKudosModule();
 builder.Services.AddReportingModule();
+builder.Services.AddIntegrationsModule();
 
 var app = builder.Build();
 

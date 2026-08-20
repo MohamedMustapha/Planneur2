@@ -99,7 +99,8 @@
     "loading": "Loading…",
     "close": "Close",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "choose": "Choose…"
   },
   "org": {
     "title": "Organisation directory",
@@ -142,7 +143,8 @@
     "iterationPresetsHint": "Quick lengths offered when creating an iteration. Consumed by slice S4.",
     "tabDepartment": "Department",
     "tabAccess": "Roles and permissions",
-    "tabMeetings": "Meetings & events"
+    "tabMeetings": "Meetings & events",
+    "tabIntegrations": "Integrations"
   },
   "directory": {
     "functionalRole": {
@@ -627,5 +629,62 @@
       "cornerstone": "Cornerstone",
       "mentor": "Mentor"
     }
+  },
+  "integrations": {
+    "title": "Integrations",
+    "subtitle": "Read-only connections to Azure DevOps and ServiceNow",
+    "readOnlyNote": "The platform reads these systems and never writes to them. Nothing configured here changes a ticket: items are mirrored locally, and the link goes back to the original record.",
+    "newConnection": "New connection",
+    "provider": "System",
+    "providers": {
+      "azure-devops": "Azure DevOps",
+      "servicenow": "ServiceNow"
+    },
+    "name": "Label",
+    "namePlaceholder": "IS — Azure DevOps",
+    "baseUrl": "Base URL",
+    "teamProject": "Team project",
+    "queue": "Assignment group",
+    "currentSprint": "Current sprint",
+    "currentSprintPlaceholder": "Sprint 42",
+    "authRef": "Secret reference",
+    "authRefHint": "The name of a secret the deployment holds — never the token itself.",
+    "pollMinutes": "Interval (minutes)",
+    "pollHint": "0 for on-demand pulls only.",
+    "create": "Create connection",
+    "none": "No connection configured for this department.",
+    "syncNow": "Sync now",
+    "pause": "Pause",
+    "resume": "Resume",
+    "lastSync": "Last sync",
+    "syncStatus": {
+      "never": "Never run",
+      "ok": "Succeeded",
+      "failed": "Failed"
+    },
+    "mirrored": "Mirrored items",
+    "schedule": "Schedule",
+    "onDemand": "On demand",
+    "mappings": "Mappings",
+    "noMappings": "No mapping: items are mirrored without a project or a unit.",
+    "addMapping": "Add a mapping",
+    "mappingKind": "Kind",
+    "mappingKinds": {
+      "area-path": "Area path",
+      "iteration": "Iteration",
+      "assignment-group": "Assignment group"
+    },
+    "externalValue": "Source value",
+    "areaPlaceholder": "CRACRA\\\\Platform",
+    "groupPlaceholder": "Helpdesk N1",
+    "target": "Local target",
+    "showMirror": "Show mirrored items",
+    "hideMirror": "Hide mirrored items",
+    "mirrorEmpty": "Nothing mirrored yet.",
+    "reference": "Reference",
+    "itemTitle": "Title",
+    "state": "State",
+    "sprintOrQueue": "Sprint / queue",
+    "saveFailed": "The connection could not be saved."
   }
 }

@@ -27,6 +27,16 @@ public sealed class AspireStackFixture : IAsyncLifetime
     /// <summary>Root of the Angular dev server, which proxies /api and /bff to the BFF (same origin).</summary>
     public string WebBaseUrl { get; private set; } = string.Empty;
 
+    /// <summary>
+    /// Root of the Azure DevOps / ServiceNow stub, for a test that configures a connection against it.
+    /// </summary>
+    /// <remarks>
+    /// Exposed rather than hard-coded because the stub's port is Aspire's to choose. A test uses it exactly as an
+    /// administrator would use a real collection URL — it goes in the connection's base-URL field, and nothing
+    /// about the platform's code path differs.
+    /// </remarks>
+    public string ProvidersBaseUrl { get; private set; } = string.Empty;
+
     public async ValueTask InitializeAsync()
     {
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Cracra_AppHost>();
@@ -46,6 +56,7 @@ public sealed class AspireStackFixture : IAsyncLifetime
         await _app.ResourceNotifications.WaitForResourceAsync("web", KnownResourceStates.Running, readiness.Token);
 
         WebBaseUrl = _app.GetEndpoint("web", "http").ToString().TrimEnd('/');
+        ProvidersBaseUrl = _app.GetEndpoint("providers", "http").ToString().TrimEnd('/');
 
         // "Running" for a dev server means the npm process started, not that Angular finished its first compile
         // and bound the port. Tests that started in that window got ERR_CONNECTION_REFUSED and looked like

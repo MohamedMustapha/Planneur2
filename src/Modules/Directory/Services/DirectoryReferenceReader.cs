@@ -104,6 +104,44 @@ internal sealed class DirectoryReferenceReader(IServiceScopeFactory scopeFactory
             .ToDictionaryAsync(person => person.Id, person => person.DisplayName, ct);
     }
 
+    public async Task<IReadOnlyDictionary<string, Guid>> ResolvePeopleByLdapUidAsync(
+        IReadOnlyList<string> ldapUids,
+        CancellationToken ct)
+    {
+        if (ldapUids.Count == 0)
+        {
+            return new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        await using var scope = SystemScope();
+
+        // Normalized on both sides. Keycloak lowercases usernames and the external systems do not agree with
+        // each other about case, so a comparison that respected it would resolve "C.Villeneuve" to nobody and
+        // leave the item looking unassigned — which is worse than an error, because it looks like an answer.
+        var normalized = ldapUids
+            .Select(uid => uid.Trim().ToLowerInvariant())
+            .Where(uid => uid.Length > 0)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        var matches = await Context(scope).People
+            .Where(person => person.Active && normalized.Contains(person.LdapUid.ToLower()))
+            .Select(person => new { person.LdapUid, person.Id })
+            .ToListAsync(ct);
+
+        var resolved = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var match in matches)
+        {
+            // Last write wins rather than a throw. Two active people whose uids differ only in case is a
+            // directory-level fault, and a background job is the wrong place to discover it: the pull would
+            // stop, and the visible symptom would be a mirror that stopped updating for no stated reason.
+            resolved[match.LdapUid] = match.Id;
+        }
+
+        return resolved;
+    }
+
     private AsyncServiceScope SystemScope()
     {
         var scope = scopeFactory.CreateAsyncScope();

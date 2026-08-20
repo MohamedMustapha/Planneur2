@@ -1,0 +1,128 @@
+:host {
+  display: contents;
+}
+
+.integrations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.integrations__note {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--primary);
+  background: var(--primary-soft);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.integrations__error {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-control);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.integrations__status,
+.integrations__hint {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+/* The provider's own words, kept legible but visibly secondary: it is a hint for whoever configured the
+   connection, not a platform error. */
+.integrations__failure {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--warning-soft);
+  color: var(--ink);
+  font-size: var(--text-sm);
+}
+
+.integrations__form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.integrations__field--wide {
+  grid-column: span 2;
+}
+
+.integrations__submit {
+  display: flex;
+  align-items: end;
+  justify-content: flex-end;
+}
+
+.integrations__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.integrations__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.integrations__meta {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+.integrations__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.integrations__status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+
+  dt {
+    color: var(--ink-muted);
+    font-size: var(--text-sm);
+  }
+
+  dd {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+}
+
+/* Three states, and the neutral one is the default: a connection that has never run is not a failure, and
+   colouring it as one would make every new connection look broken. */
+.dot--ok {
+  background: var(--success);
+}
+
+.dot--failed {
+  background: var(--danger);
+}
+
+.integrations__mapping-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--surface-2);
+}

@@ -99,7 +99,8 @@
     "loading": "Chargement…",
     "close": "Fermer",
     "cancel": "Annuler",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "choose": "Choisir…"
   },
   "org": {
     "title": "Annuaire de l'organisation",
@@ -142,7 +143,8 @@
     "iterationPresetsHint": "Raccourcis proposés à la création d'une itération. Consommé par le lot S4.",
     "tabDepartment": "Département",
     "tabAccess": "Rôles et habilitations",
-    "tabMeetings": "Réunions & événements"
+    "tabMeetings": "Réunions & événements",
+    "tabIntegrations": "Intégrations"
   },
   "directory": {
     "functionalRole": {
@@ -627,5 +629,62 @@
       "cornerstone": "Pilier",
       "mentor": "Mentor"
     }
+  },
+  "integrations": {
+    "title": "Intégrations",
+    "subtitle": "Connexions en lecture seule vers Azure DevOps et ServiceNow",
+    "readOnlyNote": "La plateforme lit ces systèmes et ne leur écrit jamais. Rien de ce qui est saisi ici ne modifie un ticket : les éléments sont recopiés localement, et le lien renvoie vers la fiche d'origine.",
+    "newConnection": "Nouvelle connexion",
+    "provider": "Système",
+    "providers": {
+      "azure-devops": "Azure DevOps",
+      "servicenow": "ServiceNow"
+    },
+    "name": "Libellé",
+    "namePlaceholder": "SI — Azure DevOps",
+    "baseUrl": "URL de base",
+    "teamProject": "Projet d'équipe",
+    "queue": "Groupe d'affectation",
+    "currentSprint": "Sprint courant",
+    "currentSprintPlaceholder": "Sprint 42",
+    "authRef": "Référence du secret",
+    "authRefHint": "Le nom du secret fourni par le déploiement, jamais le jeton lui-même.",
+    "pollMinutes": "Intervalle (minutes)",
+    "pollHint": "0 pour une synchronisation à la demande uniquement.",
+    "create": "Créer la connexion",
+    "none": "Aucune connexion configurée pour ce département.",
+    "syncNow": "Synchroniser",
+    "pause": "Suspendre",
+    "resume": "Réactiver",
+    "lastSync": "Dernière synchronisation",
+    "syncStatus": {
+      "never": "Jamais exécutée",
+      "ok": "Réussie",
+      "failed": "En échec"
+    },
+    "mirrored": "Éléments recopiés",
+    "schedule": "Planification",
+    "onDemand": "À la demande",
+    "mappings": "Correspondances",
+    "noMappings": "Aucune correspondance : les éléments sont recopiés sans projet ni unité.",
+    "addMapping": "Ajouter une correspondance",
+    "mappingKind": "Type",
+    "mappingKinds": {
+      "area-path": "Chemin d'itération (area)",
+      "iteration": "Itération",
+      "assignment-group": "Groupe d'affectation"
+    },
+    "externalValue": "Valeur source",
+    "areaPlaceholder": "CRACRA\\\\Platform",
+    "groupPlaceholder": "Helpdesk N1",
+    "target": "Cible locale",
+    "showMirror": "Voir les éléments recopiés",
+    "hideMirror": "Masquer les éléments recopiés",
+    "mirrorEmpty": "Rien de recopié pour l’instant.",
+    "reference": "Référence",
+    "itemTitle": "Intitulé",
+    "state": "État",
+    "sprintOrQueue": "Sprint / file",
+    "saveFailed": "Impossible d'enregistrer la connexion."
   }
 }

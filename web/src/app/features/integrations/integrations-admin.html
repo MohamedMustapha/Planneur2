@@ -1,0 +1,355 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('integrations.title')" [subtitle]="t('integrations.subtitle')">
+    <app-settings-tabs slot="tabs" />
+  </app-page-header>
+
+  <div class="integrations">
+    @if (errorMessage(); as message) {
+      <p class="integrations__error" role="alert">
+        {{ t(message) === message ? message : t(message) }}
+      </p>
+    }
+
+    <!-- Stated once, at the top, because it is the single thing to understand about this screen: everything
+         below configures a pull, and nothing on it can write to the other system. -->
+    <p class="integrations__note">{{ t('integrations.readOnlyNote') }}</p>
+
+    <section class="card">
+      <header class="card__header">{{ t('integrations.newConnection') }}</header>
+      <div class="card__body integrations__form">
+        <label class="field">
+          <span class="field__label">{{ t('integrations.provider') }}</span>
+          <select
+            class="select"
+            [ngModel]="formProvider()"
+            (ngModelChange)="formProvider.set($event)"
+            [attr.aria-label]="t('integrations.provider')"
+          >
+            @for (provider of providers; track provider) {
+              <option [value]="provider">{{ t('integrations.providers.' + provider) }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ t('integrations.name') }}</span>
+          <input
+            class="input"
+            [ngModel]="formName()"
+            (ngModelChange)="formName.set($event)"
+            [placeholder]="t('integrations.namePlaceholder')"
+          />
+        </label>
+
+        <label class="field integrations__field--wide">
+          <span class="field__label">{{ t('integrations.baseUrl') }}</span>
+          <input
+            class="input"
+            [ngModel]="formBaseUrl()"
+            (ngModelChange)="formBaseUrl.set($event)"
+            placeholder="https://devops.intranet"
+          />
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ t(projectOrQueueLabel()) }}</span>
+          <input
+            class="input"
+            [ngModel]="formProjectOrQueue()"
+            (ngModelChange)="formProjectOrQueue.set($event)"
+          />
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ t('integrations.currentSprint') }}</span>
+          <input
+            class="input"
+            [ngModel]="formCurrentSprint()"
+            (ngModelChange)="formCurrentSprint.set($event)"
+            [placeholder]="t('integrations.currentSprintPlaceholder')"
+          />
+        </label>
+
+        <label class="field">
+          <!-- A name, not a token. The hint says so, because a field called "credential" invites somebody to
+               paste one, and a pasted token would then live in a row a dozen people can read. -->
+          <span class="field__label">{{ t('integrations.authRef') }}</span>
+          <input
+            class="input mono"
+            [ngModel]="formAuthRef()"
+            (ngModelChange)="formAuthRef.set($event)"
+            placeholder="is-devops"
+          />
+          <span class="integrations__hint">{{ t('integrations.authRefHint') }}</span>
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ t('integrations.pollMinutes') }}</span>
+          <input
+            class="input num"
+            type="number"
+            min="0"
+            max="1440"
+            [ngModel]="formPollMinutes()"
+            (ngModelChange)="formPollMinutes.set($event)"
+          />
+          <span class="integrations__hint">{{ t('integrations.pollHint') }}</span>
+        </label>
+
+        <div class="integrations__submit">
+          <button type="button" class="btn btn--primary" [disabled]="isBusy()" (click)="submit()">
+            {{ t('integrations.create') }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    @if (integrations.isLoading()) {
+      <p class="integrations__status">{{ t('common.loading') }}</p>
+    } @else if (integrations.connections().length === 0) {
+      <p class="integrations__status">{{ t('integrations.none') }}</p>
+    }
+
+    @for (connection of integrations.connections(); track connection.id) {
+      <section class="card integrations__connection">
+        <header class="card__header integrations__header">
+          <span class="integrations__title">
+            <span class="pill" [class.pill--active]="connection.active">{{
+              t('integrations.providers.' + connection.provider)
+            }}</span>
+            <strong>{{ connection.name }}</strong>
+            <span class="integrations__meta">{{ connection.projectOrQueue }}</span>
+          </span>
+
+          <span class="integrations__actions">
+            <button
+              type="button"
+              class="btn btn--secondary"
+              [disabled]="isBusy()"
+              (click)="syncNow(connection)"
+            >
+              {{ t('integrations.syncNow') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn--neutral"
+              [disabled]="isBusy()"
+              (click)="toggleActive(connection)"
+            >
+              {{ connection.active ? t('integrations.pause') : t('integrations.resume') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn--danger-outline"
+              [disabled]="isBusy()"
+              (click)="remove(connection)"
+            >
+              {{ t('common.delete') }}
+            </button>
+          </span>
+        </header>
+
+        <div class="card__body">
+          <dl class="integrations__status-grid">
+            <div>
+              <dt>{{ t('integrations.lastSync') }}</dt>
+              <dd>
+                <!-- Three states, not two. "Never" is not a failure, and showing it as one would have every
+                     freshly configured connection looking broken for the first quarter of an hour. -->
+                <span
+                  class="dot"
+                  [class.dot--ok]="connection.lastSyncStatus === 'ok'"
+                  [class.dot--failed]="connection.lastSyncStatus === 'failed'"
+                ></span>
+                {{ t('integrations.syncStatus.' + connection.lastSyncStatus) }}
+                @if (connection.lastSyncedAt) {
+                  · {{ connection.lastSyncedAt | date: 'short' }}
+                }
+              </dd>
+            </div>
+
+            <div>
+              <dt>{{ t('integrations.mirrored') }}</dt>
+              <dd>{{ connection.mirroredItemCount }}</dd>
+            </div>
+
+            <div>
+              <dt>{{ t('integrations.schedule') }}</dt>
+              <dd>
+                {{
+                  isOnDemand(connection.pollInterval)
+                    ? t('integrations.onDemand')
+                    : connection.pollInterval
+                }}
+              </dd>
+            </div>
+
+            <div>
+              <dt>{{ t('integrations.authRef') }}</dt>
+              <dd class="mono">{{ connection.authRef }}</dd>
+            </div>
+          </dl>
+
+          @if (connection.lastSyncError; as failure) {
+            <p class="integrations__failure" role="status">{{ failure }}</p>
+          }
+
+          <h3 class="section-label">{{ t('integrations.mappings') }}</h3>
+
+          @if (connection.mappings.length === 0) {
+            <p class="integrations__hint">{{ t('integrations.noMappings') }}</p>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ t('integrations.mappingKind') }}</th>
+                  <th>{{ t('integrations.externalValue') }}</th>
+                  <th>{{ t('integrations.target') }}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (mapping of connection.mappings; track mapping.id) {
+                  <tr>
+                    <td>{{ t('integrations.mappingKinds.' + mapping.kind) }}</td>
+                    <td class="mono">{{ mapping.externalValue }}</td>
+                    <td>
+                      {{
+                        mapping.projectId
+                          ? projectCode(mapping.projectId)
+                          : unitName(mapping.unitId)
+                      }}
+                    </td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn btn--ghost"
+                        [disabled]="isBusy()"
+                        (click)="removeMapping(connection, mapping.id)"
+                      >
+                        {{ t('common.delete') }}
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+
+          <button type="button" class="btn btn--ghost" (click)="openMappingForm(connection.id)">
+            {{ t('integrations.addMapping') }}
+          </button>
+
+          @if (mappingFor() === connection.id) {
+            <div class="integrations__mapping-form">
+              <label class="field">
+                <span class="field__label">{{ t('integrations.mappingKind') }}</span>
+                <select
+                  class="select"
+                  [ngModel]="mappingKind()"
+                  (ngModelChange)="setMappingKind($event)"
+                  [attr.aria-label]="t('integrations.mappingKind')"
+                >
+                  @for (kind of mappingKinds; track kind) {
+                    <option [value]="kind">{{ t('integrations.mappingKinds.' + kind) }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field__label">{{ t('integrations.externalValue') }}</span>
+                <input
+                  class="input mono"
+                  [ngModel]="mappingValue()"
+                  (ngModelChange)="mappingValue.set($event)"
+                  [placeholder]="
+                    mappingTargetsProject()
+                      ? t('integrations.areaPlaceholder')
+                      : t('integrations.groupPlaceholder')
+                  "
+                />
+              </label>
+
+              <label class="field">
+                <!-- Projects or units, decided by the kind. Offering both at once would let somebody map an
+                     area path onto a unit, which the database refuses and the form should not have proposed. -->
+                <span class="field__label">{{ t('integrations.target') }}</span>
+                <select
+                  class="select"
+                  [ngModel]="mappingTarget()"
+                  (ngModelChange)="mappingTarget.set($event)"
+                  [attr.aria-label]="t('integrations.target')"
+                >
+                  <option value="">{{ t('common.choose') }}</option>
+                  @if (mappingTargetsProject()) {
+                    @for (project of projectList(); track project.id) {
+                      <option [value]="project.id">{{ project.code }} — {{ project.name }}</option>
+                    }
+                  } @else {
+                    @for (unit of units(); track unit.id) {
+                      <option [value]="unit.id">{{ unit.name }}</option>
+                    }
+                  }
+                </select>
+              </label>
+
+              <button
+                type="button"
+                class="btn btn--primary"
+                [disabled]="isBusy()"
+                (click)="addMapping(connection)"
+              >
+                {{ t('integrations.addMapping') }}
+              </button>
+            </div>
+          }
+
+          <button type="button" class="btn btn--ghost" (click)="togglePreview(connection)">
+            {{
+              previewFor() === connection.id
+                ? t('integrations.hideMirror')
+                : t('integrations.showMirror')
+            }}
+          </button>
+
+          @if (previewFor() === connection.id) {
+            @if (preview().length === 0) {
+              <p class="integrations__hint">{{ t('integrations.mirrorEmpty') }}</p>
+            } @else {
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>{{ t('integrations.reference') }}</th>
+                    <th>{{ t('integrations.itemTitle') }}</th>
+                    <th>{{ t('integrations.state') }}</th>
+                    <th>{{ t('integrations.sprintOrQueue') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of preview(); track item.id) {
+                    <tr>
+                      <td class="mono">
+                        @if (item.url) {
+                          <!-- Back to the record it came from. The platform mirrors the item and will never be
+                               where it is edited, so the link is the whole of the write path. -->
+                          <a [href]="item.url" target="_blank" rel="noopener">{{
+                            item.reference
+                          }}</a>
+                        } @else {
+                          {{ item.reference }}
+                        }
+                      </td>
+                      <td>{{ item.title }}</td>
+                      <td>{{ item.state }}</td>
+                      <td>{{ item.sprintOrQueue ?? '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          }
+        </div>
+      </section>
+    }
+  </div>
+</ng-container>

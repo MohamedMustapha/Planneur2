@@ -148,6 +148,25 @@ public interface IDirectoryReferenceReader
     Task<IReadOnlyDictionary<Guid, string>> GetPersonNamesAsync(
         IReadOnlyList<Guid> personIds,
         CancellationToken ct);
+
+    /// <summary>
+    /// LDAP uids to person ids, for a background job reconciling an external system's idea of who somebody is.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Added by S10, whose sync has to turn "assigned to camille.villeneuve in DevOps" into a person id it can
+    /// stamp on a mirror row. It belongs on this interface rather than on <see cref="IDirectoryReader"/> for the
+    /// same reason the rest of it does: the caller is a system-context job with no unit and no department, so a
+    /// caller-scoped lookup would resolve nobody and every pulled item would arrive unassigned.
+    /// </para>
+    /// <para>
+    /// Narrow in the same way as its neighbours — an explicit list of uids in, ids out. No name, no department,
+    /// no email: enough to say "this is that person", and not enough to enumerate the organization.
+    /// </para>
+    /// </remarks>
+    Task<IReadOnlyDictionary<string, Guid>> ResolvePeopleByLdapUidAsync(
+        IReadOnlyList<string> ldapUids,
+        CancellationToken ct);
 }
 
 /// <summary>

@@ -5,6 +5,7 @@ using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Sync;
 using Cracra.Tests.Integration.Directory;
+using Cracra.Tests.Integration.Integrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -382,9 +383,18 @@ public sealed class ActivityLoggingTests(PostgresFixture postgres)
     [Fact]
     public async Task The_assignable_tasks_dropdown_offers_only_the_callers_own_projects()
     {
-        await using var factory = await SeededAsync(seedTasks: true);
+        await using var factory = await SeededAsync();
 
-        await CreateProjectAsync(factory, withMember: SeedOrganisation.Camille);
+        var projectId = await CreateProjectAsync(factory, withMember: SeedOrganisation.Camille);
+
+        // Since S10 the dropdown reads the mirror, so this places rows in it rather than turning on a sample
+        // source. What is under test here is unchanged: whose tasks the dropdown offers.
+        await ExternalMirrorSeed.SeedAsync(
+            factory,
+            "azure-devops",
+            SeedOrganisation.Departments.InformationSystems,
+            new ExternalMirrorSeed.Item("4301", "Migrer le socle", projectId, Sprint: "Sprint 42"),
+            new ExternalMirrorSeed.Item("4302", "Corriger la pagination", projectId, Sprint: "Sprint 42"));
 
         factory.AsUser(SeedOrganisation.Camille);
 
@@ -397,7 +407,8 @@ public sealed class ActivityLoggingTests(PostgresFixture postgres)
         tasks.ShouldAllBe(task => task.SuggestedActivityTypeCode == "project-build");
 
         // Mehdi is on nothing, so his dropdown is empty even though the same source is configured. Handing one
-        // person another's assigned tickets is a disclosure the external system never agreed to.
+        // person another's assigned tickets is a disclosure the external system never agreed to — and it is RLS
+        // on the mirror, not a filter in this module, that makes it impossible.
         factory.AsUser(SeedOrganisation.Mehdi);
 
         var theirs = await factory.CreateClient().GetFromJsonAsync<List<AssignableTask>>(
@@ -410,7 +421,7 @@ public sealed class ActivityLoggingTests(PostgresFixture postgres)
     [Fact]
     public async Task An_entry_logged_from_a_pulled_task_keeps_its_reference()
     {
-        await using var factory = await SeededAsync(seedTasks: true);
+        await using var factory = await SeededAsync();
         var projectId = await CreateProjectAsync(factory, withMember: SeedOrganisation.Camille);
 
         factory.AsUser(SeedOrganisation.Camille);
@@ -589,7 +600,7 @@ public sealed class ActivityLoggingTests(PostgresFixture postgres)
         return projectId;
     }
 
-    private async Task<CracraApplicationFactory> SeededAsync(bool seedTasks = false)
+    private async Task<CracraApplicationFactory> SeededAsync()
     {
         var keycloak = FakeKeycloakDirectory.SeededOrganisation();
 
@@ -598,12 +609,6 @@ public sealed class ActivityLoggingTests(PostgresFixture postgres)
 
         var factory = new CracraApplicationFactory(postgres.AdminConnectionString)
         {
-            Settings = seedTasks
-                ? new Dictionary<string, string?>
-                {
-                    ["Cracra:Activities:AssignableTasks:SeedSampleTasks"] = "true",
-                }
-                : null,
             ConfigureAdditionalServices = services =>
             {
                 services.RemoveAll<IKeycloakDirectoryClient>();

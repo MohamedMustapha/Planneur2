@@ -130,6 +130,23 @@ services:
       # The clock a recurring meeting's local start time is read against. An org outside France changes this one
       # value; nothing else about S7 is deployment-specific.
       Cracra__Meetings__DefaultTimeZoneId: ${ORG_TIME_ZONE:-Europe/Paris}
+      # Integrations (S10). The hosts a connection may reach, and the secrets it authenticates with — both are
+      # the operator's business, never a department head's: they configure which DevOps project their people
+      # work in, on a row, and nothing about where the process may open a socket.
+      #
+      # The allow-list is comma-separated and enforced twice: when a connection is written, so an administrator
+      # is told immediately, and on every request, so a redirect cannot walk out of it. Leaving it unset permits
+      # any host, which is the dev box's default and nobody else's.
+      Cracra__Integrations__AllowedHosts__0: ${DEVOPS_HOST:-}
+      Cracra__Integrations__AllowedHosts__1: ${SERVICENOW_HOST:-}
+      # One entry per auth_ref a connection names, in the form kind:value — pat:, basic:user:password, bearer:.
+      # These arrive from the vault as environment variables and are never written to the database, which is why
+      # a connection row an administrator can read and export contains a name rather than a token.
+      Cracra__Integrations__Credentials__is-devops: ${DEVOPS_CREDENTIAL:-}
+      Cracra__Integrations__Credentials__helpdesk-servicenow: ${SERVICENOW_CREDENTIAL:-}
+      # How often the platform looks for connections whose own poll_interval has come due.
+      Cracra__Integrations__SchedulerInterval: ${INTEGRATIONS_SCHEDULER_INTERVAL:-00:01:00}
+      Cracra__Integrations__SyncOnStartup: "true"
       # The on-prem model's name as its OpenAI-compatible server reports it, and the bucket exported reports are
       # written to. The bucket is created on first start if it is missing.
       Cracra__Ai__Model: ${LLM_MODEL:-local-model}

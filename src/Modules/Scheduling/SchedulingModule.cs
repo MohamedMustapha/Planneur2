@@ -5,18 +5,14 @@ using Cracra.Modules.Scheduling.Application;
 using Contracts = Cracra.Modules.Scheduling.Contracts;
 using Cracra.Modules.Scheduling.Infrastructure;
 using FluentValidation;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Cracra.Modules.Scheduling;
 
 public static class SchedulingModule
 {
-    public static IServiceCollection AddSchedulingModule(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddSchedulingModule(this IServiceCollection services)
     {
         services.AddModuleDbContext<SchedulingDbContext>(SchedulingDbContext.SchemaName);
 
@@ -44,14 +40,16 @@ public static class SchedulingModule
         // runs several caller-scoped queries that must share the one RLS session.
         services.AddScoped<BoardComposer>();
 
-        // --- The S10 seam -----------------------------------------------------------------------------------
-        services.Configure<WorkOrderPoolOptions>(configuration.GetSection(WorkOrderPoolOptions.SectionName));
-
+        // --- The S10 seam, filled ---------------------------------------------------------------------------
+        // ServiceNow only, and deliberately: 6a's pool is the RUN queue nobody has picked up. A DevOps sprint
+        // task always belongs to a project team, so it reaches a person through S5's dropdown rather than
+        // through a pool a lead drags from.
         services.AddScoped<IEnumerable<IWorkOrderPoolSource>>(provider =>
-            provider.GetRequiredService<IOptions<WorkOrderPoolOptions>>().Value.SeedSampleWorkOrders
-                ? [new SamplePoolSource("servicenow")]
-                : [new UnconfiguredPoolSource("servicenow",
-                    provider.GetRequiredService<ILogger<UnconfiguredPoolSource>>())]);
+        [
+            new MirrorPoolSource(
+                Cracra.Modules.Integrations.Contracts.ExternalProviders.ServiceNow,
+                provider.GetRequiredService<Cracra.Modules.Integrations.Contracts.IExternalWorkItemReader>()),
+        ]);
 
         services.AddMediatorHandlersFrom(typeof(SchedulingModule).Assembly);
 

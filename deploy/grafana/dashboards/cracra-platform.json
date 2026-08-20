@@ -74,6 +74,25 @@
       "targets": [
         { "expr": "sum by (reason) (rate(cracra_kudos_refused_total[1h]))", "legendFormat": "{{reason}}" }
       ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Integration mirror staleness, by connection",
+      "description": "Seconds since each connection last pulled successfully. The signal S10 is most exposed to: a sync that has quietly stopped looks exactly like a quiet sprint — the dropdown still answers, the pool still renders, and everything in them is weeks old. Per connection rather than per provider, because two DevOps connections fail independently and an aggregate would stay healthy while one was dead.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "targets": [
+        { "expr": "max by (connection, provider) (cracra_integrations_sync_age_seconds)", "legendFormat": "{{provider}} {{connection}}" }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Integration pulls — failures and p95",
+      "description": "A failed pull is recorded on its own connection where an administrator reads the reason; this is the same fact at the operator level. Duration sits beside it because the shape of an outage is usually a provider getting slower first, not one that stops answering.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "targets": [
+        { "expr": "sum by (provider) (rate(cracra_integrations_sync_failures_total[15m]))", "legendFormat": "failures {{provider}}" },
+        { "expr": "histogram_quantile(0.95, sum by (le, provider) (rate(cracra_integrations_sync_duration_milliseconds_bucket[15m])))", "legendFormat": "p95 {{provider}}" }
+      ]
     }
   ]
 }

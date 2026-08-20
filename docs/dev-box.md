@@ -1,7 +1,8 @@
 # The dev box
 
 One command brings up the whole platform: Postgres, Keycloak (LDAP-shaped realm, seeded people), RustFS, SEQ,
-Prometheus, Grafana, an on-prem-shaped LLM stub, the API, the BFF and the Angular dev server.
+Prometheus, Grafana, an on-prem-shaped LLM stub, a stub standing in for Azure DevOps and ServiceNow, the API,
+the BFF and the Angular dev server.
 
 ```
 aspire run --project src/AppHost
@@ -101,6 +102,7 @@ the Keycloak realm, so allow a few minutes.
 | **prometheus** | http://localhost:9090 | scrapes `/metrics` from the API and the BFF |
 | **grafana** | http://localhost:3000 | anonymous admin, "Cracra — platform baseline" dashboard |
 | **llm** | dashboard link | OpenAI-compatible stub so nobody needs a GPU |
+| **providers** | dashboard link | Azure DevOps + ServiceNow stub, so the pull works with no corporate network |
 
 ### Seeded people
 
@@ -122,6 +124,29 @@ Every account uses the password `cracra`. The ids match `SeedOrganisation` in th
 
 Sign in as `camille.villeneuve` for the ordinary-employee view, `olivier.marchand` to see the department and
 finance entries appear in the rail, `nadia.kessler` for the portfolio-wide view.
+
+### Connecting Azure DevOps and ServiceNow
+
+Nothing is connected out of the box, deliberately: S10 mirrors external work items and a mirror with invented
+rows in it would be worse than an empty one. The dev box ships the far end — the **providers** stub answers the
+two API shapes the adapters are written against — and connecting it is the same three steps a real deployment
+takes.
+
+Sign in as `olivier.marchand` (dept-head) and open **Paramètres → Intégrations**:
+
+1. **Create a connection.** Provider *Azure DevOps*, base URL the **providers** endpoint from the dashboard, team
+   project `CRACRA`, current sprint `Sprint 42`, secret reference `dev-devops`, interval `0` (on demand).
+2. **Map a vocabulary.** Add an *area path* mapping from `CRACRA\Platform` to one of your projects. Without it
+   the items still mirror; they simply have no project, so picking one in the dropdown pre-fills nothing.
+3. **Press Synchroniser.** The card reports the outcome. "Voir les éléments recopiés" shows what came back.
+
+Camille then finds those tasks in her board's quick-add dropdown. For the RUN side, repeat with provider
+*ServiceNow*, assignment group `Helpdesk N1`, secret reference `dev-servicenow`, and an *assignment-group*
+mapping to the Infrastructure unit; the tickets appear in the 6a work-order pool.
+
+The secret references are names, not tokens: `AppHost.cs` provides `dev-devops` and `dev-servicenow` as
+environment variables, exactly as a deployment's vault would. A connection whose `auth_ref` names nothing
+reports a failed pull with the reason, which is worth seeing once.
 
 The realm is generated, not hand-edited:
 

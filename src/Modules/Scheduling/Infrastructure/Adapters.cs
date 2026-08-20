@@ -1,5 +1,6 @@
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
+using Cracra.Modules.Integrations.Contracts;
 using Cracra.Modules.Meetings.Contracts;
 using Cracra.Modules.Portfolio.Contracts;
 using Cracra.Modules.Projects.Contracts;
@@ -8,7 +9,6 @@ using Cracra.Modules.Scheduling.Contracts;
 using Cracra.Modules.Scheduling.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Logging;
 
 namespace Cracra.Modules.Scheduling.Infrastructure;
 
@@ -241,49 +241,66 @@ internal sealed class ScheduleLoadReader(
 }
 
 /// <summary>
-/// The pool's external half, pending S10.
+/// The pool's external half, filled by S10.
 /// </summary>
 /// <remarks>
-/// Mirrors the shape S5 already established for its per-person dropdown: unconfigured returns nothing, and the
-/// dev box turns on samples so the drag-from-pool journey is exercisable before the adapters exist. Samples are
-/// deterministic and scoped to the unit that asked, so they behave like a real queue rather than like noise.
+/// <para>
+/// What stood here was a pair of stand-ins — one returning nothing, one inventing three plausible tickets for the
+/// dev box — and this replaces them rather than sitting behind them. A deployment with no ServiceNow connection
+/// now has an empty pool because the mirror is empty, which is the same answer for a better reason.
+/// </para>
+/// <para>
+/// The mirror is a table, so refreshing the pool is an indexed query against Postgres rather than a call to
+/// somebody else's instance. That matters here more than it does for S5's dropdown: a lead refreshes the pool in
+/// front of a room, and a board that waits on a ServiceNow round trip is a board people stop using.
+/// </para>
+/// <para>
+/// Caller-scoped like every other adapter in this file. RLS has already decided which unit's tickets this reader
+/// may see; the unit filter below narrows within that, and could not widen past it.
+/// </para>
 /// </remarks>
-public sealed class WorkOrderPoolOptions
+internal sealed class MirrorPoolSource(string source, IExternalWorkItemReader mirror) : IWorkOrderPoolSource
 {
-    public const string SectionName = "Cracra:Scheduling:Pool";
+    /// <summary>What a work order costs when the source has no estimate. One hour, and visibly a default.</summary>
+    private const decimal DefaultEstimate = 1m;
 
-    public bool SeedSampleWorkOrders { get; set; }
-}
-
-internal sealed class UnconfiguredPoolSource(string source, ILogger<UnconfiguredPoolSource> logger)
-    : IWorkOrderPoolSource
-{
     public string Source => source;
 
-    public Task<IReadOnlyList<PooledWorkOrder>> GetUnassignedAsync(Guid unitId, CancellationToken ct)
+    public async Task<IReadOnlyList<PooledWorkOrder>> GetUnassignedAsync(Guid unitId, CancellationToken ct)
     {
-        logger.LogDebug("No adapter is configured for {Source}; the pool stays empty", source);
+        var items = await mirror.QueryAsync(
+            new ExternalWorkItemQuery
+            {
+                Provider = source,
 
-        return Task.FromResult<IReadOnlyList<PooledWorkOrder>>([]);
-    }
-}
+                // Both, and both matter. Unassigned is what "pool" means; the unit is which queue — a ticket
+                // somebody at the source has already picked up is not free work, and another unit's queue is not
+                // this board's business.
+                Unassigned = true,
+                UnitId = unitId,
+            },
+            ct);
 
-internal sealed class SamplePoolSource(string source) : IWorkOrderPoolSource
-{
-    public string Source => source;
-
-    public Task<IReadOnlyList<PooledWorkOrder>> GetUnassignedAsync(Guid unitId, CancellationToken ct)
-    {
-        // Derived from the unit's own id, so two units never see each other's tickets and the same unit sees the
-        // same three every time — which is what lets an E2E assertion name one.
-        var prefix = unitId.ToString("N")[..4].ToUpperInvariant();
-
-        return Task.FromResult<IReadOnlyList<PooledWorkOrder>>(
+        return
         [
-            new($"INC-{prefix}-001", "Poste bloqué au démarrage", "L'utilisateur ne peut plus ouvrir sa session.", 1m),
-            new($"INC-{prefix}-002", "Imprimante hors service", "Bourrage papier récurrent au 3e étage.", 0.5m),
-            new($"INC-{prefix}-003", "Accès VPN refusé", "Certificat expiré côté client.", 2m),
-        ]);
+            // Deduplicated on the reference, which is the identity the rest of the platform uses for an external
+            // item. The mirror can legitimately hold one ticket twice — two connections covering the same queue
+            // is a configuration mistake, not a corrupt state — and a pool that offered both would put two cards
+            // on the board for one incident, or, once a lead pressed refresh, fail outright against the unique
+            // index the work order carries. One card per ticket is the only answer that is true either way.
+            .. items
+                .GroupBy(item => item.Reference, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .Select(item => new PooledWorkOrder(
+                    item.Reference,
+                    item.Title,
+
+                    // The mirror holds a title and no body. ServiceNow's description is often several screens of
+                    // pasted email, and a pool card is one line on a timeline — so the type and state go here
+                    // instead, which is what a lead triaging the queue actually reads.
+                    $"{item.Type} · {item.State}",
+                    item.EstimatedHours ?? DefaultEstimate)),
+        ];
     }
 }
 

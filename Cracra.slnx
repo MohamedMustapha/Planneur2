@@ -63,6 +63,10 @@
     <Project Path="src/Modules/Scheduling.Contracts/Cracra.Modules.Scheduling.Contracts.csproj" />
     <Project Path="src/Modules/Scheduling/Cracra.Modules.Scheduling.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Integrations/">
+    <Project Path="src/Modules/Integrations.Contracts/Cracra.Modules.Integrations.Contracts.csproj" />
+    <Project Path="src/Modules/Integrations/Cracra.Modules.Integrations.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Kudos/">
     <Project Path="src/Modules/Kudos.Contracts/Cracra.Modules.Kudos.Contracts.csproj" />
     <Project Path="src/Modules/Kudos/Cracra.Modules.Kudos.csproj" />
@@ -87,6 +91,9 @@
   <Folder Name="/src/Tools/" />
   <Folder Name="/src/Tools/LlmStub/">
     <Project Path="src/Tools/LlmStub/Cracra.Tools.LlmStub.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/ProviderStub/">
+    <Project Path="src/Tools/ProviderStub/Cracra.Tools.ProviderStub.csproj" />
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/Architecture/">

@@ -95,6 +95,17 @@ builder.AddContainer("grafana", "grafana/grafana", "latest")
 var llm = builder.AddProject<Projects.Cracra_Tools_LlmStub>("llm")
     .WithHttpHealthCheck("/health");
 
+// --- Azure DevOps and ServiceNow -----------------------------------------------------------------------------------
+// A stub locally, for the same reason the model is one: `aspire run` has to work on a laptop with no corporate
+// network behind it. It answers the two API shapes the adapters are written against with a deterministic set of
+// work items assigned to the seeded people, so the whole pull-and-prefill journey is exercisable end to end.
+//
+// Point a connection's base URL at the real collection or instance to swap it — that is configuration held on a
+// row, not in this file, because which DevOps project a department works in is theirs to decide and not the
+// deployment's. Nothing here is deployed: deploy/docker-compose.yml has no equivalent service.
+var providers = builder.AddProject<Projects.Cracra_Tools_ProviderStub>("providers")
+    .WithHttpHealthCheck("/health");
+
 // --- API -----------------------------------------------------------------------------------------------------------
 var api = builder.AddProject<Projects.Cracra_Host>("api")
     .WithReference(database)
@@ -113,13 +124,19 @@ var api = builder.AddProject<Projects.Cracra_Host>("api")
     .WithEnvironment("Cracra__Directory__Sync__Realm", "cracra")
     .WithEnvironment("Cracra__Directory__Sync__ClientId", "cracra-sync")
     .WithEnvironment("Cracra__Directory__Sync__ClientSecret", syncClientSecret)
-    // The dev box stands in for Azure DevOps and ServiceNow until S10 brings the real adapters, so the
-    // pull-a-task flow is exercisable here. Sample tasks are derived from the caller's own projects, never
-    // invented, and this flag stays off in every real deployment.
-    .WithEnvironment("Cracra__Activities__AssignableTasks__SeedSampleTasks", "true")
-    // Likewise for the S6 work-order pool: the dev box stands in for ServiceNow so the drag-from-queue journey
-    // is exercisable before S10's adapters exist. Samples derive from the unit that asked and never leave it.
-    .WithEnvironment("Cracra__Scheduling__Pool__SeedSampleWorkOrders", "true")
+    // The secret store, as the dev box provides it. In a deployment these arrive from the vault as environment
+    // variables of exactly this shape; here they are two constants the stub ignores, because what has to be
+    // exercised locally is the resolution path — a connection whose auth_ref names nothing fails visibly, and
+    // that is a state worth being able to reproduce.
+    .WithEnvironment("Cracra__Integrations__Credentials__dev-devops", "pat:stub-token")
+    .WithEnvironment("Cracra__Integrations__Credentials__dev-servicenow", "basic:cracra:stub-password")
+    // A minute, so a connection configured through the settings screen mirrors while somebody is still looking
+    // at it. Each connection's own poll_interval still governs how often it is actually pulled.
+    .WithEnvironment("Cracra__Integrations__SchedulerInterval", "00:01:00")
+    .WithEnvironment("Cracra__Integrations__SyncOnStartup", "true")
+    // Deliberately no allow-list. An empty list permits any host, which is what a dev box pointed at a stub on
+    // localhost needs; the compose file sets a real one, and a connection outside it is refused when it is
+    // written rather than when it is pulled.
     // The zone a meeting's wall-clock time is read in. A 09:00 stand-up is 09:00 all year, so the series stores
     // the local time and this says which clock that is — the one knob S7 needs from a deployment.
     .WithEnvironment("Cracra__Meetings__DefaultTimeZoneId", "Europe/Paris")
@@ -138,6 +155,7 @@ var api = builder.AddProject<Projects.Cracra_Host>("api")
         endpoint.IsProxied = false;
     })
     .WaitFor(llm)
+    .WaitFor(providers)
     .WaitFor(rustfs);
 
 // --- BFF -----------------------------------------------------------------------------------------------------------
