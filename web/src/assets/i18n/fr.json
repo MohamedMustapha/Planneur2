@@ -82,18 +82,6 @@
     "unit": "Mon unité",
     "department": "Département"
   },
-  "placeholder": {
-    "subtitle": "Écran livré avec le lot {{slice}}",
-    "note": "Le shell, le système de design et la chaîne d'authentification sont en place. Cet écran attend son lot.",
-    "team": "Timeline d'équipe pour un chef de pôle : une ligne par membre, activités colorées par type, et génération du rapport de situation.",
-    "unit": "Vue consolidée de l'unité : charge par membre, couverture, projets rattachés.",
-    "department": "Vue département : une ligne par unité, projets imbriqués, journées spéciales et jalons en surimpression.",
-    "portfolio": "Tableau de portefeuille : couloirs Envisagé · Engagé · Actif · Déphasé, transitions guidées et itérations.",
-    "reports": "Rapport de situation contextuel selon le rôle, avec synthèse rédigée par le modèle hébergé en interne.",
-    "kudos": "Reconnaissance entre pairs : compteur, catégories, badges et classement optionnels par département.",
-    "finance": "Vue capex / opex pour les responsables de département et le PMO.",
-    "settings": "Configuration par département : taxonomie d'activités, rôles contextuels, règles de kudos."
-  },
   "common": {
     "noHours": "0,0 h",
     "loading": "Chargement…",
@@ -686,5 +674,77 @@
     "state": "État",
     "sprintOrQueue": "Sprint / file",
     "saveFailed": "Impossible d'enregistrer la connexion."
+  },
+  "finance": {
+    "title": "Capex / Opex",
+    "subtitle": "Vue de capitalisation — investissement contre exploitation",
+    "settings": "Règles et taux",
+    "export": "Exporter (Excel)",
+    "exportReady": "Export prêt.",
+    "exportDownload": "Télécharger",
+    "forbidden": "Cette vue est réservée aux chefs de département et au PMO.",
+    "loadFailed": "Impossible de charger la vue de capitalisation.",
+    "saveFailed": "Impossible d'enregistrer.",
+    "scope": {
+      "label": "Périmètre",
+      "department": "Département",
+      "project": "Projet",
+      "portfolio": "Portefeuille"
+    },
+    "project": "Projet",
+    "chooseProject": "Choisissez un projet pour afficher sa capitalisation.",
+    "period": {
+      "label": "Période",
+      "month": "Mois",
+      "quarter": "Trimestre",
+      "year": "Année"
+    },
+    "anchor": "Date de référence",
+    "capex": "Capex",
+    "opex": "Opex",
+    "manual": "saisi",
+    "effort": "valorisé",
+    "hours": "Heures",
+    "effortCost": "Coût valorisé",
+    "bucket": "Poste",
+    "treatment": "Traitement",
+    "buckets": {
+      "build": "Projet — BUILD",
+      "run": "Projet — RUN",
+      "qol": "Qualité de vie",
+      "admin": "Recrutement & administratif"
+    },
+    "treatments": {
+      "capex": "Capex",
+      "opex": "Opex",
+      "excluded": "Exclu"
+    },
+    "noRateCard": "Aucun taux horaire ne couvre cette période : les montants n'incluent que les coûts saisis, et l'effort est affiché en heures.",
+    "otherCurrency": "{{count}} projet(s) sont chiffrés dans une autre devise que {{currency}} : leur coût est affiché mais n'entre pas dans les totaux.",
+    "unallocated": "Non affecté",
+    "unvalued": "Heures sans taux horaire",
+    "notCounted": "Devise différente : coût hors totaux",
+    "byProject": "Par projet",
+    "noProjects": "Aucun projet sur ce périmètre.",
+    "code": "Projet",
+    "classification": "Classification",
+    "manualCost": "Coût saisi",
+    "buildHours": "Heures BUILD",
+    "runHours": "Heures RUN",
+    "byMonth": "Par mois",
+    "byMonthHint": "Effort uniquement : un coût saisi n'a pas de date, le répartir sur les mois reviendrait à inventer un plan d'amortissement.",
+    "month": "Mois",
+    "rules": "Règles de capitalisation",
+    "rulesDefault": "Valeurs par défaut de la plateforme — modifiez-les pour ce département.",
+    "rulesConfigured": "Règles propres à ce département.",
+    "rateCards": "Taux horaires",
+    "rateCardsHint": "Optionnel. Sans taux, l'effort reste affiché en heures. Un taux par rôle métier, daté.",
+    "role": "Rôle métier",
+    "hourlyRate": "Taux horaire",
+    "effectiveFrom": "À partir du",
+    "effectiveTo": "Jusqu'au",
+    "effectiveToHint": "Exclu. Vide = toujours en vigueur.",
+    "current": "en cours",
+    "addRateCard": "Ajouter le taux"
   }
 }

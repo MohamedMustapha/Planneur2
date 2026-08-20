@@ -1,21 +1,13 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/session/auth.guard';
-import { SlicePlaceholderData } from './features/placeholder/slice-placeholder';
 
 /**
- * One route per rail entry, so the shell is fully navigable from S0 and each later slice replaces a placeholder
- * rather than adding a route. Everything is lazy: the shell is the only thing in the initial bundle.
+ * One route per rail entry, so the shell was fully navigable from S0 and each slice replaced a placeholder rather
+ * than adding a route. Everything is lazy: the shell is the only thing in the initial bundle.
+ *
+ * S11 was the last placeholder, so the helper that produced them — and the screen it loaded — are gone. Keeping
+ * them would leave a component nothing routes to and a set of translations describing screens that now exist.
  */
-function placeholder(path: string, data: SlicePlaceholderData) {
-  return {
-    path,
-    canActivate: [authGuard],
-    data,
-    loadComponent: () =>
-      import('./features/placeholder/slice-placeholder').then((m) => m.SlicePlaceholder),
-  };
-}
-
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'board' },
   {
@@ -75,11 +67,13 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/kudos/kudos-wall').then((m) => m.KudosWall),
   },
-  placeholder('finance', {
-    titleKey: 'nav.finance',
-    slice: 'S11',
-    descriptionKey: 'placeholder.finance',
-  }),
+  {
+    // No scope in the route, for the same reason the report has none: which department's capitalization somebody
+    // may read is a server fact, and a /finance/department/<id> URL would be a client-side claim about it.
+    path: 'finance',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/finance/capex-opex').then((m) => m.CapexOpex),
+  },
   {
     path: 'settings',
     canActivate: [authGuard],

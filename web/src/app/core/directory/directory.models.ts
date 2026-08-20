@@ -48,6 +48,14 @@ export interface Me {
   readonly contextualRoles: readonly string[];
 }
 
+/** One job identity, as the rate-card picker needs it: the id it is stored by, the key it renders through. */
+export interface FunctionalRoleSummary {
+  readonly id: string;
+  readonly code: string;
+  readonly labelKey: string;
+  readonly departmentId: string | null;
+}
+
 export interface DepartmentConfig {
   readonly departmentId: string;
   readonly activityTaxonomyJson: string;

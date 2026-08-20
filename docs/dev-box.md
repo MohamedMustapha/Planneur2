@@ -148,6 +148,28 @@ The secret references are names, not tokens: `AppHost.cs` provides `dev-devops` 
 environment variables, exactly as a deployment's vault would. A connection whose `auth_ref` names nothing
 reports a failed pull with the reason, which is worth seeing once.
 
+### Reading the capex/opex view
+
+**Paramètres → nothing**: the capitalization view lives on its own rail entry, and only a department head or the
+PMO sees it. Sign in as `olivier.marchand` and open **Finance**.
+
+Out of the box a department has no rate card, so the view shows the split in hours plus whatever manual project
+costs exist, and says as much at the top. Two things change that:
+
+1. **Règles et taux → a treatment.** Each of the four activity buckets maps to capex, opex or excluded. The
+   defaults are BUILD → capex, RUN → opex, quality of life → opex, administration → excluded; a department that
+   capitalizes its maintenance changes one dropdown and the figures move.
+2. **Règles et taux → a rate.** Pick a functional role, an hourly rate and a start date. Hours logged by people
+   holding that role are then valued, and the effort columns fill in. Cards are effective-dated and may not
+   overlap for one role, so last quarter's figures do not move when this year's rates are entered.
+
+**Exporter (Excel)** renders the same view to a workbook, stores it in RustFS and hands back a short-lived link.
+The link is shown rather than followed, because a download that starts on its own is indistinguishable from one
+that failed.
+
+Sign in as `camille.villeneuve` and go to `/finance` directly to see the other half of the matrix: the rail never
+offered the entry, and the API refuses the request outright rather than returning an empty department.
+
 The realm is generated, not hand-edited:
 
 ```

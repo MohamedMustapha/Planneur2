@@ -1,0 +1,399 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('finance.title')" [subtitle]="t('finance.subtitle')">
+    <div slot="actions" class="finance__actions">
+      <button type="button" class="btn btn--neutral" (click)="showRules.set(!showRules())">
+        {{ t('finance.settings') }}
+      </button>
+      <button type="button" class="btn btn--primary" [disabled]="busy()" (click)="exportView()">
+        {{ t('finance.export') }}
+      </button>
+    </div>
+  </app-page-header>
+
+  <div class="finance">
+    @if (failure(); as problem) {
+      <p class="finance__error" role="alert">{{ t(problem) === problem ? problem : t(problem) }}</p>
+    }
+
+    @if (exportUrl(); as url) {
+      <!-- Shown rather than followed: the link is short-lived, and a download that starts on its own is
+           indistinguishable from one that failed. -->
+      <p class="finance__export" role="status">
+        {{ t('finance.exportReady') }}
+        <a [href]="url" target="_blank" rel="noopener">{{ t('finance.exportDownload') }}</a>
+      </p>
+    }
+
+    <section class="card finance__controls">
+      <div class="card__body finance__filters">
+        <label class="field">
+          <span class="field__label">{{ t('finance.scope.label') }}</span>
+          <select
+            class="select"
+            [ngModel]="finance.scope()"
+            (ngModelChange)="setScope($event)"
+            [attr.aria-label]="t('finance.scope.label')"
+          >
+            @for (scope of scopes; track scope) {
+              <option [value]="scope">{{ t('finance.scope.' + scope) }}</option>
+            }
+          </select>
+        </label>
+
+        @if (finance.scope() === 'project') {
+          <label class="field">
+            <span class="field__label">{{ t('finance.project') }}</span>
+            <select
+              class="select"
+              [ngModel]="finance.scopeId()"
+              (ngModelChange)="finance.scopeId.set($event)"
+              [attr.aria-label]="t('finance.project')"
+            >
+              <option [ngValue]="null">{{ t('common.choose') }}</option>
+              @for (project of projects.projects(); track project.id) {
+                <option [ngValue]="project.id">{{ project.code }} — {{ project.name }}</option>
+              }
+            </select>
+          </label>
+        }
+
+        <label class="field">
+          <span class="field__label">{{ t('finance.period.label') }}</span>
+          <select
+            class="select"
+            [ngModel]="finance.period()"
+            (ngModelChange)="setPeriod($event)"
+            [attr.aria-label]="t('finance.period.label')"
+          >
+            @for (period of periods; track period) {
+              <option [value]="period">{{ t('finance.period.' + period) }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ t('finance.anchor') }}</span>
+          <input
+            class="input"
+            type="date"
+            [ngModel]="finance.anchor()"
+            (ngModelChange)="finance.anchor.set($event)"
+          />
+        </label>
+      </div>
+    </section>
+
+    @if (awaitingProject()) {
+      <p class="finance__status">{{ t('finance.chooseProject') }}</p>
+    } @else if (finance.isLoading()) {
+      <p class="finance__status">{{ t('common.loading') }}</p>
+    } @else if (finance.view(); as view) {
+      <section class="card">
+        <header class="card__header">
+          {{ view.scopeLabel }} · {{ view.from }} — {{ view.to }}
+        </header>
+
+        <div class="card__body">
+          @if (!view.totals.effortValued) {
+            <!-- Stated, not implied. Without a rate card the money columns hold the manual cost alone, and a
+                 reader who does not know that reads a small number as a small spend. -->
+            <p class="finance__hint">{{ t('finance.noRateCard') }}</p>
+          }
+
+          @if (view.otherCurrencyProjects > 0) {
+            <p class="finance__hint">
+              {{
+                t('finance.otherCurrency', {
+                  count: view.otherCurrencyProjects,
+                  currency: view.currency,
+                })
+              }}
+            </p>
+          }
+
+          <div class="finance__totals">
+            <div class="finance__figure finance__figure--capex">
+              <span class="finance__figure-label">{{ t('finance.capex') }}</span>
+              <span class="finance__figure-value num">
+                {{ view.totals.capexAmount | number: '1.0-0' }} {{ view.currency }}
+              </span>
+              <span class="finance__figure-meta">
+                {{ view.totals.capexHours | number: '1.0-1' }} h · {{ t('finance.manual') }}
+                {{ view.totals.manualCapex | number: '1.0-0' }} · {{ t('finance.effort') }}
+                {{ view.totals.effortCapex | number: '1.0-0' }}
+              </span>
+            </div>
+
+            <div class="finance__figure finance__figure--opex">
+              <span class="finance__figure-label">{{ t('finance.opex') }}</span>
+              <span class="finance__figure-value num">
+                {{ view.totals.opexAmount | number: '1.0-0' }} {{ view.currency }}
+              </span>
+              <span class="finance__figure-meta">
+                {{ view.totals.opexHours | number: '1.0-1' }} h · {{ t('finance.manual') }}
+                {{ view.totals.manualOpex | number: '1.0-0' }} · {{ t('finance.effort') }}
+                {{ view.totals.effortOpex | number: '1.0-0' }}
+              </span>
+            </div>
+          </div>
+
+          @if (share(); as bar) {
+            <div class="finance__bar" role="img" [attr.aria-label]="t('finance.capex')">
+              <span class="finance__bar-capex" [style.width.%]="bar.capex"></span>
+            </div>
+          }
+
+          @if (view.totals.unallocatedAmount > 0 || view.totals.unclassifiedHours > 0) {
+            <!-- Money and hours the rules left in neither column. On the page rather than dropped, so somebody
+                 reconciling can find them. -->
+            <p class="finance__hint">
+              {{ t('finance.unallocated') }}: {{ view.totals.unallocatedAmount | number: '1.0-0' }}
+              {{ view.currency }} · {{ view.totals.unclassifiedHours | number: '1.0-1' }} h
+            </p>
+          }
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>{{ t('finance.bucket') }}</th>
+                <th>{{ t('finance.treatment') }}</th>
+                <th class="num">{{ t('finance.hours') }}</th>
+                <th class="num">{{ t('finance.effortCost') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (bucket of view.totals.byBucket; track bucket.bucket) {
+                <tr>
+                  <td>{{ t('finance.buckets.' + bucket.bucket) }}</td>
+                  <td>
+                    <span class="pill" [class.pill--active]="bucket.treatment === 'capex'">{{
+                      t('finance.treatments.' + bucket.treatment)
+                    }}</span>
+                  </td>
+                  <td class="num">{{ bucket.hours | number: '1.0-1' }}</td>
+                  <td class="num">
+                    {{ bucket.effortCost | number: '1.0-0' }}
+                    @if (bucket.unvaluedHours > 0) {
+                      <span class="finance__gap" [title]="t('finance.unvalued')">
+                        (+{{ bucket.unvaluedHours | number: '1.0-1' }} h)
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <header class="card__header">{{ t('finance.byProject') }}</header>
+        <div class="card__body">
+          @if (view.projects.length === 0) {
+            <p class="finance__hint">{{ t('finance.noProjects') }}</p>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>{{ t('finance.code') }}</th>
+                  <th>{{ t('finance.classification') }}</th>
+                  <th class="num">{{ t('finance.manualCost') }}</th>
+                  <th class="num">{{ t('finance.buildHours') }}</th>
+                  <th class="num">{{ t('finance.runHours') }}</th>
+                  <th class="num">{{ t('finance.capex') }}</th>
+                  <th class="num">{{ t('finance.opex') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of view.projects; track line.projectId) {
+                  <tr>
+                    <td>
+                      <span class="mono">{{ line.code }}</span> {{ line.name }}
+                    </td>
+                    <td>{{ t('projects.classification.' + line.classification) }}</td>
+                    <td class="num">
+                      {{ line.manualCost | number: '1.0-0' }} {{ line.costCurrency }}
+                      @if (!line.costCounted) {
+                        <span class="finance__gap" [title]="t('finance.notCounted')">*</span>
+                      }
+                    </td>
+                    <td class="num">{{ line.buildHours | number: '1.0-1' }}</td>
+                    <td class="num">{{ line.runHours | number: '1.0-1' }}</td>
+                    <td class="num">{{ line.capexAmount | number: '1.0-0' }}</td>
+                    <td class="num">{{ line.opexAmount | number: '1.0-0' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </section>
+
+      <section class="card">
+        <header class="card__header">{{ t('finance.byMonth') }}</header>
+        <div class="card__body">
+          <!-- Effort only. A manual cost has no date on it, so spreading it across months would be inventing an
+               amortization schedule — which this view is explicitly not. -->
+          <p class="finance__hint">{{ t('finance.byMonthHint') }}</p>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>{{ t('finance.month') }}</th>
+                <th class="num">{{ t('finance.capex') }} (h)</th>
+                <th class="num">{{ t('finance.opex') }} (h)</th>
+                <th class="num">{{ t('finance.capex') }}</th>
+                <th class="num">{{ t('finance.opex') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (month of view.periods; track month.month) {
+                <tr>
+                  <td class="mono">{{ month.month }}</td>
+                  <td class="num">{{ month.capexHours | number: '1.0-1' }}</td>
+                  <td class="num">{{ month.opexHours | number: '1.0-1' }}</td>
+                  <td class="num">{{ month.capexCost | number: '1.0-0' }}</td>
+                  <td class="num">{{ month.opexCost | number: '1.0-0' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      @if (showRules()) {
+        <section class="card">
+          <header class="card__header">{{ t('finance.rules') }}</header>
+          <div class="card__body">
+            <p class="finance__hint">
+              {{ view.rule.configured ? t('finance.rulesConfigured') : t('finance.rulesDefault') }}
+            </p>
+
+            <div class="finance__rules">
+              @for (bucket of buckets; track bucket) {
+                <label class="field">
+                  <span class="field__label">{{ t('finance.buckets.' + bucket) }}</span>
+                  <select
+                    class="select"
+                    [ngModel]="treatmentFor(bucket)"
+                    (ngModelChange)="setTreatment(bucket, $event)"
+                    [disabled]="busy()"
+                    [attr.aria-label]="t('finance.buckets.' + bucket)"
+                  >
+                    @for (treatment of treatments; track treatment) {
+                      <option [value]="treatment">
+                        {{ t('finance.treatments.' + treatment) }}
+                      </option>
+                    }
+                  </select>
+                </label>
+              }
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <header class="card__header">{{ t('finance.rateCards') }}</header>
+          <div class="card__body">
+            <p class="finance__hint">{{ t('finance.rateCardsHint') }}</p>
+
+            @if (finance.rateCards().length > 0) {
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>{{ t('finance.role') }}</th>
+                    <th class="num">{{ t('finance.hourlyRate') }}</th>
+                    <th>{{ t('finance.effectiveFrom') }}</th>
+                    <th>{{ t('finance.effectiveTo') }}</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (card of finance.rateCards(); track card.id) {
+                    <tr>
+                      <td>{{ card.functionalRoleCode ?? '—' }}</td>
+                      <td class="num">
+                        {{ card.hourlyRate | number: '1.2-2' }} {{ card.currency }}
+                      </td>
+                      <td class="mono">{{ card.effectiveFrom }}</td>
+                      <td class="mono">{{ card.effectiveTo ?? t('finance.current') }}</td>
+                      <td>
+                        <button
+                          type="button"
+                          class="btn btn--ghost"
+                          [disabled]="busy()"
+                          (click)="removeRateCard(card)"
+                        >
+                          {{ t('common.delete') }}
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+
+            <div class="finance__rate-form">
+              <label class="field">
+                <span class="field__label">{{ t('finance.role') }}</span>
+                <select
+                  class="select"
+                  [ngModel]="cardRole()"
+                  (ngModelChange)="cardRole.set($event)"
+                  [attr.aria-label]="t('finance.role')"
+                >
+                  <option value="">{{ t('common.choose') }}</option>
+                  @for (role of roles(); track role.id) {
+                    <option [value]="role.id">{{ role.code }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field__label">{{ t('finance.hourlyRate') }}</span>
+                <input
+                  class="input num"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  [ngModel]="cardRate()"
+                  (ngModelChange)="cardRate.set($event)"
+                />
+              </label>
+
+              <label class="field">
+                <span class="field__label">{{ t('finance.effectiveFrom') }}</span>
+                <input
+                  class="input"
+                  type="date"
+                  [ngModel]="cardFrom()"
+                  (ngModelChange)="cardFrom.set($event)"
+                />
+              </label>
+
+              <label class="field">
+                <span class="field__label">{{ t('finance.effectiveTo') }}</span>
+                <input
+                  class="input"
+                  type="date"
+                  [ngModel]="cardTo()"
+                  (ngModelChange)="cardTo.set($event)"
+                />
+                <span class="finance__hint">{{ t('finance.effectiveToHint') }}</span>
+              </label>
+
+              <button
+                type="button"
+                class="btn btn--primary"
+                [disabled]="busy()"
+                (click)="addRateCard()"
+              >
+                {{ t('finance.addRateCard') }}
+              </button>
+            </div>
+          </div>
+        </section>
+      }
+    }
+  </div>
+</ng-container>

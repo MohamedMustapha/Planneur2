@@ -87,6 +87,28 @@ public sealed class ListPeopleEndpoint(IDirectoryQueryService directory)
         await Send.OkAsync(await directory.GetPeopleAsync(request.UnitId, request.DepartmentId, ct), ct);
 }
 
+/// <summary>
+/// The functional roles, for a picker that has to name one by id.
+/// </summary>
+/// <remarks>
+/// Authenticated rather than head-only: a job title is not confidential, the list is the same for everybody, and
+/// the screens that consume it are gated by their own policies. Making this one head-only would mean the finance
+/// screen were the only thing that could ever offer a role, which is a coupling nobody asked for.
+/// </remarks>
+public sealed class ListFunctionalRolesEndpoint(IDirectoryQueryService directory)
+    : EndpointWithoutRequest<IReadOnlyList<FunctionalRoleSummary>>
+{
+    public override void Configure()
+    {
+        Get("/directory/functional-roles");
+        Policies(CracraPolicies.Authenticated);
+        Description(builder => builder.WithTags("Directory").WithSummary("Job identities the platform knows."));
+    }
+
+    public override async Task HandleAsync(CancellationToken ct) =>
+        await Send.OkAsync(await directory.GetFunctionalRolesAsync(ct), ct);
+}
+
 public sealed class DepartmentConfigRequest
 {
     public Guid Id { get; set; }

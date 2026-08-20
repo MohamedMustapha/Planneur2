@@ -1,4 +1,6 @@
+using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Application;
+using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Activities.Domain;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Projects.Contracts;
@@ -72,6 +74,44 @@ internal sealed class ProjectsAdapter(IProjectProvisioner projects, IProjectMemb
         var summaries = await projects.GetSummariesAsync(projectIds, ct);
 
         return summaries.ToDictionary(entry => entry.Key, entry => entry.Value.Code);
+    }
+}
+
+/// <summary>
+/// The department's resolved taxonomy, for anything outside this module that has to interpret a type code.
+/// </summary>
+/// <remarks>
+/// <para>
+/// One consumer so far — S11, which needs to know whether an hour booked to a department's own subtype belongs
+/// to BUILD or to RUN. It answers with the same merge S5's own picker is built from, which is the point: two
+/// implementations of "which bucket is this" would disagree the first time a department added a subtype, and the
+/// disagreement would show up as money in the wrong column.
+/// </para>
+/// <para>
+/// Falls back to the canonical buckets when the configuration is unreadable, exactly as the picker does. A
+/// department's knobs refine platform behaviour; not being able to read them should cost the refinement, not the
+/// answer.
+/// </para>
+/// </remarks>
+internal sealed class ActivityTaxonomyReader(IDirectoryPort directory, IUserContext user)
+    : IActivityTaxonomyReader
+{
+    public async Task<IReadOnlyList<ActivityTypeOption>> GetTypesAsync(Guid? departmentId, CancellationToken ct)
+    {
+        var scope = departmentId ?? user.DepartmentIds.FirstOrDefault();
+
+        var taxonomy = scope == Guid.Empty
+            ? ActivityTaxonomy.Resolve(null)
+            : (await directory.GetPolicyAsync(scope, ct)).Taxonomy;
+
+        return
+        [
+            .. taxonomy.Types.Select(type => new ActivityTypeOption(
+                type.Code,
+                type.ParentCode,
+                type.LabelKey,
+                type.RequiresProject)),
+        ];
     }
 }
 

@@ -138,15 +138,58 @@ internal sealed class DirectoryReader(DirectoryDbContext context) : IDirectoryRe
             query = query.Where(person => person.PrimaryDepartmentId == department);
         }
 
-        return await query
+        var people = await query
             .OrderBy(person => person.DisplayName)
-            .Select(person => new PersonSummary(
+            .Select(person => new
+            {
                 person.Id,
                 person.DisplayName,
                 person.PrimaryUnitId,
                 person.PrimaryDepartmentId,
-                new List<string>(),
-                person.Active))
+                person.Active,
+            })
             .ToListAsync(ct);
+
+        if (people.Count == 0)
+        {
+            return [];
+        }
+
+        // Populated, where this method used to hand back an empty list.
+        //
+        // PersonSummary declares functional role codes and GetPersonAsync fills them, so a caller cannot tell
+        // from the type which of the two honours it — and the first consumer to need them from a list found the
+        // record quietly lying. S11 was that consumer: it prices an hour by the person's job title, and every
+        // hour came back unvalued for a reason no signature revealed.
+        //
+        // One extra query rather than a join, so the boards' page of people stays one row per person instead of
+        // multiplying out by role.
+        var ids = people.Select(person => person.Id).ToList();
+
+        var roles = await context.PersonFunctionalRoles
+            .Where(assignment => ids.Contains(assignment.PersonId))
+            .Join(
+                context.FunctionalRoles,
+                assignment => assignment.FunctionalRoleId,
+                role => role.Id,
+                (assignment, role) => new { assignment.PersonId, role.Code })
+            .ToListAsync(ct);
+
+        var byPerson = roles
+            .GroupBy(entry => entry.PersonId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<string>)[.. group.Select(entry => entry.Code).Distinct()]);
+
+        return
+        [
+            .. people.Select(person => new PersonSummary(
+                person.Id,
+                person.DisplayName,
+                person.PrimaryUnitId,
+                person.PrimaryDepartmentId,
+                byPerson.GetValueOrDefault(person.Id, []),
+                person.Active)),
+        ];
     }
 }

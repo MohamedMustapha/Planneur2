@@ -16,6 +16,7 @@
     <ProjectReference Include="../Modules/Kudos/Cracra.Modules.Kudos.csproj" />
     <ProjectReference Include="../Modules/Reporting/Cracra.Modules.Reporting.csproj" />
     <ProjectReference Include="../Modules/Integrations/Cracra.Modules.Integrations.csproj" />
+    <ProjectReference Include="../Modules/Finance/Cracra.Modules.Finance.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />

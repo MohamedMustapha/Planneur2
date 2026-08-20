@@ -82,18 +82,6 @@
     "unit": "Mi unidad",
     "department": "Departamento"
   },
-  "placeholder": {
-    "subtitle": "Pantalla incluida en el lote {{slice}}",
-    "note": "El shell, el sistema de diseño y la cadena de autenticación están operativos. Esta pantalla espera su lote.",
-    "team": "Cronología de equipo para un jefe de unidad: una fila por miembro, actividades codificadas por color y generación del informe de situación.",
-    "unit": "Vista consolidada de la unidad: carga por miembro, cobertura y proyectos asociados.",
-    "department": "Vista de departamento: una fila por unidad con los proyectos anidados, jornadas especiales e hitos superpuestos.",
-    "portfolio": "Tablero de cartera: carriles Considerado · Comprometido · Activo · Déphasé, transiciones controladas e iteraciones.",
-    "reports": "Informe de situación adaptado al rol, con resumen redactado por el modelo alojado internamente.",
-    "kudos": "Reconocimiento entre compañeros: contador, categorías, insignias y clasificación opcionales por departamento.",
-    "finance": "Vista capex / opex para responsables de departamento y PMO.",
-    "settings": "Configuración por departamento: taxonomía de actividades, roles contextuales y reglas de kudos."
-  },
   "common": {
     "noHours": "0,0 h",
     "loading": "Cargando…",
@@ -686,5 +674,77 @@
     "state": "Estado",
     "sprintOrQueue": "Sprint / cola",
     "saveFailed": "No se ha podido guardar la conexión."
+  },
+  "finance": {
+    "title": "Capex / Opex",
+    "subtitle": "Vista de capitalización — inversión frente a operación",
+    "settings": "Reglas y tarifas",
+    "export": "Exportar (Excel)",
+    "exportReady": "Exportación lista.",
+    "exportDownload": "Descargar",
+    "forbidden": "Esta vista es para jefes de departamento y el PMO.",
+    "loadFailed": "No se ha podido cargar la vista de capitalización.",
+    "saveFailed": "No se ha podido guardar.",
+    "scope": {
+      "label": "Ámbito",
+      "department": "Departamento",
+      "project": "Proyecto",
+      "portfolio": "Portafolio"
+    },
+    "project": "Proyecto",
+    "chooseProject": "Elija un proyecto para ver su capitalización.",
+    "period": {
+      "label": "Periodo",
+      "month": "Mes",
+      "quarter": "Trimestre",
+      "year": "Año"
+    },
+    "anchor": "Fecha de referencia",
+    "capex": "Capex",
+    "opex": "Opex",
+    "manual": "introducido",
+    "effort": "valorado",
+    "hours": "Horas",
+    "effortCost": "Coste valorado",
+    "bucket": "Categoría",
+    "treatment": "Tratamiento",
+    "buckets": {
+      "build": "Proyecto — BUILD",
+      "run": "Proyecto — RUN",
+      "qol": "Calidad de vida",
+      "admin": "Selección y administración"
+    },
+    "treatments": {
+      "capex": "Capex",
+      "opex": "Opex",
+      "excluded": "Excluido"
+    },
+    "noRateCard": "Ninguna tarifa cubre este periodo: los importes solo incluyen los costes introducidos y el esfuerzo se muestra en horas.",
+    "otherCurrency": "{{count}} proyecto(s) están valorados en una moneda distinta de {{currency}}: su coste se muestra pero no entra en los totales.",
+    "unallocated": "Sin asignar",
+    "unvalued": "Horas sin tarifa",
+    "notCounted": "Moneda distinta: coste fuera de los totales",
+    "byProject": "Por proyecto",
+    "noProjects": "Ningún proyecto en este ámbito.",
+    "code": "Proyecto",
+    "classification": "Clasificación",
+    "manualCost": "Coste introducido",
+    "buildHours": "Horas BUILD",
+    "runHours": "Horas RUN",
+    "byMonth": "Por mes",
+    "byMonthHint": "Solo esfuerzo: un coste introducido no tiene fecha, y repartirlo por meses sería inventar un plan de amortización.",
+    "month": "Mes",
+    "rules": "Reglas de capitalización",
+    "rulesDefault": "Valores por defecto de la plataforma — cámbielos para este departamento.",
+    "rulesConfigured": "Reglas propias de este departamento.",
+    "rateCards": "Tarifas por hora",
+    "rateCardsHint": "Opcional. Sin tarifas, el esfuerzo se queda en horas. Una tarifa fechada por rol.",
+    "role": "Rol funcional",
+    "hourlyRate": "Tarifa por hora",
+    "effectiveFrom": "Desde",
+    "effectiveTo": "Hasta",
+    "effectiveToHint": "Exclusivo. Vacío significa vigente.",
+    "current": "vigente",
+    "addRateCard": "Añadir la tarifa"
   }
 }

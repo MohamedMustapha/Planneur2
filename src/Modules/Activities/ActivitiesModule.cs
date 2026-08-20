@@ -25,6 +25,10 @@ public static class ActivitiesModule
         services.AddScoped<IDirectoryPort, DirectoryAdapter>();
         services.AddScoped<IProjectsPort, ProjectsAdapter>();
 
+        // The department's resolved taxonomy, for S11: it has to know which bucket a subtype belongs to before
+        // it can put an hour in the capex or the opex column.
+        services.AddScoped<Contracts.IActivityTaxonomyReader, ActivityTaxonomyReader>();
+
         // The write-back contract S6 schedules through. Planned entries only, on the caller's own connection,
         // so RLS answers "may this lead plan for this person" exactly as it does for the API.
         services.AddScoped<Contracts.IActivityScheduler, ActivityScheduler>();

@@ -7,6 +7,7 @@ import {
   Me,
   PersonSummary,
   UnitSummary,
+  FunctionalRoleSummary,
 } from './directory.models';
 import { SessionStore } from '../session/session.store';
 
@@ -69,6 +70,21 @@ export class DirectoryStore {
     () => this.me()?.functionalRoleCodes ?? [],
   );
   readonly displayName = computed(() => this.me()?.displayName ?? this.session.displayName());
+
+  /**
+   * Every job identity the platform knows, by id.
+   *
+   * Distinct from `functionalRoles` above, which is the caller's own codes. This one is the list a picker offers
+   * — S11's rate-card editor prices a role and has to name one by id, because a code is a label a department may
+   * relabel.
+   */
+  private readonly functionalRoleResource = httpResource<FunctionalRoleSummary[]>(() =>
+    this.session.isAuthenticated() ? '/api/directory/functional-roles' : undefined,
+  );
+
+  readonly allFunctionalRoles = computed<readonly FunctionalRoleSummary[]>(
+    () => this.functionalRoleResource.value() ?? [],
+  );
 
   async people(filter?: {
     unitId?: string;

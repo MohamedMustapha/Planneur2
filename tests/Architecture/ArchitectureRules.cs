@@ -47,6 +47,11 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Reporting.Contracts.ReportView).Assembly,
         typeof(Cracra.Modules.Integrations.IntegrationsModule).Assembly,
         typeof(Cracra.Modules.Integrations.Contracts.ExternalWorkItemView).Assembly,
+
+        // Finance has no contracts assembly, and that is not an omission: it reads four modules and is read by
+        // none, so it has nothing to publish. The rule below that every module directory is scanned still holds,
+        // because it checks directories against this list rather than assuming a pair.
+        typeof(Cracra.Modules.Finance.FinanceModule).Assembly,
     ];
 
     /// <summary>

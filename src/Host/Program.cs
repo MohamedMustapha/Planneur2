@@ -6,6 +6,7 @@ using Cracra.BuildingBlocks.Web;
 using Cracra.BuildingBlocks.Web.Behaviors;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
+using Cracra.Modules.Finance;
 using Cracra.Modules.Integrations;
 using Cracra.Modules.Kudos;
 using Cracra.Modules.Meetings;
@@ -66,6 +67,7 @@ builder.Services.AddMeetingsModule();
 builder.Services.AddKudosModule();
 builder.Services.AddReportingModule();
 builder.Services.AddIntegrationsModule();
+builder.Services.AddFinanceModule();
 
 var app = builder.Build();
 

@@ -140,3 +140,36 @@ public interface IActivityScheduler
         DateOnly to,
         CancellationToken ct);
 }
+
+/// <summary>
+/// A department's activity types, as this module resolved them.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Added by S11, which has to answer "is this hour BUILD or RUN" for an entry whose type may be a department's
+/// own subtype — <c>project-build-poc</c> under <c>project-build</c>. Only this module can say: the merge of a
+/// department's configured taxonomy over the canonical buckets lives in its Domain, and the entry view carries a
+/// code without its lineage.
+/// </para>
+/// <para>
+/// The alternative was for Finance to parse <c>activity_taxonomy_json</c> itself, which would put a second
+/// implementation of the merge rules in the system — and the first department to add a subtype would discover the
+/// two disagreeing about what its hours cost.
+/// </para>
+/// <para>
+/// Caller-scoped like everything else here: it reads the department's configuration through the same reader S5
+/// uses, so a consumer resolves only taxonomies it was already allowed to read, and falls back to the canonical
+/// buckets otherwise.
+/// </para>
+/// </remarks>
+public interface IActivityTaxonomyReader
+{
+    /// <summary>
+    /// The department's types, each carrying its parent where it has one.
+    /// </summary>
+    /// <remarks>
+    /// Returns the merged set rather than a code-to-bucket map, because the caller may want the labels too — and
+    /// because a map would bake in the assumption that the hierarchy is only ever one level deep.
+    /// </remarks>
+    Task<IReadOnlyList<ActivityTypeOption>> GetTypesAsync(Guid? departmentId, CancellationToken ct);
+}

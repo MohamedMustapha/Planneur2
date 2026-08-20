@@ -38,7 +38,20 @@ public interface IDirectoryQueryService
     Task<IReadOnlyList<UnitSummary>> GetUnitsAsync(Guid? departmentId, CancellationToken ct);
 
     Task<IReadOnlyList<PersonSummary>> GetPeopleAsync(Guid? unitId, Guid? departmentId, CancellationToken ct);
+
+    /// <summary>
+    /// The job identities the platform knows, by id.
+    /// </summary>
+    /// <remarks>
+    /// Added by S11, whose rate-card editor prices a role and therefore has to offer one by id. Everywhere else
+    /// in the client a functional role travels as a code, because that is what people read; a card keys on the
+    /// id, because a code is a label a department may relabel.
+    /// </remarks>
+    Task<IReadOnlyList<FunctionalRoleSummary>> GetFunctionalRolesAsync(CancellationToken ct);
 }
+
+/// <summary>One functional role, as a picker needs it: the id it is stored by and the key it renders through.</summary>
+public sealed record FunctionalRoleSummary(Guid Id, string Code, string LabelKey, Guid? DepartmentId);
 
 internal sealed class DirectoryQueryService(DirectoryDbContext context, IUserContext user) : IDirectoryQueryService
 {
@@ -127,6 +140,16 @@ internal sealed class DirectoryQueryService(DirectoryDbContext context, IUserCon
             .Where(unit => departmentId == null || unit.DepartmentId == departmentId)
             .OrderBy(unit => unit.Name)
             .Select(unit => new UnitSummary(unit.Id, unit.DepartmentId, unit.Code, unit.Name, unit.Kind.ToString()))
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<FunctionalRoleSummary>> GetFunctionalRolesAsync(CancellationToken ct) =>
+        await context.FunctionalRoles
+            .Where(role => role.Active)
+            // Platform-wide roles first, then a department's own. The picker reads as "the standard ones, and
+            // ours" without the client having to sort one.
+            .OrderBy(role => role.DepartmentId == null ? 0 : 1)
+            .ThenBy(role => role.Code)
+            .Select(role => new FunctionalRoleSummary(role.Id, role.Code, role.LabelKey, role.DepartmentId))
             .ToListAsync(ct);
 
     public async Task<IReadOnlyList<PersonSummary>> GetPeopleAsync(
