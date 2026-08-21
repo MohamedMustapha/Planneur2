@@ -125,6 +125,34 @@ Every account uses the password `cracra`. The ids match `SeedOrganisation` in th
 Sign in as `camille.villeneuve` for the ordinary-employee view, `olivier.marchand` to see the department and
 finance entries appear in the rail, `nadia.kessler` for the portfolio-wide view.
 
+### Seeded projects
+
+The API writes two projects and a few weeks of activity on first start, so the boards open on something rather
+than on an empty grid. It is idempotent on the project code: restart as often as you like, nothing is duplicated.
+
+| Code | Name | Classification | Lead | Also contributing | Team |
+|---|---|---|---|---|---|
+| `PRJ-2026-001` | Portail RH | BUILD | DSI | — | `pierre.dubois` (60 %), `julie.ondracek` (80 %), `mehdi.sadaoui` (40 %) |
+| `PRJ-2026-002` | Refonte Facturation | MIXED | DSI | Direction Financière | `nadia.kessler` (30 %), `camille.villeneuve` (50 %), `sofia.navarro` (50 %) |
+
+Activity is written Monday to Friday for the last three ISO weeks and planned one week ahead — everything up to
+today is an *actual*, everything after it is *planned*, so the planned-versus-actual gap S5 exists to show has
+something in it on the first run. Nobody's week exceeds 30 hours, which keeps the 35h guardrail quiet unless you
+go and trip it yourself.
+
+The second project is the interesting one: Finance contributes to it, so it is the case where `laurent.bouchard`
+sees a DSI project through the cross-department rule, and where `sofia.navarro` appears on a DSI-led team.
+
+Both are seeded through the domain aggregates, not through raw SQL — the rows are the ones the API itself would
+have written. To turn the seeder off, or to change how much history it writes:
+
+```jsonc
+// src/Host/appsettings.Development.json
+"Cracra": { "DevSeed": { "Enabled": false, "HistoryWeeks": 3, "PlannedWeeks": 1 } }
+```
+
+It only ever runs in the Development environment; the check is in `Program.cs`, not only in configuration.
+
 ### Connecting Azure DevOps and ServiceNow
 
 Nothing is connected out of the box, deliberately: S10 mirrors external work items and a mirror with invented
