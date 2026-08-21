@@ -4,6 +4,7 @@ using Cracra.BuildingBlocks.Persistence;
 using Cracra.BuildingBlocks.Storage;
 using Cracra.BuildingBlocks.Web;
 using Cracra.BuildingBlocks.Web.Behaviors;
+using Cracra.Host.DevSeed;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
 using Cracra.Modules.Finance;
@@ -68,6 +69,15 @@ builder.Services.AddKudosModule();
 builder.Services.AddReportingModule();
 builder.Services.AddIntegrationsModule();
 builder.Services.AddFinanceModule();
+
+// --- Development data ----------------------------------------------------------------------------------------
+// Two projects and a few weeks of activity, so a fresh dev box opens on populated boards rather than on empty
+// ones. Behind an environment check rather than only a configuration flag: this writes invented projects, and a
+// stray key in the wrong appsettings must not be enough to do that anywhere but here.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCracraDevSeed(builder.Configuration);
+}
 
 var app = builder.Build();
 
