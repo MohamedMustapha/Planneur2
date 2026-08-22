@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Web.Users;
+﻿using Cracra.BuildingBlocks.Web.Users;
 
 namespace Cracra.BuildingBlocks.Testing;
 
@@ -7,9 +7,22 @@ namespace Cracra.BuildingBlocks.Testing;
 /// role, exactly as <c>conventions.md §6</c> requires.
 /// </summary>
 /// <remarks>
+/// <para>
 /// These ids are the same ones <c>deploy/keycloak/build-realm.py</c> seeds into the realm. Keeping one set means a
 /// Playwright test logging in as Camille and an integration test running "as Camille" are talking about the same
 /// person — which is the only way the two suites can corroborate each other rather than merely coexist.
+/// </para>
+/// <para>
+/// A subset of the realm, not a copy of it. The dev box seeds three directorates and every trade, because a demo
+/// org has to look like an org; this is the minimum shape the matrix needs to prove each rule, and growing it in
+/// step with the realm would add cases that assert nothing. Shared ids are the contract; shared size is not.
+/// </para>
+/// <para>
+/// Two of the unit names below are historical. The realm renamed <c>infra</c> to <c>ops</c> and <c>etudes</c> to
+/// <c>dev</c> without changing their ids, so <see cref="Units.Infrastructure"/> is the unit now displayed as
+/// "Exploitation &amp; Production". The aliases are kept as they are because fifty assertions name them and an
+/// id is what they actually mean.
+/// </para>
 /// </remarks>
 public static class SeedOrganisation
 {

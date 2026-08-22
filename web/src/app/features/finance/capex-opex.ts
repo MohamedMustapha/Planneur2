@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { PreferencesStore } from '../../core/preferences/preferences.store';
+import { zonedDay } from '../../core/time/zoned';
 import {
   FINANCE_PERIODS,
   FinancePeriodKind,
@@ -40,6 +42,7 @@ type Bucket = (typeof BUCKETS)[number];
 })
 export class CapexOpex {
   private readonly directory = inject(DirectoryStore);
+  private readonly preferences = inject(PreferencesStore);
 
   protected readonly finance = inject(FinanceStore);
   protected readonly projects = inject(ProjectsStore);
@@ -60,7 +63,7 @@ export class CapexOpex {
   // --- The new rate card ---------------------------------------------------------------------------------------
   protected readonly cardRole = signal('');
   protected readonly cardRate = signal(0);
-  protected readonly cardFrom = signal(new Date().toISOString().slice(0, 10));
+  protected readonly cardFrom = signal(zonedDay(new Date(), this.preferences.timeZone()));
   protected readonly cardTo = signal('');
 
   protected readonly showRules = signal(false);

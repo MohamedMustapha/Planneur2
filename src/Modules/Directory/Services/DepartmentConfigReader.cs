@@ -32,6 +32,7 @@ internal sealed class DepartmentConfigReader(DirectoryDbContext context) : IDepa
                 config.WeeklyTargetHours,
                 config.EnforceWeeklyTarget,
                 config.Version,
-                config.ShiftTemplatesJson);
+                config.ShiftTemplatesJson,
+                config.WorkingDayJson);
     }
 }

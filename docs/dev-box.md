@@ -106,39 +106,75 @@ the Keycloak realm, so allow a few minutes.
 
 ### Seeded people
 
-Every account uses the password `cracra`. The ids match `SeedOrganisation` in the test fixtures and the
-`deploy/keycloak/build-realm.py` source, so an integration test and a browser session refer to the same person.
+Every account uses the password `cracra`. The ids are the ones `SeedOrganisation` and
+`deploy/keycloak/build-realm.py` share, so an integration test and a browser session refer to the same person.
 
-| Username | Unit | Department | Contextual roles |
-|---|---|---|---|
-| `camille.villeneuve` | Infrastructure & Réseaux | DSI | member |
-| `mehdi.sadaoui` | Infrastructure & Réseaux | DSI | member |
-| `anais.lefevre` | Infrastructure & Réseaux | DSI | member |
-| `thomas.berthier` | Infrastructure & Réseaux | DSI | member, unit-head |
-| `julie.ondracek` | Études & Développement | DSI | member |
-| `olivier.marchand` | Études & Développement | DSI | member, dept-head |
-| `sofia.navarro` | Comptabilité | Direction Financière | member |
-| `laurent.bouchard` | Contrôle de gestion | Direction Financière | member, dept-head |
-| `nadia.kessler` | Études & Développement | DSI | member, pmo |
-| `pierre.dubois` | Études & Développement | DSI | member, project-lead |
+The org is three directorates. DSI has a director and a deputy above five unit heads, one per unit; Communication
+sits beside DSI as a peer directorate; DAF is unchanged, because the RLS matrix asserts against Sofia and Laurent
+by id. Job title and contextual role are separate columns on purpose — the first is where someone sits on the org
+chart, the second is what they may read.
 
-Sign in as `camille.villeneuve` for the ordinary-employee view, `olivier.marchand` to see the department and
-finance entries appear in the rail, `nadia.kessler` for the portfolio-wide view.
+| Username | Job title | Unit | Department | Contextual roles |
+|---|---|---|---|---|
+| `olivier.marchand` | Directeur | Études & Développement | DSI | member, dept-head |
+| `helene.vasseur` | Directrice adjointe | Transformation Digitale | DSI | member, dept-head |
+| `thomas.berthier` | Chef de pôle | Exploitation & Production | DSI | member, unit-head |
+| `camille.villeneuve` | Architecte | Exploitation & Production | DSI | member |
+| `mehdi.sadaoui` | Ops | Exploitation & Production | DSI | member |
+| `anais.lefevre` | Ops | Exploitation & Production | DSI | member |
+| `tarek.amrani` | Ops | Exploitation & Production | DSI | member |
+| `karim.benali` | Chef de pôle | Études & Développement | DSI | member, unit-head |
+| `pierre.dubois` | Tech lead | Études & Développement | DSI | member, project-lead |
+| `julie.ondracek` | Développeuse | Études & Développement | DSI | member |
+| `lea.fontaine` | Développeuse | Études & Développement | DSI | member |
+| `marc.delaunay` | Chef de pôle | Sécurité & Conformité | DSI | member, unit-head |
+| `ines.bourgeois` | RSSI | Sécurité & Conformité | DSI | member |
+| `yann.corbier` | Chef de pôle | Support & Assistance | DSI | member, unit-head |
+| `fatou.diallo` | Support | Support & Assistance | DSI | member |
+| `sebastien.roy` | Chef de pôle | Transformation Digitale | DSI | member, unit-head |
+| `nadia.kessler` | PMO | Transformation Digitale | DSI | member, pmo |
+| `claire.moreau` | Product owner | Transformation Digitale | DSI | member, po |
+| `valerie.lombard` | Directrice | Studio Design & Contenus | Communication | member, dept-head |
+| `hugo.petit` | Designer | Studio Design & Contenus | Communication | member |
+| `amina.cherif` | Designer | Studio Design & Contenus | Communication | member |
+| `sofia.navarro` | Comptable | Comptabilité | Direction Financière | member |
+| `laurent.bouchard` | Expert-comptable | Contrôle de gestion | Direction Financière | member, dept-head |
+
+Sign in as `camille.villeneuve` for the ordinary-employee view, `thomas.berthier` for a unit head's,
+`olivier.marchand` to see the department and finance entries appear in the rail, `nadia.kessler` for the
+portfolio-wide view, and `sofia.navarro` for the far side of every cross-department rule.
+
+The two DSI unit ids are the originals: `infra` was renamed `ops` and `etudes` was renamed `dev`, so every id the
+E2E suite and `SeedOrganisation` hold onto still resolves to the same unit. The fixture org in
+`FakeKeycloakDirectory` is deliberately *not* the realm — it is the two-department minimum the RLS matrix test
+asserts against, sharing ids with the realm rather than mirroring its full shape.
 
 ### Seeded projects
 
 The API writes two projects and a few weeks of activity on first start, so the boards open on something rather
 than on an empty grid. It is idempotent on the project code: restart as often as you like, nothing is duplicated.
 
+Every seeded account is on a team, so whoever you sign in as lands on a board with work on it.
+
 | Code | Name | Classification | Lead | Also contributing | Team |
 |---|---|---|---|---|---|
-| `PRJ-2026-001` | Portail RH | BUILD | DSI | — | `pierre.dubois` (60 %), `julie.ondracek` (80 %), `mehdi.sadaoui` (40 %) |
-| `PRJ-2026-002` | Refonte Facturation | MIXED | DSI | Direction Financière | `nadia.kessler` (30 %), `camille.villeneuve` (50 %), `sofia.navarro` (50 %) |
+| `PRJ-2026-001` | Portail RH | BUILD | DSI | Communication | Olivier, Karim, Pierre, Julie, Léa, Mehdi, Marc, Claire, Nadia, Fatou, Hugo, Valérie |
+| `PRJ-2026-002` | Refonte Facturation | MIXED | DSI | Direction Financière, Communication | Hélène, Sébastien, Camille, Thomas, Anaïs, Tarek, Julie, Inès, Yann, Amina, Sofia, Laurent |
+
+Each person logs their own trade, with three or four task titles rotating day to day so a week reads as a week of
+work rather than as one block repeated: security does homologation and audit, Ops builds the production
+environment and deploys, the designers design, development ships sprint features, the helpdesk absorbs RUN, and
+the PO runs the business workshops and the COPIL.
+
+BUILD versus RUN is per person, not per project. Fatou is on RUN while the rest of Portail RH is on BUILD, because
+the pilot users are already raising tickets against a project that is still being built. Julie is the clearest
+case: BUILD on Portail RH and RUN on Refonte Facturation, on the same days.
 
 Activity is written Monday to Friday for the last three ISO weeks and planned one week ahead — everything up to
 today is an *actual*, everything after it is *planned*, so the planned-versus-actual gap S5 exists to show has
-something in it on the first run. Nobody's week exceeds 30 hours, which keeps the 35h guardrail quiet unless you
-go and trip it yourself.
+something in it on the first run. Planned slots carry a completion percentage that decays with distance, so the
+timeline's progress bars have something to show without anyone dragging one. Nobody's week exceeds 30 hours, which
+keeps the 35h guardrail quiet unless you go and trip it yourself.
 
 The second project is the interesting one: Finance contributes to it, so it is the case where `laurent.bouchard`
 sees a DSI project through the cross-department rule, and where `sofia.navarro` appears on a DSI-led team.

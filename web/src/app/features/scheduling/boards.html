@@ -253,10 +253,26 @@
             [from]="scheduling.board()!.from"
             [to]="scheduling.board()!.to"
             [editable]="scheduling.canAssign()"
+            [workingDay]="activities.workingDay()"
             (moved)="onMoved($event)"
+            (created)="onCreate($event)"
+            (progressed)="onProgressed($event)"
           />
         }
       </section>
+    }
+
+    <!-- 6c's create popup. Rendered outside the canvas rather than anchored inside it, so a board scrolled
+         sideways cannot carry the dialog off-screen with it. -->
+    @if (pendingTask(); as seed) {
+      <app-task-popup
+        [seed]="seed"
+        [people]="taskCandidates()"
+        [error]="error()"
+        [busy]="busy()"
+        (submitted)="createTask($event)"
+        (cancelled)="pendingTask.set(null)"
+      />
     }
   </div>
 </ng-container>

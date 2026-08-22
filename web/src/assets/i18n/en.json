@@ -14,7 +14,11 @@
     "notifications": "Notifications",
     "logout": "Sign out",
     "noDepartment": "No department",
-    "unitCount": "{{count}} units"
+    "unitCount": "{{count}} units",
+    "focusEnter": "Focus mode",
+    "focusExit": "Leave focus",
+    "focusPierced": "This page is hidden in focus mode — it is shown in full for this navigation only.",
+    "returnToFocus": "Back to focus mode"
   },
   "nav": {
     "ariaLabel": "Main navigation",
@@ -55,12 +59,12 @@
     "timelinePlaceholder": "The logging surface ships with slices S5 and S6. The Mobiscroll timeline is installed and licensed.",
     "legendPlanned": "Planned",
     "legendActual": "Actual",
-    "legendGrid": "1 h steps · 07:00 → 19:00",
     "summary": {
       "build": "BUILD",
       "run": "RUN",
       "qolTraining": "Quality of life + training",
-      "variance": "Planned / actual variance"
+      "variance": "Planned / actual variance",
+      "admin": "Recruitment & admin"
     },
     "awaitingActivities": "Awaiting the Activities module",
     "myUnit": "My unit",
@@ -69,7 +73,7 @@
     "upcomingEmpty": "Meetings and special days arrive with slice S7.",
     "shortcuts": "Shortcuts",
     "shortcutWeekNav": "Previous / next week",
-    "shortcutDuplicate": "Duplicate slot",
+    "shortcutDuplicate": "Duplicate yesterday",
     "entriesTitle": "This week's activity",
     "entryCount": "{{count}} entries",
     "noEntries": "Nothing logged this week.",
@@ -80,7 +84,22 @@
     "my": "My board",
     "team": "My team",
     "unit": "My unit",
-    "department": "Department"
+    "department": "Department",
+    "clickToLog": "Click a slot to log",
+    "duplicated": "Yesterday's entries were copied to today.",
+    "nothingToDuplicate": "Nothing to copy: the previous working day has no logged activity in the week on screen.",
+    "duplicateFailed": "The entries could not be copied.",
+    "noProject": "No project",
+    "page": {
+      "purpose": "Fill in this week’s slots — the target is 35 h."
+    },
+    "guidance": {
+      "remaining": "You have {{hours}} h left to log this week.",
+      "complete": "Your week is complete — nothing to do.",
+      "overtime": "This week is {{hours}} h over target — a justification is required."
+    },
+    "hoursShort": "{{hours}} h",
+    "noEntriesHelp": "Drag across a day in the grid, or use Quick add."
   },
   "common": {
     "noHours": "0.0 h",
@@ -106,7 +125,8 @@
       "run": "Run",
       "support": "Support",
       "admin": "Admin"
-    }
+    },
+    "leadership": "Directorate"
   },
   "settings": {
     "title": "Department settings",
@@ -132,7 +152,11 @@
     "tabDepartment": "Department",
     "tabAccess": "Roles and permissions",
     "tabMeetings": "Meetings & events",
-    "tabIntegrations": "Integrations"
+    "tabIntegrations": "Integrations",
+    "workingDay": "Working day",
+    "workingDayHint": "The day's bounds and its morning / afternoon sessions. Drives the board's axis and the quick-add presets. An empty object means the defaults (06:00–20:00, 09:00–13:00, 14:00–18:00).",
+    "shiftTemplates": "Shift slots",
+    "shiftTemplatesHint": "Slots the scheduler offers and their minimum staffing. Consumed by slice S6."
   },
   "directory": {
     "functionalRole": {
@@ -141,11 +165,20 @@
       "architecte": "Architect",
       "chef-de-pole": "Unit head",
       "comptable": "Accountant",
-      "expert-comptable": "Senior accountant"
+      "expert-comptable": "Senior accountant",
+      "ops": "Ops engineer",
+      "rssi": "Security officer",
+      "support": "Support agent",
+      "designer": "Designer",
+      "directeur": "Director",
+      "directeur-adjoint": "Deputy director",
+      "product-owner": "Product owner",
+      "responsable-pmo": "PMO lead"
     },
     "department": {
       "dsi": "Information Systems",
-      "daf": "Finance"
+      "daf": "Finance",
+      "comm": "Communications"
     },
     "hiddenPerson": "Hidden member"
   },
@@ -291,7 +324,13 @@
       "integration": "Integration",
       "azuredevops": "Azure DevOps",
       "servicenow": "ServiceNow"
-    }
+    },
+    "allDay": "All day",
+    "allDayHint": "Fill a full working day ({{hours}}h)",
+    "session": "Slot",
+    "sessionMorning": "Morning",
+    "sessionAfternoon": "Afternoon",
+    "sessionDay": "Full day"
   },
   "boards": {
     "title": "Schedules",
@@ -316,7 +355,13 @@
     "empty": "Nothing to show for this period.",
     "genericError": "The operation failed.",
     "chooseProject": "Choose a project…",
-    "pickProject": "Choose a project to see its board."
+    "pickProject": "Choose a project to see its board.",
+    "newTask": "New task",
+    "nature": "Type of work",
+    "description": "Description",
+    "descriptionHint": "What the task is, in a line",
+    "percentComplete": "Progress",
+    "addTask": "Add task"
   },
   "shift": {
     "morning": "Morning",
@@ -746,5 +791,22 @@
     "effectiveToHint": "Exclusive. Empty means still current.",
     "current": "current",
     "addRateCard": "Add the rate"
+  },
+  "preferences": {
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "timeZone": "Time zone",
+    "saveFailed": "Applied here, but not saved. Try again.",
+    "languageName": {
+      "fr": "French",
+      "en": "English",
+      "es": "Spanish"
+    }
+  },
+  "obligations": {
+    "weekOverTarget": "{{hours}} h over target",
+    "dismiss": "Hide until the next load"
   }
 }

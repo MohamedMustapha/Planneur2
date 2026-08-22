@@ -17,7 +17,7 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  line-height: 1.45;
+  line-height: var(--line-height);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -39,7 +39,7 @@ textarea {
   color: inherit;
 }
 
-// Hours, costs and counts sit in columns and get compared down the column. Proportional digits make that read as
+// Mandatory on hours, money and counts (v2 §04) — hours, costs and counts sit in columns and get compared down the column. Proportional digits make that read as
 // ragged; tabular ones line up.
 .num {
   font-variant-numeric: tabular-nums;
@@ -53,7 +53,7 @@ textarea {
 // keyboard far more than consumer ones — the design's quick-add shortcut assumes exactly that.
 :focus-visible {
   outline: 2px solid var(--primary);
-  outline-offset: 1px;
+  outline-offset: 2px;
   border-radius: var(--radius-control);
 }
 

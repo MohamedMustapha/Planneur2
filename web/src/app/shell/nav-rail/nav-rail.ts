@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { FocusStore } from '../../core/focus/focus.store';
 import { LayoutStore } from '../../core/layout/layout.store';
 import { NAVIGATION } from '../../core/navigation/navigation';
 import { AccessStore } from '../../core/access/access.store';
@@ -14,6 +15,7 @@ import { AccessStore } from '../../core/access/access.store';
 })
 export class NavRail {
   protected readonly layout = inject(LayoutStore);
+  protected readonly focus = inject(FocusStore);
   private readonly access = inject(AccessStore);
 
   /**
@@ -29,4 +31,13 @@ export class NavRail {
       (item) => !item.requiresAnyRole || item.requiresAnyRole.some((role) => roles.includes(role)),
     );
   });
+
+  /**
+   * Whether the rail shows labels.
+   *
+   * Focus mode wins over the person's own collapse preference rather than overwriting it (§02.2: "collapses the
+   * left nav to icons"). Leaving the toggle's stored value alone is what makes leaving Focus mode restore the
+   * rail they had, instead of the one Focus mode left behind.
+   */
+  protected readonly showLabels = computed(() => this.layout.railExpanded() && !this.focus.active());
 }

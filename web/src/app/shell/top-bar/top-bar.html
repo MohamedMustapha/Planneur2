@@ -1,17 +1,18 @@
 <header class="topbar" *transloco="let t">
-  <!-- Department switcher -->
+  <!-- Department switcher. Focus mode leaves the scope *readable* but not switchable: which node you are looking
+       at is part of understanding the one panel in front of you, whereas changing it is a different task. -->
   <div class="topbar__menu-anchor">
     <button
       type="button"
       class="topbar__control topbar__dept"
       (click)="toggleDepartmentMenu()"
-      [disabled]="!departments.canSwitch()"
+      [disabled]="!departments.canSwitch() || focus.active()"
       [attr.aria-expanded]="departmentMenuOpen()"
       aria-haspopup="menu"
     >
       <span class="dot" aria-hidden="true"></span>
       <span class="topbar__dept-name">{{ departmentLabel(t, departments.selected()) }}</span>
-      @if (departments.canSwitch()) {
+      @if (departments.canSwitch() && !focus.active()) {
         <span class="topbar__caret" aria-hidden="true">▾</span>
       }
     </button>
@@ -42,44 +43,76 @@
     <button type="button" class="topbar__pager-step" (click)="layout.nextWeek()" [attr.aria-label]="t('shell.nextWeek')">›</button>
   </div>
 
-  <button type="button" class="topbar__control" (click)="layout.today()">{{ t('shell.today') }}</button>
+  @if (!focus.active()) {
+    <button type="button" class="topbar__control" (click)="layout.today()">{{ t('shell.today') }}</button>
 
-  <!-- Search. S1 wires it to the directory; until there is something to find it stays disabled rather than
-       pretending to work. -->
-  <label class="topbar__search">
-    <span class="topbar__search-icon" aria-hidden="true">⌕</span>
-    <input class="topbar__search-input" type="search" disabled [placeholder]="t('shell.searchPlaceholder')" />
-  </label>
+    <!-- Search. S1 wires it to the directory; until there is something to find it stays disabled rather than
+         pretending to work. Removed outright in Focus mode (§02.2). -->
+    <label class="topbar__search">
+      <span class="topbar__search-icon" aria-hidden="true">⌕</span>
+      <input class="topbar__search-input" type="search" disabled [placeholder]="t('shell.searchPlaceholder')" />
+    </label>
+  }
 
   <div class="topbar__spacer"></div>
 
-  <!-- Language -->
-  <div class="topbar__languages" role="group" [attr.aria-label]="t('shell.language')">
-    @for (option of language.available; track option) {
-      <button
-        type="button"
-        class="topbar__language"
-        [class.is-active]="language.language() === option"
-        [attr.aria-pressed]="language.language() === option"
-        (click)="setLanguage(option)"
-      >
-        {{ option | uppercase }}
-      </button>
-    }
-  </div>
+  <!-- The one thing allowed through Focus mode. It sits in the bar rather than in the page because an obligation
+       follows the person, not the screen — deep-linking away from your week does not settle it. -->
+  @if (obligations.top(); as obligation) {
+    <button
+      type="button"
+      class="pill topbar__obligation"
+      [class.pill--danger]="obligation.severity === 'danger'"
+      [class.pill--warning]="obligation.severity === 'warning'"
+      (click)="obligations.dismiss(obligation.id)"
+      [title]="t('obligations.dismiss')"
+    >
+      <span class="dot" aria-hidden="true"></span>
+      {{ t(obligation.labelKey, obligation.params) }}
+    </button>
+  }
+
+  @if (!focus.active()) {
+    <!-- Language -->
+    <div class="topbar__languages" role="group" [attr.aria-label]="t('shell.language')">
+      @for (option of language.available; track option) {
+        <button
+          type="button"
+          class="topbar__language"
+          [class.is-active]="language.language() === option"
+          [attr.aria-pressed]="language.language() === option"
+          (click)="setLanguage(option)"
+        >
+          {{ option | uppercase }}
+        </button>
+      }
+    </div>
+
+    <button type="button" class="topbar__icon-button topbar__bell" [attr.aria-label]="t('shell.notifications')">
+      <span aria-hidden="true">◔</span>
+      <span class="topbar__bell-dot" aria-hidden="true"></span>
+    </button>
+  }
 
   <button
     type="button"
-    class="topbar__control topbar__icon-button"
-    (click)="theme.toggle()"
+    class="topbar__icon-button"
+    (click)="toggleTheme()"
     [attr.aria-label]="t('shell.toggleTheme')"
   >
     {{ theme.theme() === 'dark' ? '☀' : '☾' }}
   </button>
 
-  <button type="button" class="topbar__icon-button topbar__bell" [attr.aria-label]="t('shell.notifications')">
-    <span aria-hidden="true">◔</span>
-    <span class="topbar__bell-dot" aria-hidden="true"></span>
+  <!-- Always drawn, in both modes: §02.2 is explicit that Focus mode must never be a trap. -->
+  <button
+    type="button"
+    class="topbar__focus"
+    [class.is-active]="focus.enabled()"
+    [attr.aria-pressed]="focus.enabled()"
+    (click)="toggleFocus()"
+  >
+    <span aria-hidden="true">◑</span>
+    <span>{{ focus.enabled() ? t('shell.focusExit') : t('shell.focusEnter') }}</span>
   </button>
 
   <!-- User menu -->
@@ -92,16 +125,64 @@
       aria-haspopup="menu"
     >
       <span class="avatar">{{ session.initials() }}</span>
-      <span class="topbar__caret" aria-hidden="true">▾</span>
+      @if (!focus.active()) {
+        <span class="topbar__caret" aria-hidden="true">▾</span>
+      }
     </button>
 
     @if (userMenuOpen()) {
-      <div class="menu topbar__user-menu" role="menu">
+      <div class="menu topbar__user-menu">
         <div class="topbar__user-identity">
           <strong>{{ session.displayName() }}</strong>
           <span>{{ session.user().functionalRole }}</span>
         </div>
-        <button type="button" class="menu__item" role="menuitem" (click)="logout()">
+
+        <!-- The four settings that are properties of a person rather than of a screen, gathered where the person
+             is. The quick toggles stay in the bar for the ones people flip often; this is where the choice is made
+             deliberately and kept. -->
+        <div class="prefs">
+          <label class="prefs__field">
+            <span>{{ t('preferences.language') }}</span>
+            <select
+              class="select"
+              [ngModel]="language.language()"
+              (ngModelChange)="setLanguage($event)"
+            >
+              @for (option of preferences.languages; track option) {
+                <option [value]="option">{{ t('preferences.languageName.' + option) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="prefs__field">
+            <span>{{ t('preferences.theme') }}</span>
+            <select class="select" [ngModel]="theme.theme()" (ngModelChange)="setTheme($event)">
+              <option value="light">{{ t('preferences.themeLight') }}</option>
+              <option value="dark">{{ t('preferences.themeDark') }}</option>
+            </select>
+          </label>
+
+          <label class="prefs__field">
+            <span>{{ t('preferences.timeZone') }}</span>
+            <!-- A plain select over the platform's zone list. Several hundred options is a lot, but every browser
+                 select is type-to-search, and a custom combobox here would be a worse version of that. -->
+            <select
+              class="select"
+              [ngModel]="preferences.timeZone()"
+              (ngModelChange)="setTimeZone($event)"
+            >
+              @for (zone of preferences.availableZones(); track zone) {
+                <option [value]="zone">{{ zone }}</option>
+              }
+            </select>
+          </label>
+
+          @if (preferences.error(); as message) {
+            <p class="prefs__error" role="alert">{{ t(message) }}</p>
+          }
+        </div>
+
+        <button type="button" class="menu__item" (click)="logout()">
           {{ t('shell.logout') }}
         </button>
       </div>

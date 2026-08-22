@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Web.Users;
+﻿using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Directory.Domain;
 
 namespace Cracra.Modules.Directory.Sync;
@@ -10,7 +10,7 @@ public sealed record MappedOrg(
 
 public sealed record MappedDepartment(Guid Id, string Code, string NameKey);
 
-public sealed record MappedUnit(Guid Id, Guid DepartmentId, string Code, string Name);
+public sealed record MappedUnit(Guid Id, Guid DepartmentId, string Code, string Name, UnitKind Kind);
 
 /// <summary>One Keycloak user, reduced to what the directory stores.</summary>
 public sealed record MappedPerson(
@@ -168,7 +168,8 @@ public static class DirectoryMapping
                         unitId,
                         departmentId,
                         subGroup.Name,
-                        subGroup.Attribute("unit_name") ?? subGroup.Name));
+                        subGroup.Attribute("unit_name") ?? subGroup.Name,
+                        ParseKind(subGroup.Attribute("unit_kind"))));
                 }
             }
         }
@@ -192,9 +193,21 @@ public static class DirectoryMapping
         Code = mapped.Code,
         Name = mapped.Name,
         LdapFonction = mapped.Code,
+        Kind = mapped.Kind,
         CreatedAt = now,
         ModifiedAt = now,
     };
+
+    /// <summary>
+    /// The unit's kind, defaulting to delivery.
+    /// </summary>
+    /// <remarks>
+    /// An unparseable or absent value is the old behaviour rather than a skipped unit: kind is a hint for the
+    /// default board layout, and losing a whole unit because a group attribute was misspelt would be a wildly
+    /// disproportionate response to a cosmetic field.
+    /// </remarks>
+    private static UnitKind ParseKind(string? value) =>
+        Enum.TryParse<UnitKind>(value, ignoreCase: true, out var kind) ? kind : UnitKind.Delivery;
 
     public static DepartmentConfig NewConfig(Guid departmentId, DateTimeOffset now) => new()
     {

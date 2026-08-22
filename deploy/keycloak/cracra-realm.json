@@ -173,28 +173,85 @@
       "realmRoles": [],
       "subGroups": [
         {
-          "name": "infra",
-          "path": "/dsi/infra",
+          "name": "ops",
+          "path": "/dsi/ops",
           "attributes": {
             "unit_id": [
               "aaaaaaaa-0000-0000-0000-000000000001"
             ],
             "unit_name": [
-              "Infrastructure & Réseaux"
+              "Exploitation & Production"
+            ],
+            "unit_kind": [
+              "Run"
             ]
           },
           "realmRoles": [],
           "subGroups": []
         },
         {
-          "name": "etudes",
-          "path": "/dsi/etudes",
+          "name": "dev",
+          "path": "/dsi/dev",
           "attributes": {
             "unit_id": [
               "aaaaaaaa-0000-0000-0000-000000000002"
             ],
             "unit_name": [
               "Études & Développement"
+            ],
+            "unit_kind": [
+              "Delivery"
+            ]
+          },
+          "realmRoles": [],
+          "subGroups": []
+        },
+        {
+          "name": "secu",
+          "path": "/dsi/secu",
+          "attributes": {
+            "unit_id": [
+              "aaaaaaaa-0000-0000-0000-000000000003"
+            ],
+            "unit_name": [
+              "Sécurité & Conformité"
+            ],
+            "unit_kind": [
+              "Support"
+            ]
+          },
+          "realmRoles": [],
+          "subGroups": []
+        },
+        {
+          "name": "helpdesk",
+          "path": "/dsi/helpdesk",
+          "attributes": {
+            "unit_id": [
+              "aaaaaaaa-0000-0000-0000-000000000004"
+            ],
+            "unit_name": [
+              "Support & Assistance"
+            ],
+            "unit_kind": [
+              "Support"
+            ]
+          },
+          "realmRoles": [],
+          "subGroups": []
+        },
+        {
+          "name": "transfo",
+          "path": "/dsi/transfo",
+          "attributes": {
+            "unit_id": [
+              "aaaaaaaa-0000-0000-0000-000000000005"
+            ],
+            "unit_name": [
+              "Transformation Digitale"
+            ],
+            "unit_kind": [
+              "Admin"
             ]
           },
           "realmRoles": [],
@@ -224,6 +281,9 @@
             ],
             "unit_name": [
               "Comptabilité"
+            ],
+            "unit_kind": [
+              "Admin"
             ]
           },
           "realmRoles": [],
@@ -238,6 +298,41 @@
             ],
             "unit_name": [
               "Contrôle de gestion"
+            ],
+            "unit_kind": [
+              "Admin"
+            ]
+          },
+          "realmRoles": [],
+          "subGroups": []
+        }
+      ]
+    },
+    {
+      "name": "comm",
+      "path": "/comm",
+      "attributes": {
+        "department_id": [
+          "33333333-3333-3333-3333-333333333333"
+        ],
+        "department_name": [
+          "Direction de la Communication"
+        ]
+      },
+      "realmRoles": [],
+      "subGroups": [
+        {
+          "name": "design",
+          "path": "/comm/design",
+          "attributes": {
+            "unit_id": [
+              "cccccccc-0000-0000-0000-000000000001"
+            ],
+            "unit_name": [
+              "Studio Design & Contenus"
+            ],
+            "unit_kind": [
+              "Delivery"
             ]
           },
           "realmRoles": [],
@@ -247,6 +342,126 @@
     }
   ],
   "users": [
+    {
+      "id": "c0000000-0000-0000-0000-000000000006",
+      "username": "olivier.marchand",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Olivier",
+      "lastName": "Marchand",
+      "email": "olivier.marchand@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000002"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "dept-head"
+        ],
+        "functional_role": [
+          "directeur"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/dev"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-00000000000b",
+      "username": "helene.vasseur",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Hélène",
+      "lastName": "Vasseur",
+      "email": "helene.vasseur@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000005"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "dept-head"
+        ],
+        "functional_role": [
+          "directeur-adjoint"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/transfo"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000004",
+      "username": "thomas.berthier",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Thomas",
+      "lastName": "Berthier",
+      "email": "thomas.berthier@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "unit-head"
+        ],
+        "functional_role": [
+          "chef-de-pole"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/ops"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
     {
       "id": "c0000000-0000-0000-0000-000000000001",
       "username": "camille.villeneuve",
@@ -280,7 +495,7 @@
         ]
       },
       "groups": [
-        "/dsi/infra"
+        "/dsi/ops"
       ],
       "realmRoles": [
         "default-roles-cracra"
@@ -312,14 +527,14 @@
           "member"
         ],
         "functional_role": [
-          "dev"
+          "ops"
         ],
         "locale": [
           "fr"
         ]
       },
       "groups": [
-        "/dsi/infra"
+        "/dsi/ops"
       ],
       "realmRoles": [
         "default-roles-cracra"
@@ -351,27 +566,27 @@
           "member"
         ],
         "functional_role": [
-          "dev"
+          "ops"
         ],
         "locale": [
           "fr"
         ]
       },
       "groups": [
-        "/dsi/infra"
+        "/dsi/ops"
       ],
       "realmRoles": [
         "default-roles-cracra"
       ]
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000004",
-      "username": "thomas.berthier",
+      "id": "c0000000-0000-0000-0000-000000000014",
+      "username": "tarek.amrani",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Thomas",
-      "lastName": "Berthier",
-      "email": "thomas.berthier@cracra.local",
+      "firstName": "Tarek",
+      "lastName": "Amrani",
+      "email": "tarek.amrani@cracra.local",
       "credentials": [
         {
           "type": "password",
@@ -387,8 +602,87 @@
           "11111111-1111-1111-1111-111111111111"
         ],
         "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "ops"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/ops"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-00000000000c",
+      "username": "karim.benali",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Karim",
+      "lastName": "Benali",
+      "email": "karim.benali@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000002"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
           "member",
           "unit-head"
+        ],
+        "functional_role": [
+          "chef-de-pole"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/dev"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-00000000000a",
+      "username": "pierre.dubois",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Pierre",
+      "lastName": "Dubois",
+      "email": "pierre.dubois@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000002"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "project-lead"
         ],
         "functional_role": [
           "tech-lead"
@@ -398,7 +692,7 @@
         ]
       },
       "groups": [
-        "/dsi/infra"
+        "/dsi/dev"
       ],
       "realmRoles": [
         "default-roles-cracra"
@@ -437,20 +731,20 @@
         ]
       },
       "groups": [
-        "/dsi/etudes"
+        "/dsi/dev"
       ],
       "realmRoles": [
         "default-roles-cracra"
       ]
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000006",
-      "username": "olivier.marchand",
+      "id": "c0000000-0000-0000-0000-00000000000d",
+      "username": "lea.fontaine",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Olivier",
-      "lastName": "Marchand",
-      "email": "olivier.marchand@cracra.local",
+      "firstName": "Léa",
+      "lastName": "Fontaine",
+      "email": "lea.fontaine@cracra.local",
       "credentials": [
         {
           "type": "password",
@@ -466,31 +760,30 @@
           "11111111-1111-1111-1111-111111111111"
         ],
         "contextual_roles": [
-          "member",
-          "dept-head"
+          "member"
         ],
         "functional_role": [
-          "chef-de-pole"
+          "dev"
         ],
         "locale": [
           "fr"
         ]
       },
       "groups": [
-        "/dsi/etudes"
+        "/dsi/dev"
       ],
       "realmRoles": [
         "default-roles-cracra"
       ]
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000007",
-      "username": "sofia.navarro",
+      "id": "c0000000-0000-0000-0000-00000000000e",
+      "username": "marc.delaunay",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Sofia",
-      "lastName": "Navarro",
-      "email": "sofia.navarro@cracra.local",
+      "firstName": "Marc",
+      "lastName": "Delaunay",
+      "email": "marc.delaunay@cracra.local",
       "credentials": [
         {
           "type": "password",
@@ -500,23 +793,380 @@
       ],
       "attributes": {
         "unit_id": [
-          "bbbbbbbb-0000-0000-0000-000000000001"
+          "aaaaaaaa-0000-0000-0000-000000000003"
         ],
         "dept_ids": [
-          "22222222-2222-2222-2222-222222222222"
+          "11111111-1111-1111-1111-111111111111"
         ],
         "contextual_roles": [
-          "member"
+          "member",
+          "unit-head"
         ],
         "functional_role": [
-          "comptable"
+          "chef-de-pole"
         ],
         "locale": [
           "fr"
         ]
       },
       "groups": [
-        "/daf/compta"
+        "/dsi/secu"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-00000000000f",
+      "username": "ines.bourgeois",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Inès",
+      "lastName": "Bourgeois",
+      "email": "ines.bourgeois@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000003"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "rssi"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/secu"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000010",
+      "username": "yann.corbier",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Yann",
+      "lastName": "Corbier",
+      "email": "yann.corbier@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000004"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "unit-head"
+        ],
+        "functional_role": [
+          "chef-de-pole"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/helpdesk"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000011",
+      "username": "fatou.diallo",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Fatou",
+      "lastName": "Diallo",
+      "email": "fatou.diallo@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000004"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "support"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/helpdesk"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000012",
+      "username": "sebastien.roy",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Sébastien",
+      "lastName": "Roy",
+      "email": "sebastien.roy@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000005"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "unit-head"
+        ],
+        "functional_role": [
+          "chef-de-pole"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/transfo"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000009",
+      "username": "nadia.kessler",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Nadia",
+      "lastName": "Kessler",
+      "email": "nadia.kessler@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000005"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "pmo"
+        ],
+        "functional_role": [
+          "responsable-pmo"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/transfo"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000013",
+      "username": "claire.moreau",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Claire",
+      "lastName": "Moreau",
+      "email": "claire.moreau@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "aaaaaaaa-0000-0000-0000-000000000005"
+        ],
+        "dept_ids": [
+          "11111111-1111-1111-1111-111111111111"
+        ],
+        "contextual_roles": [
+          "member",
+          "po"
+        ],
+        "functional_role": [
+          "product-owner"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/dsi/transfo"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000015",
+      "username": "valerie.lombard",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Valérie",
+      "lastName": "Lombard",
+      "email": "valerie.lombard@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "cccccccc-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "33333333-3333-3333-3333-333333333333"
+        ],
+        "contextual_roles": [
+          "member",
+          "dept-head"
+        ],
+        "functional_role": [
+          "directeur"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/comm/design"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000016",
+      "username": "hugo.petit",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Hugo",
+      "lastName": "Petit",
+      "email": "hugo.petit@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "cccccccc-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "33333333-3333-3333-3333-333333333333"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "designer"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/comm/design"
+      ],
+      "realmRoles": [
+        "default-roles-cracra"
+      ]
+    },
+    {
+      "id": "c0000000-0000-0000-0000-000000000017",
+      "username": "amina.cherif",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Amina",
+      "lastName": "Cherif",
+      "email": "amina.cherif@cracra.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cracra",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "unit_id": [
+          "cccccccc-0000-0000-0000-000000000001"
+        ],
+        "dept_ids": [
+          "33333333-3333-3333-3333-333333333333"
+        ],
+        "contextual_roles": [
+          "member"
+        ],
+        "functional_role": [
+          "designer"
+        ],
+        "locale": [
+          "fr"
+        ]
+      },
+      "groups": [
+        "/comm/design"
       ],
       "realmRoles": [
         "default-roles-cracra"
@@ -563,13 +1213,13 @@
       ]
     },
     {
-      "id": "c0000000-0000-0000-0000-000000000009",
-      "username": "nadia.kessler",
+      "id": "c0000000-0000-0000-0000-000000000007",
+      "username": "sofia.navarro",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Nadia",
-      "lastName": "Kessler",
-      "email": "nadia.kessler@cracra.local",
+      "firstName": "Sofia",
+      "lastName": "Navarro",
+      "email": "sofia.navarro@cracra.local",
       "credentials": [
         {
           "type": "password",
@@ -579,64 +1229,23 @@
       ],
       "attributes": {
         "unit_id": [
-          "aaaaaaaa-0000-0000-0000-000000000002"
+          "bbbbbbbb-0000-0000-0000-000000000001"
         ],
         "dept_ids": [
-          "11111111-1111-1111-1111-111111111111"
+          "22222222-2222-2222-2222-222222222222"
         ],
         "contextual_roles": [
-          "member",
-          "pmo"
+          "member"
         ],
         "functional_role": [
-          "chef-de-pole"
+          "comptable"
         ],
         "locale": [
           "fr"
         ]
       },
       "groups": [
-        "/dsi/etudes"
-      ],
-      "realmRoles": [
-        "default-roles-cracra"
-      ]
-    },
-    {
-      "id": "c0000000-0000-0000-0000-00000000000a",
-      "username": "pierre.dubois",
-      "enabled": true,
-      "emailVerified": true,
-      "firstName": "Pierre",
-      "lastName": "Dubois",
-      "email": "pierre.dubois@cracra.local",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "cracra",
-          "temporary": false
-        }
-      ],
-      "attributes": {
-        "unit_id": [
-          "aaaaaaaa-0000-0000-0000-000000000002"
-        ],
-        "dept_ids": [
-          "11111111-1111-1111-1111-111111111111"
-        ],
-        "contextual_roles": [
-          "member",
-          "project-lead"
-        ],
-        "functional_role": [
-          "tech-lead"
-        ],
-        "locale": [
-          "fr"
-        ]
-      },
-      "groups": [
-        "/dsi/etudes"
+        "/daf/compta"
       ],
       "realmRoles": [
         "default-roles-cracra"

@@ -46,7 +46,16 @@ public interface IDirectoryPort
 }
 
 /// <summary>The department knobs that govern one person's logging.</summary>
-public sealed record DepartmentPolicy(ActivityTaxonomy Taxonomy, decimal WeeklyTargetHours, bool EnforceWeeklyTarget);
+/// <remarks>
+/// <paramref name="WorkingDay"/> is optional so the fallback policies — a person no longer in the directory, a
+/// department with no configuration row — need not restate the defaults; <see cref="WorkingDayPolicy.Default"/> is
+/// the single place that says what an unconfigured day looks like.
+/// </remarks>
+public sealed record DepartmentPolicy(
+    ActivityTaxonomy Taxonomy,
+    decimal WeeklyTargetHours,
+    bool EnforceWeeklyTarget,
+    WorkingDay? WorkingDay = null);
 
 public interface IProjectsPort
 {

@@ -1,4 +1,4 @@
-using Cracra.Modules.Activities.Contracts;
+﻿using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Scheduling.Contracts;
 using Cracra.Modules.Scheduling.Domain;
@@ -96,7 +96,10 @@ public interface IActivitiesPort
         string? note,
         string source,
         string? externalRef,
+        int? percentComplete,
         CancellationToken ct);
+
+    Task SetProgressAsync(Guid entryId, int? percentComplete, CancellationToken ct);
 
     Task RescheduleAsync(Guid entryId, DateTimeOffset start, DateTimeOffset end, CancellationToken ct);
 

@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Messaging;
+﻿using Cracra.BuildingBlocks.Messaging;
 
 namespace Cracra.Modules.Scheduling.Contracts;
 
@@ -54,8 +54,9 @@ public sealed record BoardResource(
 /// <summary>
 /// A timeline event. Maps onto <c>MbscCalendarEvent</c>.
 /// </summary>
-/// <param name="Progress">0–100 for 6c, null elsewhere. Actuals against plan, not a typed-in percentage.</param>
+/// <param name="Progress">0–100 for 6c. What somebody said, or what plan-versus-actual implies where nobody has.</param>
 /// <param name="Editable">False where the caller may look but not move it — RLS decided, not the client.</param>
+/// <param name="Note">The short description the entry was written with, drawn under the title on 6c.</param>
 public sealed record BoardEvent(
     string Id,
     string ResourceId,
@@ -69,7 +70,8 @@ public sealed record BoardEvent(
     bool Editable,
     string? ActivityTypeCode,
     Guid? ProjectId,
-    string? ExternalRef);
+    string? ExternalRef,
+    string? Note = null);
 
 /// <summary>
 /// Something drawn across the whole board rather than on one row: a special day, a deadline, an iteration range.

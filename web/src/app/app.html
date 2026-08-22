@@ -1,8 +1,19 @@
-<div class="shell">
+<div class="shell" [class.shell--focus]="focus.active()" *transloco="let t">
   <app-nav-rail />
 
   <div class="shell__main">
     <app-top-bar />
+
+    <!-- The escape hatch from §02.2: a deep link into a screen Focus mode hides renders in full for that one
+         navigation, and says so rather than leaving the viewer wondering why the shell changed shape. -->
+    @if (focus.pierced()) {
+      <div class="shell__pierce">
+        <span class="shell__pierce-text">{{ t('shell.focusPierced') }}</span>
+        <button type="button" class="btn btn--secondary btn--compact" (click)="focus.returnToFocus()">
+          {{ t('shell.returnToFocus') }}
+        </button>
+      </div>
+    }
 
     <main class="shell__content">
       <router-outlet />

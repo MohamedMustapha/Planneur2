@@ -22,3 +22,22 @@
   min-height: 0;
   overflow: auto;
 }
+
+// --- The pierced-deep-link strip ---------------------------------------------------------------------------------
+// Deliberately a strip rather than a banner: it is a statement about the shell, not about the page, and it must
+// not push the page's own guidance banner (§02.5) out of the first screenful.
+.shell__pierce {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: none;
+  padding: var(--space-2) var(--space-6);
+  background: var(--primary-soft);
+}
+
+.shell__pierce-text {
+  flex: 1;
+  color: var(--primary-ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}

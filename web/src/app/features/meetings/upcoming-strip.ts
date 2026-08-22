@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { PreferencesStore } from '../../core/preferences/preferences.store';
+import { toWallClock } from '../../core/time/zoned';
 import { MeetingsStore, UpcomingEntry } from '../../core/meetings/meetings.store';
 import { CONTEXTUAL_ROLES } from '../../core/navigation/navigation';
 import { SessionStore } from '../../core/session/session.store';
@@ -23,6 +25,7 @@ import { SessionStore } from '../../core/session/session.store';
 })
 export class UpcomingStrip {
   private readonly transloco = inject(TranslocoService);
+  private readonly preferences = inject(PreferencesStore);
 
   private readonly session = inject(SessionStore);
 
@@ -72,7 +75,9 @@ export class UpcomingStrip {
    * and, in a browser west of UTC, the wrong day.
    */
   protected when(entry: UpcomingEntry): string {
-    const at = new Date(entry.at);
+    // Read in the person's own zone: a 09:00 stand-up is 09:00 for whoever is attending it, and a colleague in
+    // another country opening the same strip should see the hour they are expected to join at.
+    const at = toWallClock(entry.at, this.preferences.timeZone());
     const day = at.toLocaleDateString(this.transloco.getActiveLang(), {
       day: '2-digit',
       month: 'short',

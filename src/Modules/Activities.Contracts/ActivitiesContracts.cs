@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Messaging;
+﻿using Cracra.BuildingBlocks.Messaging;
 
 namespace Cracra.Modules.Activities.Contracts;
 
@@ -32,7 +32,25 @@ public sealed record ActivityEntryView(
     decimal Hours,
     Guid? SupersedesEntryId,
     bool Reconciled,
-    string? Note);
+    string? Note,
+    /// <summary>0-100 where somebody set one, null where the board should fall back to plan-versus-actual.</summary>
+    int? PercentComplete = null);
+
+/// <summary>
+/// The shape of a working day, as the department defines it.
+/// </summary>
+/// <remarks>
+/// Travels with the weekly summary rather than through an endpoint of its own, because it answers the same
+/// question that payload already answers — what this department expects of this person's week — and the two would
+/// otherwise be fetched together on every screen that draws a board.
+/// </remarks>
+public sealed record WorkingDay(
+    TimeOnly DayStart,
+    TimeOnly DayEnd,
+    TimeOnly MorningStart,
+    TimeOnly MorningEnd,
+    TimeOnly AfternoonStart,
+    TimeOnly AfternoonEnd);
 
 /// <summary>Hours by type for one person's week, and where that leaves them against the target.</summary>
 public sealed record WeeklySummary(
@@ -46,7 +64,9 @@ public sealed record WeeklySummary(
     decimal PlannedHours,
     decimal Overtime,
     string Status,
-    IReadOnlyList<WeeklyTypeTotal> ByType);
+    IReadOnlyList<WeeklyTypeTotal> ByType,
+    /// <summary>The department's working day. Drives the board's axis and the quick-add presets.</summary>
+    WorkingDay? WorkingDay = null);
 
 public sealed record WeeklyTypeTotal(string ActivityTypeCode, string LabelKey, decimal PlannedHours, decimal ActualHours);
 
@@ -118,7 +138,17 @@ public interface IActivityScheduler
         string? note,
         string source,
         string? externalRef,
+        int? percentComplete,
         CancellationToken ct);
+
+    /// <summary>
+    /// Sets how far along a planned slot is, or clears it.
+    /// </summary>
+    /// <remarks>
+    /// Separate from <see cref="RescheduleAsync"/> because the board offers the two as separate gestures — drag
+    /// the block, or drag its progress handle — and collapsing them would make each one re-validate the other.
+    /// </remarks>
+    Task SetProgressAsync(Guid entryId, int? percentComplete, CancellationToken ct);
 
     /// <summary>Moves a planned slot. Used when a task or an assignment is dragged on the timeline.</summary>
     Task RescheduleAsync(Guid entryId, DateTimeOffset start, DateTimeOffset end, CancellationToken ct);

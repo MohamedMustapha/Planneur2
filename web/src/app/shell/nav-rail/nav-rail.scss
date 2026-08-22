@@ -7,7 +7,7 @@
   flex: none;
   flex-direction: column;
   width: var(--rail-width-expanded);
-  padding: 10px 0;
+  padding: var(--space-4) 0;
   background: var(--rail-bg);
   color: var(--rail-ink);
   transition: width var(--transition-fast);
@@ -15,13 +15,18 @@
 
 .rail--collapsed {
   width: var(--rail-width-collapsed);
+  align-items: center;
 }
 
 .rail__brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: var(--space-1) 14px 14px;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-5);
+}
+
+.rail--collapsed .rail__brand {
+  padding: 0 0 var(--space-4);
 }
 
 .rail__logo {
@@ -29,41 +34,49 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-card);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-control);
   background: var(--primary);
   color: #fff;
   font-size: var(--text-base);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
 }
 
 .rail__brand-text {
   color: #fff;
-  font-size: var(--text-base);
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
   white-space: nowrap;
 }
 
 .rail__items {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.rail--collapsed .rail__items {
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .rail__item,
 .rail__toggle {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 14px;
   width: calc(100% - var(--space-4));
-  margin: 1px var(--space-2);
-  padding: var(--space-2) 10px;
+  margin: 2px var(--space-2);
+  padding: var(--space-3);
   border: none;
   border-radius: var(--radius-control);
   background: none;
   color: var(--rail-ink);
-  font-size: var(--text-base);
+  font-size: 15px;
   white-space: nowrap;
   cursor: pointer;
 
@@ -73,16 +86,35 @@
   }
 }
 
+// Icon-only: a 48px square target rather than a full-width row with an icon floating in it. Focus mode narrows
+// the rail, and §04's density contract is explicit that it must not shrink the controls while doing so.
+.rail--collapsed {
+  .rail__item,
+  .rail__toggle {
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    padding: 0;
+    border-radius: 12px;
+  }
+
+  // Re-stated after the reset above, which would otherwise drop the `auto` that pins the toggle to the bottom.
+  .rail__toggle {
+    margin-top: auto;
+  }
+}
+
 .rail__item.is-active {
   background: var(--primary);
   color: #fff;
-  font-weight: 500;
+  font-weight: var(--weight-semibold);
 }
 
 .rail__icon {
   flex: none;
-  width: 18px;
-  font-size: var(--text-md);
+  width: 22px;
+  font-size: var(--text-base);
   text-align: center;
 }
 

@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { PreferencesStore } from '../../core/preferences/preferences.store';
+import { zonedDay } from '../../core/time/zoned';
 import {
   endDateFor,
   IterationLength,
@@ -38,6 +40,7 @@ const NEXT_ACTION: Record<PortfolioState, 'commit' | 'activate' | 'archive' | nu
 })
 export class PortfolioBoard {
   protected readonly portfolio = inject(PortfolioStore);
+  private readonly preferences = inject(PreferencesStore);
   protected readonly session = inject(SessionStore);
   protected readonly departments = inject(DepartmentScopeStore);
 
@@ -67,7 +70,7 @@ export class PortfolioBoard {
 
   protected readonly iterationName = signal('');
   protected readonly iterationLength = signal<IterationLength>('twoweeks');
-  protected readonly iterationStart = signal(new Date().toISOString().slice(0, 10));
+  protected readonly iterationStart = signal(zonedDay(new Date(), this.preferences.timeZone()));
   protected readonly iterationEnd = signal('');
 
   /**

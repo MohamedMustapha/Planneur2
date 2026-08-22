@@ -45,7 +45,13 @@ public sealed record DepartmentConfigSnapshot(
     bool EnforceWeeklyTarget,
     int Version,
     /// <summary>Shift slots the department offers, and their minimum staffing (S6). Empty means the defaults.</summary>
-    string ShiftTemplatesJson = "{}");
+    string ShiftTemplatesJson = "{}",
+    /// <summary>
+    /// When the department's day starts and ends, and where its morning and afternoon sit inside that. Empty means
+    /// the defaults. Drives the board's axis and the quick-add presets, so a department that works 07:00-15:00 gets
+    /// a canvas of its own hours rather than one built around somebody else's.
+    /// </summary>
+    string WorkingDayJson = "{}");
 
 // --- Integration events ------------------------------------------------------------------------------------------
 

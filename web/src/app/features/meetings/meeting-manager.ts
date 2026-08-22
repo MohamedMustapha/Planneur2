@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { PreferencesStore } from '../../core/preferences/preferences.store';
+import { zonedDay } from '../../core/time/zoned';
 import {
   buildRecurrenceRule,
   MEETING_KINDS,
@@ -36,6 +38,7 @@ type Frequency = 'DAILY' | 'WEEKLY' | 'MONTHLY';
 })
 export class MeetingManager {
   protected readonly meetings = inject(MeetingsStore);
+  private readonly preferences = inject(PreferencesStore);
   protected readonly directory = inject(DirectoryStore);
 
   protected readonly kinds = MEETING_KINDS;
@@ -55,7 +58,7 @@ export class MeetingManager {
   protected readonly frequency = signal<Frequency>('WEEKLY');
   protected readonly interval = signal(1);
   protected readonly selectedDays = signal<readonly string[]>(['MO']);
-  protected readonly startsOn = signal(today());
+  protected readonly startsOn = signal(today(this.preferences.timeZone()));
   protected readonly startTime = signal('09:00');
   protected readonly durationMinutes = signal(30);
   protected readonly location = signal('');
@@ -98,7 +101,7 @@ export class MeetingManager {
   protected readonly dayName = signal('');
   protected readonly dayScopeType = signal<MeetingScopeType>('department');
   protected readonly dayScopeId = signal('');
-  protected readonly dayDate = signal(today());
+  protected readonly dayDate = signal(today(this.preferences.timeZone()));
   protected readonly daySeverity = signal<SpecialDaySeverity>('warning');
   protected readonly dayDescription = signal('');
 
@@ -222,6 +225,12 @@ export class MeetingManager {
   }
 }
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
+/**
+ * Today, on the reader's own calendar.
+ *
+ * Was `toISOString().slice(0, 10)`, which is the UTC day: a picker opened at 01:00 in Paris defaulted to
+ * yesterday, and one opened in the evening in New York defaulted to tomorrow.
+ */
+function today(zone: string): string {
+  return zonedDay(new Date(), zone);
 }

@@ -17,7 +17,8 @@ public sealed record UpdateDepartmentConfigRequest(
     string IterationPresetsJson,
     decimal WeeklyTargetHours,
     bool EnforceWeeklyTarget,
-    string ShiftTemplatesJson = "{}");
+    string ShiftTemplatesJson = "{}",
+    string WorkingDayJson = "{}");
 
 public interface IDepartmentConfigService
 {
@@ -61,6 +62,7 @@ internal sealed class DepartmentConfigService(DirectoryDbContext context, IUserC
 
         config.ActivityTaxonomyJson = request.ActivityTaxonomyJson;
         config.ShiftTemplatesJson = request.ShiftTemplatesJson;
+        config.WorkingDayJson = request.WorkingDayJson;
         config.RoleLabelsJson = request.RoleLabelsJson;
         config.KudoRulesJson = request.KudoRulesJson;
         config.DefaultBoardLayout = request.DefaultBoardLayout;
@@ -101,5 +103,10 @@ internal sealed class DepartmentConfigService(DirectoryDbContext context, IUserC
         config.IterationPresetsJson,
         config.WeeklyTargetHours,
         config.EnforceWeeklyTarget,
-        config.Version);
+        config.Version,
+        // Both blobs travel, and the shift templates did not before this line existed: the snapshot fell back to
+        // its own "{}" default, so the editor read an empty set for a department that had configured one and would
+        // have written that emptiness back on the next save.
+        config.ShiftTemplatesJson,
+        config.WorkingDayJson);
 }

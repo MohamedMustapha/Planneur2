@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Web.Users;
+﻿using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Access.Contracts;
 using Cracra.Modules.Activities.Domain;
 using Cracra.Modules.Activities.Infrastructure;
@@ -186,7 +186,7 @@ internal sealed class DevDataSeeder(
                     member.UnitId,
                     member.DepartmentId,
                     Taxonomy,
-                    TypeCodeFor(blueprint.Classification, day),
+                    TypeCodeFor(member.Nature, day),
                     projectId,
                     iterationId: null,
                     kind,
@@ -197,9 +197,14 @@ internal sealed class DevDataSeeder(
                     // Null so the entry takes the slot's own length. Splitting the two apart is for the case where
                     // they genuinely differ, and here they do not.
                     hours: null,
-                    member.Note,
+                    TaskFor(member, day),
                     createdBy: member.Id,
                     now);
+
+                if (kind is ActivityKind.Planned && ProgressFor(day, today) is { } percent)
+                {
+                    entry.SetProgress(percent, member.Id, now);
+                }
 
                 await activities.Entries.AddAsync(entry, ct);
                 written++;
@@ -212,17 +217,45 @@ internal sealed class DevDataSeeder(
     }
 
     /// <summary>
-    /// A BUILD project logs BUILD and a RUN project logs RUN; a MIXED one alternates by day.
+    /// BUILD or RUN, as this person's own contribution rather than the project's headline.
     /// </summary>
     /// <remarks>
-    /// Alternating rather than randomising: the seed has to be the same on every dev box, or two people comparing
-    /// the same screen are comparing different data.
+    /// Read from the member and not from <see cref="Classification"/>, because a project's classification is a
+    /// budgeting statement about the whole and says nothing about the helpdesk absorbing tickets on the same code
+    /// the developers are still writing. Alternating rather than randomising, so the seed is identical on every
+    /// dev box — two people comparing the same screen have to be comparing the same data.
     /// </remarks>
-    private static string TypeCodeFor(Classification classification, DateOnly day) => classification switch
+    private static string TypeCodeFor(SeedWorkNature nature, DateOnly day) => nature switch
     {
-        Classification.Build => BuildWork,
-        Classification.Run => RunWork,
+        SeedWorkNature.Build => BuildWork,
+        SeedWorkNature.Run => RunWork,
         _ => day.DayNumber % 2 == 0 ? BuildWork : RunWork,
+    };
+
+    /// <summary>
+    /// Which of the member's tasks this day is against.
+    /// </summary>
+    /// <remarks>
+    /// Rotating by day rather than by week: a week showing four different tasks reads as work, whereas the same
+    /// title five times reads as a rendering bug — which is the wrong first impression for a board whose whole job
+    /// is to show what people are doing.
+    /// </remarks>
+    private static string TaskFor(SeedTeamMember member, DateOnly day) =>
+        member.Tasks.Count == 0 ? string.Empty : member.Tasks[day.DayNumber % member.Tasks.Count];
+
+    /// <summary>
+    /// How far along a planned slot is, or null for one nobody would have an opinion on yet.
+    /// </summary>
+    /// <remarks>
+    /// Decaying with distance: this week's plan is largely done, next week's has been started, and anything beyond
+    /// that carries no figure at all so the board still shows what "nobody has said" looks like. Derived from the
+    /// date rather than randomised, for the same reproducibility reason as the type code above.
+    /// </remarks>
+    private static int? ProgressFor(DateOnly day, DateOnly today) => (day.DayNumber - today.DayNumber) switch
+    {
+        <= 7 => 65,
+        <= 14 => 25,
+        _ => null,
     };
 
     private static DateOnly FirstWorkingDay(DevSeedOptions settings) =>

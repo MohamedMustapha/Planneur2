@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Abstractions;
+﻿using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Scheduling.Contracts;
@@ -25,6 +25,7 @@ internal sealed class BoardComposer(
     IDirectoryPort directory,
     IProjectsPort projects,
     IActivitiesPort activities,
+    IActivityTaxonomyReader taxonomy,
     IPortfolioPort portfolio,
     IShiftRepository shifts,
     IWorkOrderRepository workOrders,
@@ -56,33 +57,28 @@ internal sealed class BoardComposer(
         };
 
     /// <summary>
-    /// My board: one row per activity lane, my slots on them.
+    /// My board: the activity buckets as categories, the things I actually worked on as rows beneath them.
     /// </summary>
     /// <remarks>
-    /// Rows are lanes rather than days because the design's board is a timeline: days are the horizontal axis, and
+    /// <para>
+    /// Rows are activity, not days, because the design's board is a timeline: days are the horizontal axis, and
     /// making them rows too would produce a grid with the same thing on both axes.
+    /// </para>
+    /// <para>
+    /// Two levels rather than one, because a flat bucket row answers the wrong question. "You spent 22 hours on
+    /// BUILD" is a number nobody acts on; "14 on the SI rewrite, 8 on the HR portal" is the sentence people
+    /// actually want the board to say. So BUILD and RUN open onto the projects the week was spent against, while
+    /// the two non-project buckets open onto the department's own subtypes — which is where their detail lives.
+    /// </para>
     /// </remarks>
     private async Task<BoardPayload> MyAsync(DateOnly from, DateOnly to, CancellationToken ct)
     {
         var entries = await activities.GetForPeopleAsync([user.UserId], from, to, ct);
+        // Null, not the caller's department id: the reader already resolves "mine" that way, and passing one of
+        // several department ids by hand would pick the wrong taxonomy for anyone who spans two.
+        var types = await taxonomy.GetTypesAsync(null, ct);
 
-        // A lane per bucket that actually has something in it, plus the canonical four so an empty week still
-        // renders as a board rather than as nothing.
-        var codes = BucketColors.Keys
-            .Concat(entries.Select(entry => entry.ActivityTypeCode))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(code => code, StringComparer.Ordinal)
-            .ToList();
-
-        var resources = codes
-            .Select(code => new BoardResource(
-                code,
-                code,
-                Kind: "lane",
-                ParentId: null,
-                ColorFor(code),
-                SubtitleKey: LabelFor(entries, code)))
-            .ToList();
+        var rows = MyRows(entries, types);
 
         return new BoardPayload(
             BoardTypes.My,
@@ -90,8 +86,8 @@ internal sealed class BoardComposer(
             "board.my",
             from,
             to,
-            resources,
-            [.. entries.Select(entry => EventFor(entry, entry.ActivityTypeCode, CanEdit(entry)))],
+            [.. rows.Resources],
+            [.. entries.Select(entry => EventFor(entry, rows.RowIdFor(entry), CanEdit(entry)))],
             [.. await overlays.GetOverlaysAsync(user.UnitId, null, from, to, ct)],
             Pool: [],
             Coverage: [],
@@ -478,9 +474,10 @@ internal sealed class BoardComposer(
     /// Turns an activity entry into a timeline event.
     /// </summary>
     /// <remarks>
-    /// Progress is set only on a planned slot that an actual has reconciled, and it is the ratio of the two — the
-    /// spec's "progress reflects actuals vs plan". A typed-in percentage would be a second number to keep true;
-    /// this one cannot drift because it is derived from the hours themselves.
+    /// Progress prefers what somebody said, and falls back to what the hours imply. A plan its actual has
+    /// reconciled is finished whether or not anyone dragged the handle, so the derived answer stays; but a task
+    /// that spans three days is half done long before any of its hours are logged, and only the person doing it
+    /// can say so. The explicit figure therefore wins where it exists, and nothing invents one where it does not.
     /// </remarks>
     private static BoardEvent EventFor(ActivityEntryView entry, string resourceId, bool editable) =>
         new(
@@ -492,11 +489,12 @@ internal sealed class BoardComposer(
             entry.Kind,
             ColorFor(entry.ActivityTypeCode),
             entry.Kind == "planned" ? "event event--planned" : "event event--actual",
-            entry.Kind == "planned" && entry.Reconciled ? 100 : null,
+            entry.PercentComplete ?? (entry.Kind == "planned" && entry.Reconciled ? 100 : null),
             editable,
             entry.ActivityTypeCode,
             entry.ProjectId,
-            entry.ExternalRef);
+            entry.ExternalRef,
+            entry.Note);
 
     /// <summary>
     /// Whether the caller may move this block.
@@ -506,6 +504,164 @@ internal sealed class BoardComposer(
     /// not something a drag gesture should quietly rewrite.
     /// </remarks>
     private static bool CanEdit(ActivityEntryView entry) => entry.Kind == "planned";
+
+    /// <summary>
+    /// The personal board's two levels, and the mapping from an entry to the row it belongs on.
+    /// </summary>
+    /// <remarks>
+    /// Built together and returned together, because the rows and the lookup are the same decision seen twice: a
+    /// row exists precisely because some entry resolves to it. Computing them separately is how a board ends up
+    /// with events pointing at rows that were never emitted, which Mobiscroll renders as nothing at all.
+    /// </remarks>
+    private static MyBoardRows MyRows(
+        IReadOnlyList<ActivityEntryView> entries,
+        IReadOnlyList<ActivityTypeOption> types)
+    {
+        // Which bucket a code belongs to. A department subtype resolves through its parent; a canonical bucket is
+        // its own. Anything the taxonomy does not know falls back to itself, so an entry logged against a type
+        // that has since been removed from the configuration still lands somewhere visible.
+        var bucketOf = types.ToDictionary(
+            type => type.Code,
+            type => type.ParentCode ?? type.Code,
+            StringComparer.OrdinalIgnoreCase);
+
+        string Bucket(string code) => bucketOf.GetValueOrDefault(code, code);
+
+        var resources = new List<BoardResource>();
+        var rowIds = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        // The canonical four always, plus any bucket this week's entries reached that is not one of them, so a
+        // department with its own top-level bucket still sees it.
+        var buckets = BucketColors.Keys
+            .Concat(entries.Select(entry => Bucket(entry.ActivityTypeCode)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(code => code, StringComparer.Ordinal)
+            .ToList();
+
+        foreach (var bucket in buckets)
+        {
+            resources.Add(new BoardResource(
+                bucket,
+                bucket,
+                Kind: "category",
+                ParentId: null,
+                ColorFor(bucket),
+                SubtitleKey: LabelFor(entries, bucket)));
+
+            var children = ProjectBuckets.Contains(bucket)
+                ? ProjectRowsFor(entries, bucket, Bucket)
+                : SubtypeRowsFor(entries, types, bucket, Bucket);
+
+            foreach (var (key, child) in children)
+            {
+                resources.Add(child);
+                rowIds[key] = child.Id;
+            }
+
+            // A category with nothing under it still gets one row, so an empty week reads as a board waiting for
+            // entries rather than as four headers over blank space — and so there is somewhere to click.
+            if (children.Count == 0)
+            {
+                var placeholder = new BoardResource(
+                    $"{bucket}:none",
+                    bucket,
+                    Kind: "lane",
+                    ParentId: bucket,
+                    ColorFor(bucket),
+                    SubtitleKey: LabelFor(entries, bucket));
+
+                resources.Add(placeholder);
+            }
+        }
+
+        return new MyBoardRows(resources, rowIds, Bucket);
+    }
+
+    /// <summary>One row per project the week was spent against, plus one for the hours that named none.</summary>
+    private static List<(string Key, BoardResource Row)> ProjectRowsFor(
+        IReadOnlyList<ActivityEntryView> entries,
+        string bucket,
+        Func<string, string> bucketOf) =>
+        [.. entries
+            .Where(entry => string.Equals(bucketOf(entry.ActivityTypeCode), bucket, StringComparison.OrdinalIgnoreCase))
+            .GroupBy(entry => entry.ProjectId)
+            .OrderBy(group => group.Key is null)
+            .ThenBy(group => group.First().ProjectCode, StringComparer.Ordinal)
+            .Select(group =>
+            {
+                var id = $"{bucket}:{group.Key?.ToString() ?? "none"}";
+
+                return (
+                    Key: $"{bucket}|{group.Key?.ToString() ?? string.Empty}",
+                    Row: new BoardResource(
+                        id,
+                        // The code is the name — a project code is not a translation key and must not be run
+                        // through the dictionary. SubtitleKey stays null for exactly that reason.
+                        group.First().ProjectCode ?? string.Empty,
+                        Kind: group.Key is null ? "lane" : "project-line",
+                        ParentId: bucket,
+                        ColorFor(bucket),
+                        SubtitleKey: group.Key is null ? "board.noProject" : null));
+            })];
+
+    /// <summary>One row per configured subtype the week actually used, falling back to the bucket itself.</summary>
+    private static List<(string Key, BoardResource Row)> SubtypeRowsFor(
+        IReadOnlyList<ActivityEntryView> entries,
+        IReadOnlyList<ActivityTypeOption> types,
+        string bucket,
+        Func<string, string> bucketOf) =>
+        [.. entries
+            .Where(entry => string.Equals(bucketOf(entry.ActivityTypeCode), bucket, StringComparison.OrdinalIgnoreCase))
+            .Select(entry => entry.ActivityTypeCode)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(code => code, StringComparer.Ordinal)
+            .Select(code => (
+                Key: $"{bucket}|{code}",
+                Row: new BoardResource(
+                    $"{bucket}:{code}",
+                    code,
+                    Kind: "lane",
+                    ParentId: bucket,
+                    ColorFor(bucket),
+                    SubtitleKey: types.FirstOrDefault(type =>
+                            string.Equals(type.Code, code, StringComparison.OrdinalIgnoreCase))?.LabelKey
+                        ?? LabelFor(entries, code))))];
+
+    /// <summary>
+    /// The buckets whose detail is a project rather than a subtype.
+    /// </summary>
+    /// <remarks>
+    /// The same two the taxonomy marks <c>requiresProject</c>, but stated here rather than read from it: a
+    /// department may add a subtype that requires a project under quality-of-life, and that must not turn the
+    /// training bucket into a project list.
+    /// </remarks>
+    private static readonly HashSet<string> ProjectBuckets =
+        new(["project-build", "project-run"], StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The personal board's rows, and which one an entry belongs on.</summary>
+    private sealed record MyBoardRows(
+        IReadOnlyList<BoardResource> Resources,
+        IReadOnlyDictionary<string, string> RowIds,
+        Func<string, string> BucketOf)
+    {
+        /// <summary>
+        /// Where this entry draws.
+        /// </summary>
+        /// <remarks>
+        /// Falls back to the category itself rather than to nothing: an event with no row silently disappears,
+        /// and an hour somebody logged vanishing from their own board is the worst failure this screen has.
+        /// </remarks>
+        public string RowIdFor(ActivityEntryView entry)
+        {
+            var bucket = BucketOf(entry.ActivityTypeCode);
+
+            var key = ProjectBuckets.Contains(bucket)
+                ? $"{bucket}|{entry.ProjectId?.ToString() ?? string.Empty}"
+                : $"{bucket}|{entry.ActivityTypeCode}";
+
+            return RowIds.GetValueOrDefault(key, bucket);
+        }
+    }
 
     private static string? ColorFor(string code) => BucketColors.GetValueOrDefault(code);
 

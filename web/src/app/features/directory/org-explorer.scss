@@ -76,3 +76,20 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Leadership ------------------------------------------------------------------------------------------------
+   The directorate's table is separated by a rule rather than by a heading of its own: the column header already
+   says who they are, and a second heading above a two-row table is more chrome than content. */
+.org__table + .org__table {
+  border-top: 1px solid var(--line);
+}
+
+.org__row--lead {
+  background: var(--surface-2);
+}
+
+.avatar--lead {
+  color: var(--primary-ink);
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-border);
+}

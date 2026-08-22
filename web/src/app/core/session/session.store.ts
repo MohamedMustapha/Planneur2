@@ -1,6 +1,5 @@
-import { computed, Injectable, inject } from '@angular/core';
-import { HttpClient, httpResource } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { computed, Injectable } from '@angular/core';
+import { httpResource } from '@angular/common/http';
 
 /**
  * What `/bff/user` returns. Mirrors `BffUser` on the server; the two are one contract.
@@ -38,8 +37,6 @@ export const ANONYMOUS_SESSION: SessionUser = {
  */
 @Injectable({ providedIn: 'root' })
 export class SessionStore {
-  private readonly http = inject(HttpClient);
-
   private readonly resource = httpResource<SessionUser>(() => '/bff/user', {
     defaultValue: ANONYMOUS_SESSION,
   });
@@ -76,9 +73,27 @@ export class SessionStore {
     window.location.href = `/bff/login?returnUrl=${encodeURIComponent(returnUrl)}`;
   }
 
-  async logout(): Promise<void> {
-    await firstValueFrom(this.http.post('/bff/logout', null, { observe: 'response' }));
-    window.location.href = '/';
+  /**
+   * Signs out by submitting a real form, so the browser navigates.
+   *
+   * The same reason <see cref="login"/> is a navigation: signing out of OIDC is a redirect chain, not a request.
+   * The BFF answers with a 302 to Keycloak's end-session endpoint, Keycloak clears its own SSO cookie and
+   * redirects back here. Issued as an XHR that whole chain happens inside the fetch — which then fails CORS on
+   * the cross-origin hop and leaves the page exactly where it was, with Keycloak still signed in. Logging out
+   * only in this tab while the identity provider still considers you signed in is worse than not offering it:
+   * the next login succeeds without a prompt and looks like the button did nothing.
+   *
+   * A form rather than assigning `location.href`, because the endpoint is a POST and must stay one. A GET would
+   * make logout reachable from any third-party `img` tag.
+   */
+  logout(): void {
+    const form = document.createElement('form');
+
+    form.method = 'post';
+    form.action = '/bff/logout';
+    // Detached forms are not submittable; it only has to be in the document long enough to leave it.
+    document.body.appendChild(form);
+    form.submit();
   }
 
   reload(): void {

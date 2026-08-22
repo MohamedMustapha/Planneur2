@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Cracra.BuildingBlocks.Abstractions;
 
@@ -35,6 +36,77 @@ public static class DepartmentConfigValidator
         if (string.IsNullOrWhiteSpace(request.DefaultBoardLayout))
         {
             throw new DomainRuleViolationException("A default board layout is required.");
+        }
+
+        ValidateWorkingDay(request.WorkingDayJson);
+    }
+
+    /// <summary>
+    /// The working day must parse, and must not contradict itself.
+    /// </summary>
+    /// <remarks>
+    /// Still structure rather than judgement, in the spirit of the rest of this class: whether 07:00 is a sensible
+    /// hour to start is the department's business, but an afternoon ending before it starts — or sitting outside
+    /// the day it belongs to — is not a policy anyone meant. S5 ignores an incoherent day and falls back to the
+    /// platform default, which means a bad edit accepted here would save cleanly and then quietly do nothing.
+    /// Better to say so while the person is still looking at the form.
+    /// </remarks>
+    private static void ValidateWorkingDay(string value)
+    {
+        var root = Parse(value, nameof(UpdateDepartmentConfigRequest.WorkingDayJson));
+
+        if (root.ValueKind is not JsonValueKind.Object)
+        {
+            throw new DomainRuleViolationException("WorkingDayJson must be a JSON object.");
+        }
+
+        // An empty object is how a department says "use the defaults", and is the value every existing row holds.
+        if (!root.EnumerateObject().Any())
+        {
+            return;
+        }
+
+        var dayStart = ReadTime(root, "dayStart");
+        var dayEnd = ReadTime(root, "dayEnd");
+        var (morningStart, morningEnd) = ReadSession(root, "morning");
+        var (afternoonStart, afternoonEnd) = ReadSession(root, "afternoon");
+
+        Ensure(dayStart < dayEnd, "The working day must end after it starts.");
+        Ensure(morningStart < morningEnd, "The morning session must end after it starts.");
+        Ensure(afternoonStart < afternoonEnd, "The afternoon session must end after it starts.");
+        Ensure(morningEnd <= afternoonStart, "The morning session must finish before the afternoon begins.");
+        Ensure(
+            morningStart >= dayStart && afternoonEnd <= dayEnd,
+            "Both sessions must fall inside the working day.");
+    }
+
+    private static (TimeOnly Start, TimeOnly End) ReadSession(JsonElement root, string name)
+    {
+        if (!root.TryGetProperty(name, out var session) || session.ValueKind is not JsonValueKind.Object)
+        {
+            throw new DomainRuleViolationException($"WorkingDayJson needs a '{name}' object.");
+        }
+
+        return (ReadTime(session, "start"), ReadTime(session, "end"));
+    }
+
+    private static TimeOnly ReadTime(JsonElement parent, string name)
+    {
+        if (!parent.TryGetProperty(name, out var property)
+            || property.ValueKind is not JsonValueKind.String
+            || !TimeOnly.TryParse(property.GetString(), CultureInfo.InvariantCulture, out var parsed))
+        {
+            throw new DomainRuleViolationException($"WorkingDayJson needs '{name}' as a time such as \"09:00\".");
+        }
+
+        return parsed;
+    }
+
+    private static void Ensure(bool condition, string message)
+    {
+        if (!condition)
+        {
+            throw new DomainRuleViolationException(message);
         }
     }
 

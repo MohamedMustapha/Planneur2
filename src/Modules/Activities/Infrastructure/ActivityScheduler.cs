@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Abstractions;
+﻿using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Application;
 using Cracra.Modules.Activities.Contracts;
@@ -26,6 +26,7 @@ internal sealed class ActivityScheduler(
     ActivitiesDbContext context,
     IActivityRepository repository,
     IDirectoryPort directory,
+    IProjectsPort projects,
     IUserContext user) : IActivityScheduler
 {
     public async Task<Guid> PlanAsync(
@@ -37,6 +38,7 @@ internal sealed class ActivityScheduler(
         string? note,
         string source,
         string? externalRef,
+        int? percentComplete,
         CancellationToken ct)
     {
         var placement = await directory.GetPlacementAsync(personId, ct)
@@ -65,6 +67,11 @@ internal sealed class ActivityScheduler(
             user.UserId,
             DateTimeOffset.UtcNow);
 
+        if (percentComplete is not null)
+        {
+            entry.SetProgress(percentComplete, user.UserId, DateTimeOffset.UtcNow);
+        }
+
         await repository.AddAsync(entry, ct);
 
         // Written now rather than at the end of the caller's transaction, because the caller needs the id to store
@@ -73,6 +80,15 @@ internal sealed class ActivityScheduler(
         await context.SaveChangesAsync(ct);
 
         return entry.Id;
+    }
+
+    public async Task SetProgressAsync(Guid entryId, int? percentComplete, CancellationToken ct)
+    {
+        var entry = await repository.GetAsync(entryId, ct);
+
+        entry.SetProgress(percentComplete, user.UserId, DateTimeOffset.UtcNow);
+
+        await context.SaveChangesAsync(ct);
     }
 
     public async Task RescheduleAsync(Guid entryId, DateTimeOffset start, DateTimeOffset end, CancellationToken ct)
@@ -166,6 +182,13 @@ internal sealed class ActivityScheduler(
 
         var names = await directory.GetPersonNamesAsync([.. rows.Select(row => row.PersonId).Distinct()], ct);
 
+        // Resolved here rather than left null, as the S5 feed already does. A board that groups project hours by
+        // project has to name the rows it groups them into, and the code is that name — one lookup for the whole
+        // page, not one per row.
+        var codes = await projects.GetProjectCodesAsync(
+            [.. rows.Where(row => row.ProjectId is not null).Select(row => row.ProjectId!.Value).Distinct()],
+            ct);
+
         var policies = new Dictionary<Guid, DepartmentPolicy>();
 
         foreach (var departmentId in rows.Select(row => row.DepartmentId).Distinct())
@@ -186,7 +209,7 @@ internal sealed class ActivityScheduler(
                     ? policy.Taxonomy.Get(row.ActivityTypeCode).LabelKey
                     : $"activity.type.{row.ActivityTypeCode}",
                 row.ProjectId,
-                ProjectCode: null,
+                row.ProjectId is { } projectId ? codes.GetValueOrDefault(projectId) : null,
                 row.IterationId,
                 row.Kind.ToString().ToLowerInvariant(),
                 SourceCodes.ToCode(row.Source),
@@ -196,7 +219,8 @@ internal sealed class ActivityScheduler(
                 row.Hours,
                 row.SupersedesEntryId,
                 row.Reconciled,
-                row.Note)),
+                row.Note,
+                row.PercentComplete)),
         ];
     }
 }

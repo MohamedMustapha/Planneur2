@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Cracra.Tests.Architecture;
@@ -17,9 +17,19 @@ public sealed partial class AccessRules
     /// Migration SQL that mentions a contextual role must go through an <c>access.*</c> predicate.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Two implementations of "is this person a department head" will eventually disagree, and the one in a
     /// module's migration is the one nobody re-reads when the matrix changes. The access schema is exempt: it is
     /// where the predicates are defined, so it necessarily names the roles.
+    /// </para>
+    /// <para>
+    /// The system stamp is exempt too, and only in its exact form. A data migration writing into an RLS table has
+    /// to claim a scope — the tables carry <c>force row level security</c>, so the connection is subject to its
+    /// own policies — and the scope the write policies already name is <c>system</c>. Stamping the GUC is the
+    /// opposite of rolling your own check: it hands the decision back to the policy instead of bypassing it. The
+    /// match is the whole trimmed line rather than a substring, so nothing that also evaluates a role slips
+    /// through on the same line.
+    /// </para>
     /// </remarks>
     [Fact]
     public void Module_migrations_use_the_shared_predicates_rather_than_their_own_role_checks()
@@ -38,7 +48,8 @@ public sealed partial class AccessRules
                 // access.has('...') inside a predicate definition is the sanctioned form; what this catches is a
                 // policy comparing a role literal directly, or a WHERE that rolls its own check.
                 if (!line.Contains("access.has(", StringComparison.Ordinal)
-                    && !line.Contains("create or replace function access.", StringComparison.Ordinal))
+                    && !line.Contains("create or replace function access.", StringComparison.Ordinal)
+                    && !IsSystemStamp(line))
                 {
                     offenders.Add($"{Path.GetFileName(file)}: {line.Trim()}");
                 }
@@ -171,6 +182,10 @@ public sealed partial class AccessRules
 
         return files;
     }
+
+    /// <summary>The one sanctioned way a migration may name a role: claiming the system scope for its own write.</summary>
+    private static bool IsSystemStamp(string line) =>
+        line.Trim().Equals("set local app.roles = 'system';", StringComparison.Ordinal);
 
     [GeneratedRegex(@"'(member|unit-head|dept-head|project-lead|po|pmo|system)'")]
     private static partial Regex RoleLiteral();

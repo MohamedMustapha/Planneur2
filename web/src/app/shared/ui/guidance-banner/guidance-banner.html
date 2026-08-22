@@ -1,0 +1,28 @@
+<div class="guidance" role="status" *transloco="let t">
+  <span class="guidance__glyph" aria-hidden="true">◈</span>
+
+  <div class="guidance__text">
+    <span class="guidance__message">{{ message() }}</span>
+    @if (detail()) {
+      <span class="guidance__detail">{{ detail() }}</span>
+    }
+  </div>
+
+  @if (showObligation() && obligations.top(); as obligation) {
+    <button
+      type="button"
+      class="pill guidance__obligation"
+      [class.pill--danger]="obligation.severity === 'danger'"
+      [class.pill--warning]="obligation.severity === 'warning'"
+      (click)="obligations.dismiss(obligation.id)"
+      [title]="t('obligations.dismiss')"
+    >
+      <span class="dot" aria-hidden="true"></span>
+      {{ t(obligation.labelKey, obligation.params) }}
+    </button>
+  }
+
+  @if (actionLabel()) {
+    <button type="button" class="btn btn--primary" (click)="acted.emit()">{{ actionLabel() }}</button>
+  }
+</div>

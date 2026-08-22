@@ -1,4 +1,4 @@
-namespace Cracra.Modules.Directory.Domain;
+﻿namespace Cracra.Modules.Directory.Domain;
 
 /// <summary>
 /// A department — the top of the org tree and the unit of configuration. "Department-agnostic" in the positioning
@@ -104,6 +104,32 @@ public sealed class Person
     /// <summary>fr / en / es. Seeds the client's language on first load; the user may override per browser.</summary>
     public string UiLanguage { get; set; } = "fr";
 
+    // --- Preferences ---------------------------------------------------------------------------------------------
+    // Deliberately separate from TimeZone and UiLanguage above, which the directory sync owns and rewrites from
+    // Keycloak on every run. These three are the person's own answer and sync never touches them, so a preference
+    // set in the app is not silently reverted the next time LDAP is read. Null means "never chosen", which is what
+    // makes the synced values a seed rather than a competitor: the app falls back to them until someone decides.
+
+    /// <summary>fr / en / es, chosen in the app. Null falls back to <see cref="UiLanguage"/>.</summary>
+    public string? PreferredLanguage { get; set; }
+
+    /// <summary>An IANA zone chosen in the app. Null falls back to <see cref="TimeZone"/>.</summary>
+    public string? PreferredTimeZone { get; set; }
+
+    /// <summary>light / dark. Null means the browser decides, from the OS setting.</summary>
+    public string? PreferredTheme { get; set; }
+
+    /// <summary>
+    /// Whether the shell renders in Focus mode (v2 §02.2).
+    /// </summary>
+    /// <remarks>
+    /// Stored against the person rather than in the browser on purpose: Focus mode changes what the whole
+    /// application looks like, and someone who turned it off on their laptop should not meet the stripped shell
+    /// again on the machine in the meeting room. Null is "never chosen", which lets the seeded default — on for
+    /// members, off for heads, PO and PMO — apply until they express an opinion.
+    /// </remarks>
+    public bool? FocusMode { get; set; }
+
     /// <summary>
     /// Set false when a person disappears from the directory. Never deleted: their logged activity, kudos and
     /// project history stay meaningful, and a hard delete would orphan every one of them.
@@ -204,6 +230,15 @@ public sealed class DepartmentConfig
     /// on shift codes, so a department that defines its own is not dropping vocabulary anyone else depends on.
     /// </remarks>
     public string ShiftTemplatesJson { get; set; } = "{}";
+
+    /// <summary>
+    /// The shape of this department's working day: its bounds, and the two sessions inside them.
+    /// </summary>
+    /// <remarks>
+    /// One blob rather than six columns, for the same reason as the shift templates: it is read whole, written
+    /// whole, and nothing joins on an individual hour.
+    /// </remarks>
+    public string WorkingDayJson { get; set; } = "{}";
 
     /// <summary>Iteration length presets offered in the quick selector (S4): 1w / 2w / 1m / custom.</summary>
     public string IterationPresetsJson { get; set; } = """["1w","2w","1m"]""";

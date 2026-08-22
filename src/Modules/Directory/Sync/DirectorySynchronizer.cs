@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Cracra.BuildingBlocks.Observability;
 using Cracra.BuildingBlocks.Persistence.Outbox;
 using Cracra.BuildingBlocks.Web.Users;
@@ -150,6 +150,7 @@ internal sealed class DirectorySynchronizer(
                 existing.DepartmentId = mappedUnit.DepartmentId;
                 existing.Code = mappedUnit.Code;
                 existing.Name = mappedUnit.Name;
+                existing.Kind = mappedUnit.Kind;
                 existing.ModifiedAt = now;
             }
             else

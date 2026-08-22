@@ -5,7 +5,42 @@
     [resources]="mbscResources()"
     [colors]="mbscColors()"
     [selectedDate]="selectedDate()"
+    [timelineEventTemplate]="eventTemplate"
     (onEventUpdate)="onEventUpdate($event)"
     (onEventCreate)="onEventCreate($event)"
   />
 </div>
+
+<!-- One template for every archetype, branching on whether this board keeps progress. A second template for the
+     shift and work-order boards would be the same three lines minus the bar, and would drift the first time the
+     block's layout changed. -->
+<ng-template #eventTemplate let-event>
+  @if (showsProgress()) {
+    <div class="progress" [style.background]="event.color">
+      <div class="progress__bar" [style.width]="(event.original.progress || 0) + '%'">
+        <!-- Only where the caller may write. A handle that moves and then silently snaps back is worse than no
+             handle, and RLS has already answered whether this block is theirs. -->
+        @if (event.original.editable) {
+          <span
+            class="progress__handle"
+            role="slider"
+            tabindex="-1"
+            aria-hidden="true"
+            (mousedown)="onProgressHandleDown($event, event.original)"
+          ></span>
+        }
+      </div>
+
+      <div class="progress__content">
+        <span class="progress__title">{{ event.original.title }}</span>
+        @if (event.original.note) {
+          <span class="progress__note">{{ event.original.note }}</span>
+        }
+      </div>
+
+      <span class="progress__label num">{{ event.original.progress || 0 }}%</span>
+    </div>
+  } @else {
+    <div class="block" [style.background]="event.color">{{ event.original.title }}</div>
+  }
+</ng-template>

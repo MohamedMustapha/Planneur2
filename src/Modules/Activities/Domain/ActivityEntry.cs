@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Abstractions;
+﻿using Cracra.BuildingBlocks.Abstractions;
 
 namespace Cracra.Modules.Activities.Domain;
 
@@ -73,6 +73,22 @@ public sealed class ActivityEntry
 
     /// <summary>Set on the planned entry once an actual has reconciled against it.</summary>
     public bool Reconciled { get; private set; }
+
+    /// <summary>
+    /// How far along the task is, 0-100, where somebody has said so.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Null means nobody has claimed a figure, and the boards fall back to what the hours already imply — a plan
+    /// its actual has reconciled is done. The explicit number exists because a task that runs over three days is
+    /// half finished long before any of its hours are logged, and the board is where that is said.
+    /// </para>
+    /// <para>
+    /// Planned entries only. An actual is a claim about time already spent; it is complete by definition and a
+    /// percentage on it would be a second, contradictory answer to the same question.
+    /// </para>
+    /// </remarks>
+    public int? PercentComplete { get; private set; }
 
     public string? Note { get; private set; }
 
@@ -283,6 +299,30 @@ public sealed class ActivityEntry
 
         _domainEvents.Add(new ActivityReconciled(
             Id, planned.Id, PersonId, planned.Hours, Hours, planned.ActivityTypeCode, ActivityTypeCode));
+    }
+
+    /// <summary>
+    /// Sets, or clears, how far along the task is.
+    /// </summary>
+    /// <remarks>
+    /// Its own method rather than a parameter on <see cref="Amend"/>, because dragging a block to another hour and
+    /// saying it is now three-quarters done are different claims and only one of them re-runs the slot rules.
+    /// </remarks>
+    public void SetProgress(int? percentComplete, Guid modifiedBy, DateTimeOffset now)
+    {
+        if (Kind is not ActivityKind.Planned)
+        {
+            throw new DomainRuleViolationException("Only a planned slot carries a completion percentage.");
+        }
+
+        if (percentComplete is { } percent && percent is < 0 or > 100)
+        {
+            throw new DomainRuleViolationException("Completion is a percentage between 0 and 100.");
+        }
+
+        PercentComplete = percentComplete;
+
+        Touch(modifiedBy, now);
     }
 
     public void ClearDomainEvents() => _domainEvents.Clear();

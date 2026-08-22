@@ -86,7 +86,7 @@
       @if (requiresProject()) {
         <label class="field">
           <span>{{ t('activity.project') }}</span>
-          <select class="select" [ngModel]="projectId()" (ngModelChange)="projectId.set($event)">
+          <select class="select" [ngModel]="project()" (ngModelChange)="project.set($event)">
             <option value="">{{ t('activity.chooseProject') }}</option>
             @for (project of projects.projects(); track project.id) {
               <option [value]="project.id">{{ project.code }} — {{ project.name }}</option>
@@ -100,17 +100,40 @@
         <input class="input" type="time" [ngModel]="startTime()" (ngModelChange)="startTime.set($event)" />
       </label>
 
+      <!-- The three shapes almost every entry takes, one press each. Above the time and hours fields rather than
+           beside them, because pressing one answers both — and a shortcut that sits under the thing it fills in
+           reads as a modifier of it rather than as a replacement for typing. -->
+      <fieldset class="field">
+        <legend>{{ t('activity.session') }}</legend>
+        <div class="tabs">
+          @for (session of sessions(); track session.id) {
+            <button
+              type="button"
+              class="tab"
+              [class.is-active]="activeSession() === session.id"
+              [attr.aria-pressed]="activeSession() === session.id"
+              [title]="session.start + ' → ' + session.end"
+              (click)="toggleSession(session)"
+            >
+              {{ t(session.labelKey) }}
+            </button>
+          }
+        </div>
+      </fieldset>
+
       <label class="field">
         <span>{{ t('activity.hours') }}</span>
-        <input
-          class="input num"
-          type="number"
-          min="0.25"
-          max="24"
-          step="0.25"
-          [ngModel]="hours()"
-          (ngModelChange)="hours.set($event)"
-        />
+        <span class="field__row">
+          <input
+            class="input num"
+            type="number"
+            min="0.25"
+            max="24"
+            step="0.25"
+            [ngModel]="hours()"
+            (ngModelChange)="hours.set($event)"
+          />
+        </span>
       </label>
 
       <label class="field quick-add__note">

@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Web.Authorization;
+﻿using Cracra.BuildingBlocks.Web.Authorization;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Directory.Services;
 using Cracra.Modules.Directory.Sync;
@@ -28,6 +28,30 @@ public sealed class GetMeEndpoint(IDirectoryQueryService directory) : EndpointWi
 
     public override async Task HandleAsync(CancellationToken ct) =>
         await Send.OkAsync(await directory.GetMeAsync(ct), ct);
+}
+
+/// <summary>
+/// The caller's own display preferences.
+/// </summary>
+/// <remarks>
+/// No id in the route and none in the body: the only row this can write is the caller's own. Authenticated is
+/// therefore the whole policy — there is no scope for a head or a PMO to be granted here, because there is nothing
+/// wider to grant.
+/// </remarks>
+public sealed class UpdateMyPreferencesEndpoint(IDirectoryQueryService directory)
+    : Endpoint<UpdatePreferencesRequest, MeResponse>
+{
+    public override void Configure()
+    {
+        Put("/directory/me/preferences");
+        Policies(CracraPolicies.Authenticated);
+        Description(builder => builder
+            .WithTags("Directory")
+            .WithSummary("Set the signed-in person's language, time zone, theme and Focus mode."));
+    }
+
+    public override async Task HandleAsync(UpdatePreferencesRequest request, CancellationToken ct) =>
+        await Send.OkAsync(await directory.UpdateMyPreferencesAsync(request, ct), ct);
 }
 
 public sealed class ListDepartmentsEndpoint(IDirectoryQueryService directory)
@@ -154,6 +178,9 @@ public class UpdateDepartmentConfigRequestBase
 
     /// <summary>Shift slots offered by the S6 scheduler. An empty object means the platform defaults.</summary>
     public string ShiftTemplatesJson { get; set; } = "{}";
+
+    /// <summary>The department's working day and its two sessions. An empty object means the platform defaults.</summary>
+    public string WorkingDayJson { get; set; } = "{}";
 }
 
 public sealed class UpdateDepartmentConfigEndpoint(IDepartmentConfigService configs)
@@ -180,7 +207,8 @@ public sealed class UpdateDepartmentConfigEndpoint(IDepartmentConfigService conf
                 request.IterationPresetsJson,
                 request.WeeklyTargetHours,
                 request.EnforceWeeklyTarget,
-                request.ShiftTemplatesJson),
+                request.ShiftTemplatesJson,
+                request.WorkingDayJson),
             ct);
 
         await Send.OkAsync(updated, ct);

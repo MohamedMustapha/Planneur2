@@ -1,12 +1,12 @@
 <nav
   class="rail"
-  [class.rail--collapsed]="!layout.railExpanded()"
+  [class.rail--collapsed]="!showLabels()"
   *transloco="let t"
   [attr.aria-label]="t('nav.ariaLabel')"
 >
   <div class="rail__brand">
     <span class="rail__logo" aria-hidden="true">A</span>
-    @if (layout.railExpanded()) {
+    @if (showLabels()) {
       <span class="rail__brand-text">{{ t('shell.appName') }}</span>
     }
   </div>
@@ -22,7 +22,7 @@
           [attr.aria-label]="t(item.labelKey)"
         >
           <span class="rail__icon" aria-hidden="true">{{ item.icon }}</span>
-          @if (layout.railExpanded()) {
+          @if (showLabels()) {
             <span class="rail__label">{{ t(item.labelKey) }}</span>
           }
         </a>
@@ -30,16 +30,20 @@
     }
   </ul>
 
-  <button
-    type="button"
-    class="rail__toggle"
-    (click)="layout.toggleRail()"
-    [attr.aria-expanded]="layout.railExpanded()"
-    [attr.aria-label]="layout.railExpanded() ? t('shell.collapseNav') : t('shell.expandNav')"
-  >
-    <span class="rail__icon" aria-hidden="true">{{ layout.railExpanded() ? '‹' : '›' }}</span>
-    @if (layout.railExpanded()) {
-      <span class="rail__label">{{ t('shell.collapseNav') }}</span>
-    }
-  </button>
+  <!-- Hidden in Focus mode: the rail is already at its narrowest, and a control whose only effect is to widen
+       something Focus mode has decided to narrow is a control that does nothing. -->
+  @if (!focus.active()) {
+    <button
+      type="button"
+      class="rail__toggle"
+      (click)="layout.toggleRail()"
+      [attr.aria-expanded]="layout.railExpanded()"
+      [attr.aria-label]="layout.railExpanded() ? t('shell.collapseNav') : t('shell.expandNav')"
+    >
+      <span class="rail__icon" aria-hidden="true">{{ layout.railExpanded() ? '‹' : '›' }}</span>
+      @if (showLabels()) {
+        <span class="rail__label">{{ t('shell.collapseNav') }}</span>
+      }
+    </button>
+  }
 </nav>

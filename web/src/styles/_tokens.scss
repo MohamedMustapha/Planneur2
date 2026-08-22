@@ -1,122 +1,167 @@
 // =================================================================================================================
-// Design tokens — lifted verbatim from the Claude Design canvas "Design System & Shell".
+// Design tokens — v2, lifted from the Claude Design canvas "Theme Shell Focus v2" and normatively fixed by
+// `specs/v2/02-navigation-focus-mode.md` §4.
 //
 // Every colour, radius and control height in the application comes from this file. A component that hard-codes a
 // hex value is a bug: the dark theme works by redefining these custom properties and nothing else, so a literal
 // colour is a literal colour in both themes.
+//
+// What changed from v1, and why — the three levers the reconciliation pack calls out by name:
+//
+//   * Base type 13px → 16px. v1 was sized like a 2010 admin console; §4 calls this "the single biggest
+//     anti-2010 lever" and it is the one change that cannot be made component by component.
+//   * Controls 34px → 44px, rows 56px. Fitts's law is not a style preference. 36px survives as
+//     `--control-height-sm` and is allowed *only* inside dense grids.
+//   * Hairlines → shadows. `--line` still exists and is still used, but sparingly: a card is separated from the
+//     page by `--shadow-card`, not by a 1px border, which is what stops a dense screen reading as a spreadsheet.
+//
+// The v1 token *names* are all still here. Renaming them would have meant touching every component in the same
+// commit as the retheme, and a retheme you cannot review is a retheme you cannot revert.
 // =================================================================================================================
 
 :root {
   // --- Surfaces and ink (light) ---------------------------------------------------------------------------------
-  --bg: #eceff1;
+  // Three levels, not two: the page sits a shade below the cards on it, and controls inside a card sit a shade
+  // above the card. Without the third level every raised control on a white card needs a border to be visible,
+  // which is exactly the hairline habit this theme is getting rid of.
+  --bg: #f1f4f9;
   --surface: #ffffff;
-  --surface-2: #f5f6f8;
-  --line: #e0e3e7;
-  --line-2: #cfd4da;
-  --ink: #1c1f23;
-  --ink-2: #5a6470;
-  --ink-3: #8b949e;
+  --surface-2: #f7f9fc;
+  --line: #e3e8f0;
+  --line-2: #d6deea;
+  --ink: #101828;
+  --ink-2: #5b6b84;
+  --ink-3: #8494ac;
 
-  --primary: #3949ab;
-  --primary-hover: #303f9f;
-  --primary-soft: #e8eaf6;
-  --primary-border: #c5cae9;
-  --primary-ink: #283593;
+  --primary: #2e5bff;
+  --primary-hover: #1e45d8;
+  --primary-soft: #eaf0ff;
+  --primary-border: #c9d6ff;
+  --primary-ink: #1e45d8;
 
-  --rail-bg: #1f2430;
-  --rail-ink: #c4cbd6;
-  --rail-ink-muted: #8b95a5;
+  --rail-bg: #101828;
+  --rail-ink: #b6c2d9;
+  --rail-ink-muted: #8797b4;
 
   // --- Neutral ramp (8 steps) -----------------------------------------------------------------------------------
-  --neutral-50: #f5f6f8;
-  --neutral-100: #e9ecef;
-  --neutral-200: #d5dae0;
-  --neutral-300: #b3bcc6;
-  --neutral-400: #8b949e;
-  --neutral-600: #5a6470;
-  --neutral-800: #343b45;
-  --neutral-900: #1c1f23;
+  --neutral-50: #f7f9fc;
+  --neutral-100: #eef2f8;
+  --neutral-200: #e3e8f0;
+  --neutral-300: #c9d3e4;
+  --neutral-400: #8494ac;
+  --neutral-600: #5b6b84;
+  --neutral-800: #344054;
+  --neutral-900: #101828;
 
   // --- Portfolio lifecycle --------------------------------------------------------------------------------------
-  // The four states from the glossary. Déphasé is a muted brown-grey on purpose: archived work must read as
-  // "settled", never as a warning.
+  // Five states now: v2 §03 adds "en attente v2" between active and déphasé, for work that is finished as far as
+  // this iteration goes and deliberately queued rather than abandoned.
+  //
+  // Every `-soft` here is the base colour at 12% alpha and every `-ink` is a darkened version of it. That is the
+  // pill rule from §4 stated as tokens: a tinted background carrying full-strength text, never a saturated fill
+  // behind white text at 14px — which is the single visual tic that makes a tool look grim and corporate.
   --state-considered: #64748b;
-  --state-considered-soft: #eceff1;
-  --state-considered-ink: #475569;
-  --state-committed: #1e6fd9;
-  --state-committed-soft: #e3f2fd;
-  --state-committed-ink: #1565c0;
-  --state-active: #2e7d32;
-  --state-active-soft: #e8f5e9;
-  --state-active-ink: #2e7d32;
-  --state-dephase: #a1887f;
-  --state-dephase-soft: #efebe9;
-  --state-dephase-ink: #6d4c41;
+  --state-considered-soft: #64748b1f;
+  --state-considered-ink: #4a5768;
+  --state-committed: #2e5bff;
+  --state-committed-soft: #2e5bff1f;
+  --state-committed-ink: #1e45d8;
+  --state-active: #12b76a;
+  --state-active-soft: #12b76a1f;
+  --state-active-ink: #0b8a4f;
+  --state-vnext: #7c4dff;
+  --state-vnext-soft: #7c4dff1f;
+  --state-vnext-ink: #6a38f5;
+  --state-dephase: #b4841f;
+  --state-dephase-soft: #b4841f1f;
+  --state-dephase-ink: #8e6716;
 
   // --- Activity-type accents ------------------------------------------------------------------------------------
-  --activity-build: #3949ab;
-  --activity-build-soft: #c5cae9;
-  --activity-build-bg: #e8eaf6;
-  --activity-build-ink: #283593;
+  // These are the timeline's block colours as well as the chips', so they carry text on both a light and a dark
+  // canvas: `-soft` is the planned ghost behind an actual, `-bg`/`-ink` are the chip pair.
+  --activity-build: #4b5bd7;
+  --activity-build-soft: #c9d3f5;
+  --activity-build-bg: #4b5bd71f;
+  --activity-build-ink: #3b49b8;
 
-  --activity-run: #00796b;
-  --activity-run-soft: #b2dfdb;
-  --activity-run-bg: #e0f2f1;
-  --activity-run-ink: #00695c;
+  --activity-run: #0e9f9f;
+  --activity-run-soft: #bce7e7;
+  --activity-run-bg: #0e9f9f1f;
+  --activity-run-ink: #0b8484;
 
-  --activity-qol: #43a047;
-  --activity-qol-soft: #c8e6c9;
-  --activity-qol-bg: #e8f5e9;
-  --activity-qol-ink: #2e7d32;
+  --activity-qol: #12b76a;
+  --activity-qol-soft: #bfebd3;
+  --activity-qol-bg: #12b76a1f;
+  --activity-qol-ink: #0b8a4f;
 
-  --activity-leave: #ef6c00;
-  --activity-leave-soft: #ffe0b2;
-  --activity-leave-bg: #fff3e0;
-  --activity-leave-ink: #e65100;
+  // "Recrutement / Admin" on the canvas. Kept under the v1 name because every chip, legend and lane in the
+  // application already asks for it by that name.
+  --activity-admin: #7c4dff;
+  --activity-admin-soft: #d8cbff;
+  --activity-admin-bg: #7c4dff1f;
+  --activity-admin-ink: #6a38f5;
 
-  --activity-training: #8e24aa;
-  --activity-training-soft: #e1bee7;
-  --activity-training-bg: #f3e5f5;
-  --activity-training-ink: #6a1b9a;
+  --activity-leave: #f79009;
+  --activity-leave-soft: #ffdcae;
+  --activity-leave-bg: #f790091f;
+  --activity-leave-ink: #b96a05;
+
+  --activity-training: #7c4dff;
+  --activity-training-soft: #d8cbff;
+  --activity-training-bg: #7c4dff1f;
+  --activity-training-ink: #6a38f5;
 
   // --- Semantic -------------------------------------------------------------------------------------------------
-  --warning: #ef6c00;
-  --warning-soft: #fff3e0;
-  --danger: #c62828;
-  --danger-hover: #a91f1f;
-  --danger-soft: #fff5f5;
-  --danger-border: #ef9a9a;
-  --success: #2e7d32;
+  --warning: #f79009;
+  --warning-soft: #f790091f;
+  --warning-ink: #b96a05;
+  --danger: #d92d20;
+  --danger-hover: #b42318;
+  --danger-soft: #d92d201f;
+  --danger-ink: #b42318;
+  --danger-border: #f5b5b0;
+  --success: #12b76a;
+  --success-ink: #0b8a4f;
 
-  --kudo: #ffb300;
-  --kudo-ink: #b28900;
-  --kudo-soft: #fffdf5;
-  --kudo-border: #ffe082;
+  --kudo: #f79009;
+  --kudo-ink: #b96a05;
+  --kudo-soft: #f790091f;
+  --kudo-border: #ffdcae;
 
   // --- Calendar events (S7) -------------------------------------------------------------------------------------
   // Backdrops, not foregrounds: these paint whole board columns behind the work drawn on them, so they have to
   // stay quiet enough to read through. Severity is three levels because it maps onto three colours and nothing
   // else — a scale finer than the eye can tell apart only invites arguments about whether an audit is a 3 or a 4.
-  --event-meeting: #eceff1;
-  --event-info: #e3f2fd;
-  --event-warning: #fff3e0;
-  --event-critical: #ffebee;
+  --event-meeting: #eef2f8;
+  --event-info: #eaf0ff;
+  --event-warning: #fff5e8;
+  --event-critical: #fdeceb;
 
   // --- Typography -----------------------------------------------------------------------------------------------
-  --font-sans: 'Roboto', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  // Public Sans, self-hosted like Roboto was: this deploys onto a plain Docker host with no guarantee of reaching
+  // fonts.googleapis.com, and a design that falls back to Arial on the target box is not the design.
+  --font-sans: 'Public Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-mono: 'Roboto Mono', 'Cascadia Mono', ui-monospace, monospace;
 
-  --text-2xs: 10px;
-  --text-xs: 11px;
-  --text-sm: 12px;
-  --text-base: 13px;
-  --text-md: 14px;
-  --text-lg: 16px;
-  --text-xl: 20px;
+  // The whole ramp moved up. `--text-base` is the 16px §4 mandates; `sm`/`xs` are its 14/12; `2xs` survives at
+  // 11px for the two places that genuinely need a caption under a caption, and is never body text.
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-md: 18px;
+  --text-lg: 20px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+
+  --line-height: 1.5;
+
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
 
   // --- Space, radius, elevation ---------------------------------------------------------------------------------
-  // An 8px grid with 4px half-steps. Enterprise density: this screen is looked at for eight hours a day, so the
-  // steps below 8 exist and get used.
+  // An 8px grid with 4px half-steps. `--space-1` is for icon gaps and nothing else (§4).
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -126,26 +171,53 @@
   --space-8: 32px;
   --space-10: 40px;
 
-  --radius-control: 4px;
-  --radius-card: 6px;
+  --radius-control: 10px;
+  --radius-card: 14px;
+  --radius-sm: 6px;
   --radius-pill: 999px;
 
-  --control-height: 34px;
-  --control-height-sm: 30px;
-  --control-height-xs: 24px;
+  --control-height: 44px;
+  --control-height-sm: 36px;
+  --control-height-xs: 32px;
 
-  --shadow-raised: 0 1px 2px rgb(0 0 0 / 18%);
-  --shadow-card: 0 1px 3px rgb(0 0 0 / 8%);
-  --shadow-menu: 0 6px 18px rgb(0 0 0 / 16%);
-  --shadow-modal: 0 16px 48px rgb(0 0 0 / 32%);
+  // Primary list and board rows. Focus mode tightens this — and only this — see the density contract below.
+  --row-h: 56px;
+
+  --shadow-raised: 0 1px 3px rgb(16 24 40 / 8%);
+  --shadow-card: 0 1px 3px rgb(16 24 40 / 8%);
+  --shadow-menu: 0 12px 32px rgb(16 24 40 / 18%);
+  --shadow-modal: 0 24px 64px rgb(16 24 40 / 35%);
+  --shadow-frame: 0 8px 28px rgb(16 24 40 / 12%);
 
   // --- Layout ---------------------------------------------------------------------------------------------------
-  --rail-width-expanded: 240px;
-  --rail-width-collapsed: 64px;
-  --topbar-height: 52px;
+  --rail-width-expanded: 248px;
+  --rail-width-collapsed: 76px;
+  --topbar-height: 68px;
   --side-rail-width: 290px;
+  --page-max: 1440px;
 
   --transition-fast: 0.18s ease;
+
+  // --- Aliases --------------------------------------------------------------------------------------------------
+  // Names a handful of screens reach for that were never defined — `var(--ink-muted)` resolves to nothing and the
+  // declaration is dropped, which is why they looked *nearly* right and nobody chased it. Found while auditing
+  // every token reference for this retheme; defined here rather than corrected in seven components, because a
+  // retheme is exactly the wrong moment to also be editing the screens you are trying to compare before and after.
+  --ink-1: var(--ink);
+  --ink-muted: var(--ink-2);
+  --surface-1: var(--surface);
+  --radius-md: var(--radius-card);
+}
+
+// =================================================================================================================
+// Focus mode — the density contract from §4.
+//
+// "Focus is about *fewer things*, not *smaller things*." The rows tighten from 56 to 48; the controls do not move,
+// because a stripped-down screen with shrunken buttons reproduces exactly the problem Focus mode exists to fix.
+// Everything else about Focus mode is which elements render at all, which is a template question, not a token one.
+// =================================================================================================================
+:root[data-focus='on'] {
+  --row-h: 48px;
 }
 
 // =================================================================================================================
@@ -153,64 +225,113 @@
 //
 // Applied by an attribute on <html> rather than by prefers-color-scheme alone, because the choice is a per-user
 // preference stored in the profile — the design's top bar has an explicit toggle, so the OS is at most a default.
+//
+// The ramp is the canvas's own DARK map. Note that `--primary` stays the same blue in both themes: it is the one
+// colour the design deliberately does not invert, so a primary button is recognisably the same object either way.
 // =================================================================================================================
 :root[data-theme='dark'] {
-  --bg: #15181e;
-  --surface: #1c2028;
-  --surface-2: #232833;
-  --line: #2c323d;
-  --line-2: #3a4250;
-  --ink: #e6e9ee;
-  --ink-2: #a3adbb;
-  --ink-3: #78828f;
+  --bg: #0e1320;
+  --surface: #151b2b;
+  --surface-2: #1b2233;
+  --line: #263048;
+  --line-2: #33405e;
+  --ink: #e7ecf5;
+  --ink-2: #97a4bc;
+  --ink-3: #7a88a3;
 
-  --primary: #7986cb;
-  --primary-hover: #9fa8da;
-  --primary-soft: #2a3050;
-  --primary-border: #3d4370;
-  --primary-ink: #c5cae9;
+  --primary-hover: #4570ff;
+  --primary-soft: #1c2645;
+  --primary-border: #35447a;
+  --primary-ink: #8ea6ff;
 
-  --rail-bg: #11141a;
-  --rail-ink: #aab3c0;
-  --rail-ink-muted: #78828f;
+  --rail-bg: #080c16;
+  --rail-ink: #b6c2d9;
+  --rail-ink-muted: #8797b4;
 
-  // Soft fills carry text on top of them, so in dark they become dim backdrops rather than pale washes — the
-  // hue is kept, the luminance is inverted.
-  --state-considered-soft: #2a3038;
-  --state-considered-ink: #b0bec5;
-  --state-committed-soft: #16304d;
-  --state-committed-ink: #90caf9;
-  --state-active-soft: #1b3a1f;
-  --state-active-ink: #a5d6a7;
-  --state-dephase-soft: #322a26;
-  --state-dephase-ink: #bcaaa4;
+  --neutral-50: #1b2233;
+  --neutral-100: #222b41;
+  --neutral-200: #263048;
+  --neutral-300: #33405e;
+  --neutral-400: #7a88a3;
+  --neutral-600: #97a4bc;
+  --neutral-800: #cbd4e4;
+  --neutral-900: #e7ecf5;
 
-  --activity-build-bg: #23294a;
-  --activity-build-ink: #c5cae9;
-  --activity-run-bg: #12332f;
-  --activity-run-ink: #80cbc4;
-  --activity-qol-bg: #1b3a1f;
-  --activity-qol-ink: #a5d6a7;
-  --activity-leave-bg: #3a2a16;
-  --activity-leave-ink: #ffcc80;
-  --activity-training-bg: #331f3a;
-  --activity-training-ink: #ce93d8;
+  // Semantic hues keep their identity and gain luminance: a 12%-alpha tint over a near-black page is nearly
+  // invisible, so the soft fills go to 20% and the ink goes to the light end of each hue rather than the dark.
+  --state-considered: #94a3b8;
+  --state-considered-soft: #94a3b833;
+  --state-considered-ink: #cbd5e1;
+  --state-committed-soft: #2e5bff33;
+  --state-committed-ink: #8ea6ff;
+  --state-active: #3ddc93;
+  --state-active-soft: #12b76a33;
+  --state-active-ink: #3ddc93;
+  --state-vnext: #a98bff;
+  --state-vnext-soft: #7c4dff33;
+  --state-vnext-ink: #a98bff;
+  --state-dephase: #d9ab52;
+  --state-dephase-soft: #b4841f33;
+  --state-dephase-ink: #d9ab52;
 
-  --warning-soft: #3a2a16;
-  --danger-soft: #3a1f1f;
+  // The timeline blocks. `-soft` is the planned ghost, which on a dark canvas has to be *darker* than the actual
+  // rather than paler — same reasoning, inverted: the ghost must recede, and on black, pale advances.
+  --activity-build: #6c8bff;
+  --activity-build-soft: #39456b;
+  --activity-build-bg: #6c8bff26;
+  --activity-build-ink: #6c8bff;
+
+  --activity-run: #2ecfcf;
+  --activity-run-soft: #1e4a4a;
+  --activity-run-bg: #2ecfcf26;
+  --activity-run-ink: #2ecfcf;
+
+  --activity-qol: #3ddc93;
+  --activity-qol-soft: #1c4534;
+  --activity-qol-bg: #3ddc9326;
+  --activity-qol-ink: #3ddc93;
+
+  --activity-admin: #a98bff;
+  --activity-admin-soft: #33265c;
+  --activity-admin-bg: #a98bff26;
+  --activity-admin-ink: #a98bff;
+
+  --activity-leave: #fdb022;
+  --activity-leave-soft: #4a3413;
+  --activity-leave-bg: #fdb02226;
+  --activity-leave-ink: #fdb022;
+
+  --activity-training: #a98bff;
+  --activity-training-soft: #33265c;
+  --activity-training-bg: #a98bff26;
+  --activity-training-ink: #a98bff;
+
+  --warning: #fdb022;
+  --warning-soft: #f7900933;
+  --warning-ink: #fdb022;
+  --danger: #ff6a5e;
+  --danger-hover: #ff8b81;
+  --danger-soft: #d92d2033;
+  --danger-ink: #ff9c94;
   --danger-border: #6d3030;
+  --success: #3ddc93;
+  --success-ink: #3ddc93;
 
-  --kudo-soft: #33291a;
-  --kudo-border: #6b5424;
+  --kudo: #fdb022;
+  --kudo-ink: #fdb022;
+  --kudo-soft: #f7900933;
+  --kudo-border: #4a3413;
 
   // Same reasoning as the soft state fills above: the hue is kept and the luminance inverted, so a patch party
   // still reads as amber against a dark canvas instead of blanking the column it sits on.
-  --event-meeting: #262b34;
-  --event-info: #16304d;
-  --event-warning: #3a2a16;
+  --event-meeting: #1b2233;
+  --event-info: #1c2645;
+  --event-warning: #33280f;
   --event-critical: #3a1f1f;
 
+  --shadow-raised: 0 1px 3px rgb(0 0 0 / 40%);
   --shadow-card: 0 1px 3px rgb(0 0 0 / 40%);
-  --shadow-menu: 0 6px 18px rgb(0 0 0 / 50%);
-  --shadow-modal: 0 16px 48px rgb(0 0 0 / 60%);
+  --shadow-menu: 0 12px 32px rgb(0 0 0 / 50%);
+  --shadow-modal: 0 24px 64px rgb(0 0 0 / 60%);
+  --shadow-frame: 0 8px 28px rgb(0 0 0 / 24%);
 }

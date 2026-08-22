@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Mediator;
+﻿using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Web.Authorization;
 using Cracra.Modules.Scheduling.Application;
 using Cracra.Modules.Scheduling.Contracts;
@@ -285,6 +285,87 @@ public sealed class DeleteShiftEndpoint(ISender sender) : EndpointWithoutRequest
     public override async Task HandleAsync(CancellationToken ct)
     {
         await sender.Send(new DeleteShiftCommand(Route<Guid>("id")), ct);
+
+        await Send.NoContentAsync(ct);
+    }
+}
+
+public sealed class PlanTaskRequest
+{
+    public Guid PersonId { get; set; }
+
+    /// <summary>project-build or project-run, or any subtype a department has added beneath them.</summary>
+    public string ActivityTypeCode { get; set; } = string.Empty;
+
+    public Guid? ProjectId { get; set; }
+
+    public DateTimeOffset Start { get; set; }
+
+    public DateTimeOffset End { get; set; }
+
+    /// <summary>The short description the popup asks for. Stored as the entry's note.</summary>
+    public string? Note { get; set; }
+
+    /// <summary>0-100. Omitted leaves the board deriving progress from plan versus actual.</summary>
+    public int? PercentComplete { get; set; }
+}
+
+public sealed record TaskPlannedResponse(Guid Id);
+
+/// <summary>
+/// 6c: the popup behind a click on empty canvas.
+/// </summary>
+/// <remarks>
+/// Authenticated rather than DeliveryLead, on the same reasoning as the reschedule below: planning your own week
+/// on your own board is ordinary, and RLS already refuses the rows that belong to somebody else.
+/// </remarks>
+public sealed class PlanTaskEndpoint(ISender sender) : Endpoint<PlanTaskRequest, TaskPlannedResponse>
+{
+    public override void Configure()
+    {
+        Post("/scheduling/tasks");
+        Policies(CracraPolicies.Authenticated);
+        Description(builder => builder.WithTags("Scheduling")
+            .WithSummary("Draw a planned task on the timeline."));
+    }
+
+    public override async Task HandleAsync(PlanTaskRequest request, CancellationToken ct)
+    {
+        var id = await sender.Send(
+            new PlanTaskCommand(
+                request.PersonId,
+                request.ActivityTypeCode,
+                request.ProjectId,
+                request.Start,
+                request.End,
+                request.Note,
+                request.PercentComplete),
+            ct);
+
+        await Send.ResponseAsync(new TaskPlannedResponse(id), StatusCodes.Status201Created, ct);
+    }
+}
+
+public sealed class SetTaskProgressRequest
+{
+    public Guid Id { get; set; }
+
+    public int? PercentComplete { get; set; }
+}
+
+/// <summary>6c: the progress handle, dragged.</summary>
+public sealed class SetTaskProgressEndpoint(ISender sender) : Endpoint<SetTaskProgressRequest>
+{
+    public override void Configure()
+    {
+        Put("/scheduling/tasks/{id}/progress");
+        Policies(CracraPolicies.Authenticated);
+        Description(builder => builder.WithTags("Scheduling").WithSummary("Set how far along a planned task is."));
+    }
+
+    public override async Task HandleAsync(SetTaskProgressRequest request, CancellationToken ct)
+    {
+        await sender.Send(new SetTaskProgressCommand(request.Id, request.PercentComplete), ct);
 
         await Send.NoContentAsync(ct);
     }

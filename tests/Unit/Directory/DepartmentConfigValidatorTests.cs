@@ -70,6 +70,92 @@ public sealed class DepartmentConfigValidatorTests
             () => DepartmentConfigValidator.Validate(Valid() with { DefaultBoardLayout = "  " }));
     }
 
+    [Fact]
+    public void Accepts_an_empty_working_day_as_meaning_the_defaults()
+    {
+        // The value every row holds before a department configures one, and the value the migration backfilled.
+        // If this threw, no existing configuration could be saved again without editing a field nobody set.
+        Should.NotThrow(() => DepartmentConfigValidator.Validate(Valid() with { WorkingDayJson = "{}" }));
+    }
+
+    [Fact]
+    public void Accepts_a_working_day_that_is_configured_end_to_end()
+    {
+        Should.NotThrow(() => DepartmentConfigValidator.Validate(Valid() with { WorkingDayJson = WorkingDay() }));
+    }
+
+    [Fact]
+    public void Rejects_a_session_that_ends_before_it_starts()
+    {
+        var exception = Should.Throw<DomainRuleViolationException>(
+            () => DepartmentConfigValidator.Validate(Valid() with
+            {
+                WorkingDayJson = WorkingDay(afternoonStart: "18:00", afternoonEnd: "14:00"),
+            }));
+
+        exception.Message.ShouldContain("afternoon");
+    }
+
+    [Fact]
+    public void Rejects_a_session_that_falls_outside_the_working_day()
+    {
+        // The rule that matters most: S5 ignores an incoherent day and falls back to the platform default, so a
+        // configuration accepted here would save cleanly and then quietly do nothing.
+        Should.Throw<DomainRuleViolationException>(
+            () => DepartmentConfigValidator.Validate(Valid() with
+            {
+                WorkingDayJson = WorkingDay(dayEnd: "17:00"),
+            }));
+    }
+
+    [Fact]
+    public void Rejects_a_morning_that_overlaps_the_afternoon()
+    {
+        Should.Throw<DomainRuleViolationException>(
+            () => DepartmentConfigValidator.Validate(Valid() with
+            {
+                WorkingDayJson = WorkingDay(morningEnd: "15:00"),
+            }));
+    }
+
+    [Fact]
+    public void Rejects_a_working_day_missing_a_session()
+    {
+        Should.Throw<DomainRuleViolationException>(
+            () => DepartmentConfigValidator.Validate(Valid() with
+            {
+                WorkingDayJson = """{"dayStart":"06:00","dayEnd":"20:00"}""",
+            }));
+    }
+
+    [Fact]
+    public void Rejects_a_time_that_is_not_a_time()
+    {
+        var exception = Should.Throw<DomainRuleViolationException>(
+            () => DepartmentConfigValidator.Validate(Valid() with
+            {
+                WorkingDayJson = WorkingDay(dayStart: "morning"),
+            }));
+
+        exception.Message.ShouldContain("dayStart");
+    }
+
+    private static string WorkingDay(
+        string dayStart = "06:00",
+        string dayEnd = "20:00",
+        string morningStart = "09:00",
+        string morningEnd = "13:00",
+        string afternoonStart = "14:00",
+        string afternoonEnd = "18:00") =>
+        $$"""
+        {
+          "dayStart": "{{dayStart}}",
+          "dayEnd": "{{dayEnd}}",
+          "morning": { "start": "{{morningStart}}", "end": "{{morningEnd}}" },
+          "afternoon": { "start": "{{afternoonStart}}", "end": "{{afternoonEnd}}" }
+        }
+        """;
+
     private static UpdateDepartmentConfigRequest Valid() => new(
         ActivityTaxonomyJson: """{"build":{"labelKey":"activity.build"},"run":{"labelKey":"activity.run"}}""",
         RoleLabelsJson: """{"dev":{"fr":"Développeur","en":"Developer","es":"Desarrollador"}}""",

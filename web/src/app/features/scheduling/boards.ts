@@ -9,8 +9,11 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { PreferencesStore } from '../../core/preferences/preferences.store';
+import { fromWallClock, zonedDay } from '../../core/time/zoned';
 import {
   BoardType,
+  PlanTaskRequest,
   SchedulingStore,
   ShiftTemplate,
   WorkOrderView,
@@ -18,9 +21,16 @@ import {
 import { SessionStore } from '../../core/session/session.store';
 import { DirectoryStore } from '../../core/directory/directory.store';
 import { ProjectsStore } from '../../core/projects/projects.store';
+import { ActivitiesStore } from '../../core/activities/activities.store';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
-import { BoardTimeline, TimelineMove } from '../../shared/timeline/board-timeline/board-timeline';
+import {
+  BoardTimeline,
+  TimelineCreate,
+  TimelineMove,
+  TimelineProgress,
+} from '../../shared/timeline/board-timeline/board-timeline';
 import { KudosMonthly } from '../kudos/kudos-monthly';
+import { TaskCandidate, TaskPopup, TaskSeed } from './task-popup';
 
 /**
  * The board switcher, and the three archetypes around the shared timeline.
@@ -32,12 +42,16 @@ import { KudosMonthly } from '../kudos/kudos-monthly';
 @Component({
   selector: 'app-boards',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, FormsModule, PageHeader, BoardTimeline, KudosMonthly],
+  imports: [TranslocoDirective, FormsModule, PageHeader, BoardTimeline, KudosMonthly, TaskPopup],
   templateUrl: './boards.html',
   styleUrl: './boards.scss',
 })
 export class Boards {
   protected readonly scheduling = inject(SchedulingStore);
+  // Only for the working day, which is department policy rather than board state: the axis this canvas draws has
+  // to be the same one the personal board draws, or the same hour would sit in two places.
+  protected readonly activities = inject(ActivitiesStore);
+  private readonly preferences = inject(PreferencesStore);
   protected readonly session = inject(SessionStore);
   protected readonly directory = inject(DirectoryStore);
   protected readonly projects = inject(ProjectsStore);
@@ -57,10 +71,26 @@ export class Boards {
   /** The pool card the user picked up. 6a assigns by picking a card, then a person. */
   protected readonly heldOrder = signal<WorkOrderView | null>(null);
 
+  /**
+   * The click on empty canvas, held while the popup asks what it means.
+   *
+   * Null closes the popup, which is also what a successful save sets it to — one signal rather than a separate
+   * open flag, so the two can never disagree about whether the dialog is up.
+   */
+  protected readonly pendingTask = signal<TaskSeed | null>(null);
+
+  /** Rows a task can be planned onto, for the case where the click landed on a header rather than a person. */
+  protected readonly taskCandidates = computed<readonly TaskCandidate[]>(() =>
+    this.scheduling
+      .resources()
+      .filter((row) => row.kind === 'person')
+      .map((row) => ({ id: row.id, name: row.name })),
+  );
+
   protected readonly templates = signal<readonly ShiftTemplate[]>([]);
   protected readonly rosterPerson = signal('');
   protected readonly rosterTemplate = signal('');
-  protected readonly rosterDay = signal(new Date().toISOString().slice(0, 10));
+  protected readonly rosterDay = signal(zonedDay(new Date(), this.preferences.timeZone()));
 
   /**
    * The boards offered.
@@ -167,6 +197,7 @@ export class Boards {
   protected select(board: BoardType): void {
     this.error.set(null);
     this.heldOrder.set(null);
+    this.pendingTask.set(null);
     this.scheduling.show(board);
   }
 
@@ -183,8 +214,12 @@ export class Boards {
       return;
     }
 
-    const start = new Date(this.scheduling.week().monday);
-    start.setHours(9, 0, 0, 0);
+    // Monday at 09:00 on the assigner's own clock, not the browser's — the same reading everyone looking at this
+    // board would give the slot they just dropped a work order into.
+    const monday = new Date(this.scheduling.week().monday);
+    monday.setHours(9, 0, 0, 0);
+
+    const start = fromWallClock(monday, this.preferences.timeZone());
 
     await this.run(async () => {
       await this.scheduling.assign(order.id, personId, start);
@@ -206,9 +241,64 @@ export class Boards {
     await this.run(() => this.scheduling.refreshPool(unitId).then(() => undefined));
   }
 
+  /**
+   * 6c: a click, or a sweep, on empty canvas.
+   *
+   * The row id is decoded rather than passed through, because a project line's id is a person and a project glued
+   * together — which means a click on that line has already answered two of the popup's questions and should not
+   * ask them again.
+   */
+  protected onCreate(request: TimelineCreate): void {
+    const row = this.scheduling
+      .resources()
+      .find((candidate) => candidate.id === request.resourceId);
+    const [rowPersonId, rowProjectId] = request.resourceId.split(':');
+    const me = this.directory.me();
+
+    // Three row shapes reach here, and each answers a different amount of the form. A person row names who; a
+    // project line names who and against what; a lane on the personal board names the caller and which bucket.
+    const person =
+      row?.kind === 'person'
+        ? { id: row.id, name: row.name }
+        : row?.kind === 'project-line'
+          ? { id: rowPersonId, name: this.personName(rowPersonId) }
+          : row?.kind === 'lane' && me
+            ? { id: me.personId, name: me.displayName }
+            : null;
+
+    this.error.set(null);
+    this.pendingTask.set({
+      personId: person?.id ?? null,
+      personName: person?.name ?? null,
+      projectId: row?.kind === 'project-line' ? (rowProjectId ?? null) : null,
+      nature: row?.kind === 'lane' ? natureOf(row.id) : null,
+      start: request.start,
+      end: request.end,
+    });
+  }
+
+  protected async createTask(request: PlanTaskRequest): Promise<void> {
+    await this.run(async () => {
+      await this.scheduling.planTask(request);
+      // Only on success. A refusal leaves the popup open on what the user typed, because retyping four fields to
+      // find out the second refusal is the same as the first is how people stop using a dialog.
+      this.pendingTask.set(null);
+    });
+  }
+
+  /** 6c: the progress handle, released. */
+  protected async onProgressed(change: TimelineProgress): Promise<void> {
+    await this.run(() => this.scheduling.setTaskProgress(change.eventId, change.percentComplete));
+  }
+
   /** 6c: a block dragged on the canvas. The server refuses anything that is not a planned slot. */
   protected async onMoved(move: TimelineMove): Promise<void> {
     await this.run(() => this.scheduling.rescheduleTask(move.eventId, move.start, move.end));
+  }
+
+  /** A person row's name, for the popup's header. Falls back to nothing rather than to an id. */
+  private personName(personId: string): string | null {
+    return this.scheduling.resources().find((row) => row.id === personId)?.name ?? null;
   }
 
   private async loadTemplates(): Promise<void> {
@@ -249,6 +339,20 @@ export class Boards {
       this.busy.set(false);
     }
   }
+}
+
+/**
+ * The BUILD or RUN answer a lane already carries.
+ *
+ * Only the two canonical buckets, and their subtypes by prefix. A quality-of-life lane maps to neither, and
+ * guessing BUILD for it would put non-project hours against a project the moment the user pressed save.
+ */
+function natureOf(laneCode: string): 'build' | 'run' | null {
+  return laneCode.startsWith('project-build')
+    ? 'build'
+    : laneCode.startsWith('project-run')
+      ? 'run'
+      : null;
 }
 
 function format(date: Date): string {

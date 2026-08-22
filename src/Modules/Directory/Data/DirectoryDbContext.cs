@@ -96,6 +96,11 @@ internal sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(person => person.TimeZone).HasMaxLength(64).IsRequired();
         builder.Property(person => person.UiLanguage).HasMaxLength(8).IsRequired();
 
+        // Nullable on purpose: null is "never chosen", which is what lets the synced values above act as seeds.
+        builder.Property(person => person.PreferredLanguage).HasMaxLength(8);
+        builder.Property(person => person.PreferredTimeZone).HasMaxLength(64);
+        builder.Property(person => person.PreferredTheme).HasMaxLength(16);
+
         builder.HasIndex(person => person.LdapUid).IsUnique();
         builder.HasIndex(person => person.PrimaryUnitId);
         builder.HasIndex(person => person.PrimaryDepartmentId);
@@ -168,6 +173,7 @@ internal sealed class DepartmentConfigConfiguration : IEntityTypeConfiguration<D
         // jsonb rather than text: these are queried (S5 reads the taxonomy) and Postgres can index into jsonb.
         builder.Property(config => config.ActivityTaxonomyJson).HasColumnType("jsonb").IsRequired();
         builder.Property(config => config.ShiftTemplatesJson).HasColumnType("jsonb").IsRequired();
+        builder.Property(config => config.WorkingDayJson).HasColumnType("jsonb").IsRequired();
         builder.Property(config => config.RoleLabelsJson).HasColumnType("jsonb").IsRequired();
         builder.Property(config => config.KudoRulesJson).HasColumnType("jsonb").IsRequired();
         builder.Property(config => config.IterationPresetsJson).HasColumnType("jsonb").IsRequired();

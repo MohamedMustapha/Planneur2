@@ -14,32 +14,77 @@ import pathlib
 REALM = "cracra"
 
 # --- The seed organisation -------------------------------------------------------------------------------------
-# Two departments, two units each — the exact shape conventions.md §6 requires the RLS matrix test to assert against.
+# Three departments. DSI is the IT directorate the product is built around: a director and a deputy director above
+# five unit heads, one per unit. Communication sits beside it as a peer directorate — same level, different trade —
+# which is what gives the cross-department rules something real to be visible on. DAF stays as it was, because the
+# RLS matrix test and the Playwright suite both assert against Sofia and Laurent by id.
 
 DEPARTMENTS = {
     "dsi": ("11111111-1111-1111-1111-111111111111", "Direction des Systèmes d'Information"),
     "daf": ("22222222-2222-2222-2222-222222222222", "Direction Financière"),
+    "comm": ("33333333-3333-3333-3333-333333333333", "Direction de la Communication"),
 }
 
+# (id, display name, owning department, unit kind)
+#
+# The two DSI unit ids are the originals: `infra` became `ops` and `etudes` became `dev`, renamed rather than
+# replaced so every id SeedOrganisation and the E2E suite hold onto still resolves to the same unit.
 UNITS = {
-    "infra": ("aaaaaaaa-0000-0000-0000-000000000001", "Infrastructure & Réseaux", "dsi"),
-    "etudes": ("aaaaaaaa-0000-0000-0000-000000000002", "Études & Développement", "dsi"),
-    "compta": ("bbbbbbbb-0000-0000-0000-000000000001", "Comptabilité", "daf"),
-    "controle": ("bbbbbbbb-0000-0000-0000-000000000002", "Contrôle de gestion", "daf"),
+    "ops": ("aaaaaaaa-0000-0000-0000-000000000001", "Exploitation & Production", "dsi", "Run"),
+    "dev": ("aaaaaaaa-0000-0000-0000-000000000002", "Études & Développement", "dsi", "Delivery"),
+    "secu": ("aaaaaaaa-0000-0000-0000-000000000003", "Sécurité & Conformité", "dsi", "Support"),
+    "helpdesk": ("aaaaaaaa-0000-0000-0000-000000000004", "Support & Assistance", "dsi", "Support"),
+    "transfo": ("aaaaaaaa-0000-0000-0000-000000000005", "Transformation Digitale", "dsi", "Admin"),
+    "compta": ("bbbbbbbb-0000-0000-0000-000000000001", "Comptabilité", "daf", "Admin"),
+    "controle": ("bbbbbbbb-0000-0000-0000-000000000002", "Contrôle de gestion", "daf", "Admin"),
+    "design": ("cccccccc-0000-0000-0000-000000000001", "Studio Design & Contenus", "comm", "Delivery"),
 }
 
 # (id, username, first, last, unit, functional role, contextual roles)
+#
+# The hierarchy is expressed in two columns at once, and deliberately so. The functional role is the job title the
+# org chart draws — `directeur` above `directeur-adjoint` above `chef-de-pole` — while the contextual role is what
+# the person may see. A directorate's deputy holds dept-head because that is genuinely their scope; a unit head
+# holds unit-head and no more. Conflating the two would make every promotion an access-control change.
 PEOPLE = [
-    ("c0000000-0000-0000-0000-000000000001", "camille.villeneuve", "Camille", "Villeneuve", "infra", "architecte", ["member"]),
-    ("c0000000-0000-0000-0000-000000000002", "mehdi.sadaoui", "Mehdi", "Sadaoui", "infra", "dev", ["member"]),
-    ("c0000000-0000-0000-0000-000000000003", "anais.lefevre", "Anaïs", "Lefèvre", "infra", "dev", ["member"]),
-    ("c0000000-0000-0000-0000-000000000004", "thomas.berthier", "Thomas", "Berthier", "infra", "tech-lead", ["member", "unit-head"]),
-    ("c0000000-0000-0000-0000-000000000005", "julie.ondracek", "Julie", "Ondracek", "etudes", "dev", ["member"]),
-    ("c0000000-0000-0000-0000-000000000006", "olivier.marchand", "Olivier", "Marchand", "etudes", "chef-de-pole", ["member", "dept-head"]),
-    ("c0000000-0000-0000-0000-000000000007", "sofia.navarro", "Sofia", "Navarro", "compta", "comptable", ["member"]),
+    # --- DSI: the directorate ------------------------------------------------------------------------------------
+    ("c0000000-0000-0000-0000-000000000006", "olivier.marchand", "Olivier", "Marchand", "dev", "directeur", ["member", "dept-head"]),
+    ("c0000000-0000-0000-0000-00000000000b", "helene.vasseur", "Hélène", "Vasseur", "transfo", "directeur-adjoint", ["member", "dept-head"]),
+
+    # --- DSI / Exploitation & Production (Ops) -------------------------------------------------------------------
+    ("c0000000-0000-0000-0000-000000000004", "thomas.berthier", "Thomas", "Berthier", "ops", "chef-de-pole", ["member", "unit-head"]),
+    ("c0000000-0000-0000-0000-000000000001", "camille.villeneuve", "Camille", "Villeneuve", "ops", "architecte", ["member"]),
+    ("c0000000-0000-0000-0000-000000000002", "mehdi.sadaoui", "Mehdi", "Sadaoui", "ops", "ops", ["member"]),
+    ("c0000000-0000-0000-0000-000000000003", "anais.lefevre", "Anaïs", "Lefèvre", "ops", "ops", ["member"]),
+    ("c0000000-0000-0000-0000-000000000014", "tarek.amrani", "Tarek", "Amrani", "ops", "ops", ["member"]),
+
+    # --- DSI / Études & Développement (Dev) ----------------------------------------------------------------------
+    ("c0000000-0000-0000-0000-00000000000c", "karim.benali", "Karim", "Benali", "dev", "chef-de-pole", ["member", "unit-head"]),
+    ("c0000000-0000-0000-0000-00000000000a", "pierre.dubois", "Pierre", "Dubois", "dev", "tech-lead", ["member", "project-lead"]),
+    ("c0000000-0000-0000-0000-000000000005", "julie.ondracek", "Julie", "Ondracek", "dev", "dev", ["member"]),
+    ("c0000000-0000-0000-0000-00000000000d", "lea.fontaine", "Léa", "Fontaine", "dev", "dev", ["member"]),
+
+    # --- DSI / Sécurité & Conformité (Secu) ----------------------------------------------------------------------
+    ("c0000000-0000-0000-0000-00000000000e", "marc.delaunay", "Marc", "Delaunay", "secu", "chef-de-pole", ["member", "unit-head"]),
+    ("c0000000-0000-0000-0000-00000000000f", "ines.bourgeois", "Inès", "Bourgeois", "secu", "rssi", ["member"]),
+
+    # --- DSI / Support & Assistance (Helpdesk) -------------------------------------------------------------------
+    ("c0000000-0000-0000-0000-000000000010", "yann.corbier", "Yann", "Corbier", "helpdesk", "chef-de-pole", ["member", "unit-head"]),
+    ("c0000000-0000-0000-0000-000000000011", "fatou.diallo", "Fatou", "Diallo", "helpdesk", "support", ["member"]),
+
+    # --- DSI / Transformation Digitale (PMO & PO) ----------------------------------------------------------------
+    ("c0000000-0000-0000-0000-000000000012", "sebastien.roy", "Sébastien", "Roy", "transfo", "chef-de-pole", ["member", "unit-head"]),
+    ("c0000000-0000-0000-0000-000000000009", "nadia.kessler", "Nadia", "Kessler", "transfo", "responsable-pmo", ["member", "pmo"]),
+    ("c0000000-0000-0000-0000-000000000013", "claire.moreau", "Claire", "Moreau", "transfo", "product-owner", ["member", "po"]),
+
+    # --- Communication -------------------------------------------------------------------------------------------
+    ("c0000000-0000-0000-0000-000000000015", "valerie.lombard", "Valérie", "Lombard", "design", "directeur", ["member", "dept-head"]),
+    ("c0000000-0000-0000-0000-000000000016", "hugo.petit", "Hugo", "Petit", "design", "designer", ["member"]),
+    ("c0000000-0000-0000-0000-000000000017", "amina.cherif", "Amina", "Cherif", "design", "designer", ["member"]),
+
+    # --- DAF -----------------------------------------------------------------------------------------------------
     ("c0000000-0000-0000-0000-000000000008", "laurent.bouchard", "Laurent", "Bouchard", "controle", "expert-comptable", ["member", "dept-head"]),
-    ("c0000000-0000-0000-0000-000000000009", "nadia.kessler", "Nadia", "Kessler", "etudes", "chef-de-pole", ["member", "pmo"]),
-    ("c0000000-0000-0000-0000-00000000000a", "pierre.dubois", "Pierre", "Dubois", "etudes", "tech-lead", ["member", "project-lead"]),
+    ("c0000000-0000-0000-0000-000000000007", "sofia.navarro", "Sofia", "Navarro", "compta", "comptable", ["member"]),
 ]
 
 # Every seeded account uses this. Development only — the realm is re-imported on every clean dev box.
@@ -94,7 +139,7 @@ CRACRA_MAPPERS = [
 def build():
     users = []
     for uid, username, first, last, unit_key, functional_role, contextual_roles in PEOPLE:
-        unit_id, _, dept_key = UNITS[unit_key]
+        unit_id, _, dept_key, _kind = UNITS[unit_key]
         dept_id, _ = DEPARTMENTS[dept_key]
 
         users.append({
@@ -133,12 +178,18 @@ def build():
     groups = []
     for dept_key, (dept_id, dept_name) in DEPARTMENTS.items():
         subgroups = []
-        for unit_key, (unit_id, unit_name, owner) in UNITS.items():
+        for unit_key, (unit_id, unit_name, owner, unit_kind) in UNITS.items():
             if owner == dept_key:
                 subgroups.append({
                     "name": unit_key,
                     "path": f"/{dept_key}/{unit_key}",
-                    "attributes": {"unit_id": [unit_id], "unit_name": [unit_name]},
+                    # unit_kind travels as a group attribute because it is a property of the unit, not of anyone
+                    # in it. Without it every unit imports as Delivery and a helpdesk reads as a delivery squad.
+                    "attributes": {
+                        "unit_id": [unit_id],
+                        "unit_name": [unit_name],
+                        "unit_kind": [unit_kind],
+                    },
                     "realmRoles": [],
                     "subGroups": [],
                 })

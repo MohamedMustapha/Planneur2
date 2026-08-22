@@ -8,7 +8,7 @@
   flex: none;
   gap: var(--space-3);
   height: var(--topbar-height);
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-5);
   border-bottom: 1px solid var(--line);
   background: var(--surface);
 }
@@ -21,22 +21,26 @@
   position: relative;
 }
 
+// Every control in the bar is a tinted well on the surface rather than a bordered box. Two dozen hairlines
+// across one 68px strip is the grim-toolbar look that v2 §04 is written against.
 .topbar__control {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--line-2);
+  gap: 10px;
+  flex: none;
+  height: var(--control-height);
+  padding: 0 14px;
+  border: none;
   border-radius: var(--radius-control);
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--ink);
-  font-size: var(--text-base);
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
   white-space: nowrap;
   cursor: pointer;
 
   &:hover:not(:disabled) {
-    background: var(--surface-2);
+    background: var(--primary-soft);
   }
 
   &:disabled {
@@ -44,65 +48,64 @@
   }
 }
 
+.topbar__dept {
+  min-width: 0;
+}
+
 .topbar__dept-name {
-  max-width: 260px;
+  max-width: 320px;
   overflow: hidden;
-  font-weight: 500;
+  font-weight: var(--weight-semibold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .topbar__caret {
-  color: var(--ink-3);
-  font-size: var(--text-2xs);
+  flex: none;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
 }
 
 .topbar__dept-menu {
-  top: 36px;
+  top: 52px;
   left: 0;
-  min-width: 230px;
+  width: 320px;
 }
 
 .topbar__dept-count {
-  color: var(--ink-3);
-  font-size: var(--text-xs);
+  color: var(--ink-2);
+  font-size: 13px;
 }
 
 // --- Week pager -------------------------------------------------------------------------------------------------
 .topbar__pager {
   display: flex;
   align-items: center;
+  flex: none;
   overflow: hidden;
-  height: 32px;
-  border: 1px solid var(--line-2);
+  height: var(--control-height);
   border-radius: var(--radius-control);
+  background: var(--surface-2);
 }
 
 .topbar__pager-step {
-  width: 30px;
-  height: 32px;
+  width: 40px;
+  height: var(--control-height);
   border: none;
   background: none;
   color: var(--ink-2);
+  font-size: var(--text-md);
   cursor: pointer;
 
-  &:first-child {
-    border-right: 1px solid var(--line);
-  }
-
-  &:last-child {
-    border-left: 1px solid var(--line);
-  }
-
   &:hover {
-    background: var(--surface-2);
+    background: var(--primary-soft);
   }
 }
 
 .topbar__pager-label {
   padding: 0 var(--space-3);
-  font-size: var(--text-base);
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
   white-space: nowrap;
 }
 
@@ -110,12 +113,11 @@
 .topbar__search {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 10px;
   flex: 1;
   max-width: 340px;
-  height: 32px;
-  padding: 0 10px;
-  border: 1px solid var(--line-2);
+  height: var(--control-height);
+  padding: 0 14px;
   border-radius: var(--radius-control);
   background: var(--surface-2);
   color: var(--ink-3);
@@ -140,32 +142,66 @@
 // --- Language ----------------------------------------------------------------------------------------------------
 .topbar__languages {
   display: flex;
+  flex: none;
   overflow: hidden;
-  height: var(--control-height-sm);
-  border: 1px solid var(--line-2);
+  height: var(--control-height);
   border-radius: var(--radius-control);
+  background: var(--surface-2);
 }
 
 .topbar__language {
-  padding: 0 10px;
+  padding: 0 var(--space-3);
   border: none;
-  background: var(--surface);
+  background: none;
   color: var(--ink-2);
-  font-size: var(--text-sm);
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
   cursor: pointer;
 
-  & + & {
-    border-left: 1px solid var(--line);
-  }
-
   &:hover {
-    background: var(--surface-2);
+    background: var(--primary-soft);
   }
 
   &.is-active {
     background: var(--primary);
     color: #fff;
-    font-weight: 500;
+  }
+}
+
+// --- Focus toggle ---------------------------------------------------------------------------------------------
+// Drawn in both states, and it changes fill rather than position when it flips: a control that moves when you
+// press it is a control you have to hunt for the second time.
+.topbar__focus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  height: var(--control-height);
+  padding: 0 18px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: var(--primary-soft);
+  color: var(--primary-ink);
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+
+  &.is-active {
+    background: var(--primary);
+    color: #fff;
+  }
+}
+
+.topbar__obligation {
+  flex: none;
+  border: none;
+  cursor: pointer;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    background: currentcolor;
   }
 }
 
@@ -174,31 +210,33 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  flex: none;
+  width: var(--control-height);
+  height: var(--control-height);
   padding: 0;
   border: none;
   border-radius: var(--radius-control);
-  background: none;
+  background: var(--surface-2);
   color: var(--ink-2);
+  font-size: var(--text-base);
   cursor: pointer;
 
   &:hover {
-    background: var(--surface-2);
+    background: var(--primary-soft);
   }
 }
 
 .topbar__bell {
   position: relative;
-  font-size: 15px;
+  font-size: var(--text-md);
 }
 
 .topbar__bell-dot {
   position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 7px;
-  height: 7px;
+  top: 9px;
+  right: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--danger);
 }
@@ -208,6 +246,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  flex: none;
   padding: 0 var(--space-1);
   border: none;
   background: none;
@@ -215,22 +254,52 @@
 }
 
 .topbar__user-menu {
-  top: 38px;
+  top: 56px;
   right: 0;
-  min-width: 220px;
+  // Wider than the department menu it shares a class with: a zone name like "America/Argentina/Buenos_Aires" is
+  // the widest string this shell renders anywhere, and a select that truncates it is a select you cannot read.
+  min-width: 280px;
+}
+
+.prefs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--space-1);
+}
+
+.prefs__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+
+  .select {
+    width: 100%;
+  }
+}
+
+.prefs__error {
+  margin: 0;
+  color: var(--danger-ink);
+  font-size: var(--text-sm);
 }
 
 .topbar__user-identity {
   display: flex;
   flex-direction: column;
-  padding: var(--space-2) 10px var(--space-3);
+  gap: 2px;
+  padding: var(--space-2) var(--space-3) var(--space-3);
   border-bottom: 1px solid var(--line);
   margin-bottom: var(--space-1);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
 
   span {
-    color: var(--ink-3);
-    font-size: var(--text-xs);
+    color: var(--ink-2);
+    font-size: var(--text-sm);
   }
 }
 

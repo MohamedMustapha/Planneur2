@@ -9,10 +9,14 @@
   z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  width: min(480px, calc(100vw - var(--space-4) * 2));
-  max-height: calc(100vh - var(--space-4) * 2);
-  padding: var(--space-4);
+  gap: var(--space-4);
+  // 620px, from the canvas's slot editor. The v1 480 was sized for 13px type; at 16px the two-up field rows in
+  // here wrap, and a form that wraps mid-row stops reading as rows.
+  width: min(620px, calc(100vw - var(--space-6) * 2));
+  max-height: calc(100vh - var(--space-6) * 2);
+  padding: var(--space-6);
+  border-radius: 16px;
+  box-shadow: var(--shadow-modal);
   overflow-y: auto;
   transform: translate(-50%, -50%);
 }
@@ -25,18 +29,17 @@
 
 .quick-add__title {
   margin: 0;
-  font-size: var(--text-base);
-  font-weight: 600;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
 }
 
 .quick-add__error {
   margin: 0;
-  padding: var(--space-2) var(--space-3);
-  color: var(--danger);
-  font-size: var(--text-xs);
+  padding: var(--space-3) var(--space-4);
+  color: var(--danger-ink);
+  font-size: var(--text-sm);
   background: var(--danger-soft);
-  border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
 }
 
 .quick-add__hint,
@@ -45,8 +48,8 @@
   align-items: center;
   gap: var(--space-2);
   margin: 0;
-  color: var(--ink-3);
-  font-size: var(--text-xs);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
 }
 
 .quick-add__pull {

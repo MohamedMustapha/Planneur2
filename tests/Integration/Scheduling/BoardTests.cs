@@ -28,7 +28,7 @@ public sealed class BoardTests(PostgresFixture postgres)
     private static readonly Guid DevRole = Guid.Parse("f0000000-0000-0000-0000-000000000001");
 
     [Fact]
-    public async Task My_board_has_a_lane_per_activity_bucket()
+    public async Task My_board_has_a_category_per_activity_bucket()
     {
         await using var factory = await SeededAsync();
 
@@ -40,10 +40,98 @@ public sealed class BoardTests(PostgresFixture postgres)
         board.Archetype.ShouldBe(BoardArchetypes.TaskProgress);
 
         // The canonical four are always there, so an empty week still renders as a board rather than as nothing.
-        board.Resources.Select(row => row.Id).ShouldContain("project-build");
-        board.Resources.ShouldAllBe(row => row.Kind == "lane");
+        var categories = board.Resources.Where(row => row.Kind == "category").ToList();
 
-        board.Events.ShouldHaveSingleItem().ResourceId.ShouldBe("quality-of-life");
+        categories.Select(row => row.Id).ShouldContain("project-build");
+        categories.ShouldAllBe(row => row.ParentId == null);
+
+        // Two levels since v2: the bucket is a heading, and the hours draw on a row beneath it. A flat bucket row
+        // answers the wrong question — "22 hours on BUILD" is a number nobody acts on.
+        board.Events.ShouldHaveSingleItem().ResourceId.ShouldBe("quality-of-life:quality-of-life");
+    }
+
+    [Fact]
+    public async Task A_project_bucket_opens_onto_the_projects_the_week_was_spent_on()
+    {
+        await using var factory = await SeededAsync();
+        var projectId = await CrossDepartmentProjectAsync(factory);
+
+        await LogAsync(factory, SeedOrganisation.Camille, "project-build", 3, projectId);
+
+        var board = await BoardAsync(factory, SeedOrganisation.Camille, "my");
+
+        var line = board.Resources.Single(row => row.Id == $"project-build:{projectId}");
+
+        // "14 on the SI rewrite, 8 on the HR portal" is the sentence the board exists to say, so BUILD and RUN
+        // open onto projects rather than onto subtypes.
+        line.Kind.ShouldBe("project-line");
+        line.ParentId.ShouldBe("project-build");
+        line.Name.ShouldBe("PRJ-BOARD");
+
+        // The code is the name and must not be run through the dictionary — a project code is not a key.
+        line.SubtitleKey.ShouldBeNull();
+
+        board.Events.ShouldHaveSingleItem().ResourceId.ShouldBe(line.Id);
+    }
+
+    [Fact]
+    public async Task A_non_project_bucket_opens_onto_the_types_the_week_actually_used()
+    {
+        await using var factory = await SeededAsync();
+
+        await ConfigureTaxonomyAsync(
+            factory,
+            """{"types":[{"code":"payroll-run","parent":"recruitment-admin","labelKey":"hr.payroll"}]}""");
+
+        await LogAsync(factory, SeedOrganisation.Camille, "payroll-run", 2);
+
+        var board = await BoardAsync(factory, SeedOrganisation.Camille, "my");
+
+        var lane = board.Resources.Single(row => row.Id == "recruitment-admin:payroll-run");
+
+        // A department subtype resolves through its parent, so the hours land under the canonical bucket rather
+        // than inventing a fifth one — and the row carries the department's own label.
+        lane.ParentId.ShouldBe("recruitment-admin");
+        lane.SubtitleKey.ShouldBe("hr.payroll");
+
+        board.Events.ShouldHaveSingleItem().ResourceId.ShouldBe(lane.Id);
+    }
+
+    [Fact]
+    public async Task An_empty_category_still_gets_a_row_to_click_on()
+    {
+        await using var factory = await SeededAsync();
+
+        // Nothing was booked to BUILD this week, so its category has no project to open onto.
+        await LogAsync(factory, SeedOrganisation.Camille, "quality-of-life", 3);
+
+        var board = await BoardAsync(factory, SeedOrganisation.Camille, "my");
+
+        var placeholder = board.Resources.Single(row => row.Id == "project-build:none");
+
+        // An empty category still gets one row, so the week reads as a board waiting for entries rather than as
+        // four headings over blank space — and so there is somewhere to click.
+        placeholder.Kind.ShouldBe("lane");
+        placeholder.ParentId.ShouldBe("project-build");
+    }
+
+    [Fact]
+    public async Task Every_event_lands_on_a_row_the_board_actually_emitted()
+    {
+        await using var factory = await SeededAsync();
+        var projectId = await CrossDepartmentProjectAsync(factory);
+
+        await LogAsync(factory, SeedOrganisation.Camille, "project-build", 3, projectId);
+        await LogAsync(factory, SeedOrganisation.Camille, "quality-of-life", 2,
+            start: MondayMorning.AddDays(1));
+
+        var board = await BoardAsync(factory, SeedOrganisation.Camille, "my");
+        var rows = board.Resources.Select(row => row.Id).ToHashSet(StringComparer.Ordinal);
+
+        // The failure this guards against is silent: Mobiscroll renders an event whose resource does not exist as
+        // nothing at all, and an hour somebody logged vanishing from their own board is this screen's worst bug.
+        board.Events.ShouldNotBeEmpty();
+        board.Events.ShouldAllBe(row => rows.Contains(row.ResourceId));
     }
 
     [Fact]
@@ -700,6 +788,28 @@ public sealed class BoardTests(PostgresFixture postgres)
         }
 
         return factory;
+    }
+
+    /// <summary>Rewrites the IS department's taxonomy as its head, which is who is allowed to.</summary>
+    private static async Task ConfigureTaxonomyAsync(CracraApplicationFactory factory, string taxonomyJson)
+    {
+        factory.AsUser(SeedOrganisation.Olivier);
+
+        var response = await factory.CreateClient().PutAsJsonAsync(
+            $"/api/directory/departments/{SeedOrganisation.Departments.InformationSystems}/config",
+            new
+            {
+                activityTaxonomyJson = taxonomyJson,
+                roleLabelsJson = "{}",
+                kudoRulesJson = "{}",
+                defaultBoardLayout = "week",
+                iterationPresetsJson = """["1w","2w","1m"]""",
+                weeklyTargetHours = 35m,
+                enforceWeeklyTarget = false,
+            },
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     private static async Task ConfigureAsync(

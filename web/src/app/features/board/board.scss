@@ -12,66 +12,125 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
   min-width: 0;
-  padding: var(--space-4);
+  padding: var(--space-5) var(--space-6) var(--space-6);
 }
 
-// --- Meter --------------------------------------------------------------------------------------------------------
-.board__meter {
+// --- Meter, full mode -----------------------------------------------------------------------------------------
+// A card rather than a bare cluster: it sits on the page background beside the title, and without a surface under
+// it the ring reads as a floating graphic rather than as this week's number.
+.board__ring-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: none;
+  padding: 10px 18px 10px var(--space-3);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  white-space: nowrap;
+}
+
+.board__ring {
+  position: relative;
+  flex: none;
+  width: 84px;
+  height: 84px;
+
+  svg {
+    width: 84px;
+    height: 84px;
+    // Start the arc at twelve o'clock. Every progress ring anybody has ever read starts there.
+    transform: rotate(-90deg);
+  }
+}
+
+.board__ring-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  font-weight: var(--weight-semibold);
+}
+
+.board__ring-text {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  min-width: 280px;
+  gap: 2px;
 }
 
-.board__meter-row {
+.board__ring-total {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+}
+
+.board__ring-note {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+// --- Meter, Focus mode ----------------------------------------------------------------------------------------
+.board__focus-meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 18px 22px;
+}
+
+.board__focus-meter-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  gap: var(--space-4);
 }
 
-.board__meter-label {
+.board__focus-meter-label {
   color: var(--ink-2);
-  font-size: var(--text-xs);
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
 }
 
-.board__meter-value {
-  font-size: var(--text-base);
-  font-weight: 500;
-}
-
-.board__meter-note {
-  margin: 0;
-  font-size: var(--text-xs);
+.board__focus-meter-value {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
 }
 
 .board__actions {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
 }
 
-// --- Timeline card --------------------------------------------------------------------------------------------------
+// --- Timeline card --------------------------------------------------------------------------------------------
+.board__timeline-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .board__legend {
   display: flex;
   align-items: center;
-  gap: 14px;
-  color: var(--ink-3);
-  font-size: var(--text-xs);
+  gap: var(--space-4);
+  color: var(--ink-2);
+  font-size: 13px;
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .board__legend-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .board__legend-swatch {
-  width: 14px;
-  height: 9px;
-  border-radius: 2px;
+  width: 16px;
+  height: 10px;
+  border-radius: 3px;
 }
 
 .board__legend-swatch--planned {
@@ -82,67 +141,47 @@
   background: var(--activity-build);
 }
 
-// --- Summary tiles ----------------------------------------------------------------------------------------------------
+.board__lanes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0 18px var(--space-4);
+}
+
+// --- Summary tiles --------------------------------------------------------------------------------------------
 .board__summary {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .board__tile {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-3) 14px;
+  padding: var(--space-4) 18px;
 }
 
 .board__tile-value {
   font-size: var(--text-xl);
-  font-weight: 500;
+  font-weight: var(--weight-semibold);
 }
 
 .board__tile-note {
-  color: var(--ink-3);
-  font-size: var(--text-xs);
-}
-
-// --- Side rail ----------------------------------------------------------------------------------------------------------
-.board__rail {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-  gap: 18px;
-  width: var(--side-rail-width);
-  padding: var(--space-4);
-  overflow: auto;
-  border-left: 1px solid var(--line);
-  background: var(--surface);
-}
-
-.board__rail-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  h2 {
-    margin: 0;
-  }
-}
-
-.board__divider {
-  height: 1px;
-  margin: 0;
-  border: none;
-  background: var(--line);
-}
-
-.board__empty {
-  margin: 0;
-  padding: var(--space-3);
-  border: 1px dashed var(--line-2);
-  border-radius: var(--radius-control);
-  color: var(--ink-3);
+  color: var(--ink-2);
   font-size: var(--text-sm);
+}
+
+// --- Shortcuts popover ----------------------------------------------------------------------------------------
+// What used to be a permanent quarter of the screen teaching two keystrokes. Discoverable, not resident (§02.3).
+.board__shortcut-anchor {
+  position: relative;
+}
+
+.board__shortcuts-menu {
+  top: calc(var(--control-height) + var(--space-2));
+  right: 0;
+  width: 300px;
 }
 
 .board__shortcuts {
@@ -153,7 +192,9 @@
 
   div {
     display: flex;
+    align-items: center;
     justify-content: space-between;
+    gap: var(--space-3);
     color: var(--ink-2);
     font-size: var(--text-sm);
   }
@@ -164,30 +205,46 @@
   }
 }
 
-// Below a laptop width the side rail stops earning its space; the grid it sits next to needs every pixel.
-@media (max-width: 1200px) {
-  .board__rail {
-    display: none;
-  }
+.board__shortcut-action {
+  height: auto;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  background: none;
 
+  &:hover:not(:disabled) {
+    background: none;
+    text-decoration: underline;
+  }
+}
+
+.board__empty {
+  margin: 0;
+  padding: var(--space-5) 18px;
+  color: var(--ink-2);
+  font-size: var(--text-base);
+}
+
+// Below a laptop width the four tiles stop fitting; the grid above them needs every pixel.
+@media (max-width: 1200px) {
   .board__summary {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-// --- Entry list -------------------------------------------------------------------------------------------------
-// The week's entries, grouped by day. S6 replaces this with the drag-to-log timeline; until then it carries the
-// same information without the geometry, which is what makes the slice usable on its own.
+// --- Entry list -----------------------------------------------------------------------------------------------
+// The week's entries, grouped by day. A reading view beside the timeline's editing view: "what did I book on
+// Tuesday" is a question a list answers better than a grid.
 .day + .day {
   border-top: 1px solid var(--line);
 }
 
 .day__label {
   margin: 0;
-  padding: var(--space-2) var(--space-3) 0;
-  color: var(--ink-3);
-  font-size: var(--text-xs);
-  font-weight: 500;
+  padding: var(--space-3) 18px 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
 }
 
 .day__entries {
@@ -201,9 +258,10 @@
 .entry {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-xs);
+  gap: var(--space-3);
+  min-height: var(--row-h);
+  padding: var(--space-2) 18px;
+  font-size: var(--text-sm);
   border-left: 3px solid var(--activity-build);
 }
 
@@ -216,38 +274,38 @@
 
 .entry__hours {
   flex-shrink: 0;
-  min-width: 44px;
-  font-weight: 500;
+  min-width: 52px;
+  font-weight: var(--weight-semibold);
 }
 
 .entry__type {
   flex-shrink: 0;
-  font-weight: 500;
+  font-weight: var(--weight-medium);
 }
 
 .entry__project,
 .entry__ref {
   flex-shrink: 0;
-  padding: 1px var(--space-2);
-  color: var(--ink-3);
-  font-size: var(--text-2xs);
+  padding: 2px var(--space-2);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
   background: var(--surface-2);
   border-radius: var(--radius-sm);
 }
 
 .entry__badge {
   flex-shrink: 0;
-  padding: 1px var(--space-2);
+  padding: 2px var(--space-2);
   color: var(--state-active-ink);
-  font-size: var(--text-2xs);
+  font-size: var(--text-xs);
   background: var(--state-active-soft);
-  border-radius: var(--radius-pill, 999px);
+  border-radius: var(--radius-pill);
 }
 
 .entry__note {
   flex: 1;
   overflow: hidden;
-  color: var(--ink-3);
+  color: var(--ink-2);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -257,12 +315,21 @@
 }
 
 .board__entry-count {
-  color: var(--ink-3);
-  font-size: var(--text-xs);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
   font-weight: 400;
 }
 
 .board__meter-enforced {
-  margin-left: 4px;
-  font-weight: 500;
+  margin-left: var(--space-1);
+  font-weight: var(--weight-semibold);
+}
+
+/* --- Shortcut feedback ----------------------------------------------------------------------------------------
+   A keystroke has no other acknowledgement, so the one line it produces has to carry the whole result. */
+.board__notice {
+  margin: 0;
+  padding: var(--space-2) 18px var(--space-3);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
 }

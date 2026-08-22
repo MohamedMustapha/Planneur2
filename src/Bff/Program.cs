@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Yarp.ReverseProxy.Transforms;
 
@@ -35,6 +36,13 @@ builder.Services
 
         options.SlidingExpiration = true;
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
+
+        // Eight hours of cookie over minutes of access token. SessionTokenRefresher is what closes that gap on
+        // every request, so the cookie's lifetime is the session's lifetime rather than a promise the tokens
+        // cannot keep.
+        options.Events.OnValidatePrincipal = context => context.HttpContext.RequestServices
+            .GetRequiredService<SessionTokenRefresher>()
+            .ValidateAsync(context);
 
         // A browser calling /api must get a 401 to react to, not a 302 into an HTML login page it cannot render.
         options.Events.OnRedirectToLogin = context =>
@@ -73,9 +81,31 @@ builder.Services
 
         options.TokenValidationParameters.NameClaimType = "preferred_username";
         options.TokenValidationParameters.RoleClaimType = ClaimTypes.Role;
+
+        // A failed callback must not dead-end on an exception page. The common case is a replayed callback:
+        // Keycloak answers the authorization request with a self-submitting form_post page, so pressing Back
+        // after signing in re-submits it, and the correlation cookie that callback belongs to was consumed and
+        // deleted by the login that already succeeded. The session is fine — only this one stale POST is not.
+        // Sending the browser home lets the route guard decide, which either lands on the app or starts a
+        // genuinely fresh login. Leaving it on the error page strands the user with no way back.
+        options.Events.OnRemoteFailure = context =>
+        {
+            context.HttpContext.RequestServices
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("Cracra.Bff.Authentication")
+                .LogWarning(context.Failure, "OpenID Connect callback failed; returning the browser to the app.");
+
+            context.HandleResponse();
+            context.Response.Redirect("/");
+
+            return Task.CompletedTask;
+        };
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.TryAddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<SessionTokenRefresher>();
 
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))

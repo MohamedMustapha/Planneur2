@@ -172,6 +172,11 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("shift_templates_json");
 
+                    b.Property<string>("WorkingDayJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("working_day_json");
+
                     b.Property<int>("Version")
                         .HasColumnType("integer")
                         .HasColumnName("version");
@@ -317,6 +322,25 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
                         .HasColumnName("time_zone");
+
+                    b.Property<bool?>("FocusMode")
+                        .HasColumnType("boolean")
+                        .HasColumnName("focus_mode");
+
+                    b.Property<string>("PreferredLanguage")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("preferred_language");
+
+                    b.Property<string>("PreferredTheme")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("preferred_theme");
+
+                    b.Property<string>("PreferredTimeZone")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("preferred_time_zone");
 
                     b.Property<string>("UiLanguage")
                         .IsRequired()

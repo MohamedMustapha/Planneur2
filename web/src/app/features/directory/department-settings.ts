@@ -38,6 +38,11 @@ export class DepartmentSettings {
   protected readonly roleLabelsJson = signal('{}');
   protected readonly kudoRulesJson = signal('{}');
   protected readonly iterationPresetsJson = signal('[]');
+  // Both of these are edited here and read nowhere else on this screen, but they must still make the round trip:
+  // the update request defaults anything it is not sent to "{}", so a save that left them out would quietly erase
+  // a department's shift slots and working day.
+  protected readonly shiftTemplatesJson = signal('{}');
+  protected readonly workingDayJson = signal('{}');
   protected readonly defaultBoardLayout = signal('week');
   protected readonly weeklyTargetHours = signal(35);
   protected readonly enforceWeeklyTarget = signal(false);
@@ -61,6 +66,8 @@ export class DepartmentSettings {
       this.roleLabelsJson.set(this.pretty(config.roleLabelsJson));
       this.kudoRulesJson.set(this.pretty(config.kudoRulesJson));
       this.iterationPresetsJson.set(this.pretty(config.iterationPresetsJson));
+      this.shiftTemplatesJson.set(this.pretty(config.shiftTemplatesJson));
+      this.workingDayJson.set(this.pretty(config.workingDayJson));
       this.defaultBoardLayout.set(config.defaultBoardLayout);
       this.weeklyTargetHours.set(config.weeklyTargetHours);
       this.enforceWeeklyTarget.set(config.enforceWeeklyTarget);
@@ -86,6 +93,8 @@ export class DepartmentSettings {
         roleLabelsJson: this.roleLabelsJson(),
         kudoRulesJson: this.kudoRulesJson(),
         iterationPresetsJson: this.iterationPresetsJson(),
+        shiftTemplatesJson: this.shiftTemplatesJson(),
+        workingDayJson: this.workingDayJson(),
         defaultBoardLayout: this.defaultBoardLayout(),
         weeklyTargetHours: this.weeklyTargetHours(),
         enforceWeeklyTarget: this.enforceWeeklyTarget(),

@@ -2,10 +2,29 @@
   display: block;
 }
 
+// A strip, not a column: it sits above the week grid as context for the week being filled in, and a strip is what
+// fits there. Scrolls horizontally rather than wrapping, so a busy fortnight cannot push the grid down the page.
 .upcoming {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  align-items: center;
+  gap: var(--space-4);
+  padding: 10px 18px;
+  overflow-x: auto;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.upcoming__label {
+  flex: none;
+  white-space: nowrap;
+}
+
+.upcoming__items {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex: 1;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -13,16 +32,17 @@
 
 .upcoming__item {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
-  align-items: baseline;
+  white-space: nowrap;
 }
 
 /* The same three severity tokens the board overlays paint with, so an audit day reads as the same colour here
    as it does on the canvas. Meetings get the neutral one — they are context, not a warning. */
 .upcoming__dot {
   flex: 0 0 auto;
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--event-meeting);
   box-shadow: inset 0 0 0 1px var(--line-2);
@@ -40,44 +60,32 @@
   background: var(--event-critical);
 }
 
-.upcoming__body {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-width: 0;
-}
-
 .upcoming__name {
-  overflow: hidden;
-  font-size: var(--text-base);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: var(--text-sm);
 }
 
 .upcoming__when {
   color: var(--ink-2);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
 }
 
 .upcoming__join,
 .upcoming__manage {
+  flex: none;
   color: var(--primary);
-  font-size: var(--text-xs);
-}
-
-.upcoming__manage {
-  display: inline-block;
-  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  white-space: nowrap;
 }
 
 .upcoming__more {
-  margin: var(--space-2) 0 0;
+  flex: none;
   color: var(--ink-2);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
+  white-space: nowrap;
 }
 
 .upcoming__error {
   margin: 0;
-  color: var(--danger);
+  color: var(--danger-ink);
   font-size: var(--text-sm);
 }

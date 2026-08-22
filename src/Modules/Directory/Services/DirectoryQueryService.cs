@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Abstractions;
+﻿using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Directory.Data;
@@ -19,7 +19,33 @@ public sealed record MeResponse(
     IReadOnlyList<UnitSummary> Units,
     IReadOnlyList<DepartmentSummary> Departments,
     IReadOnlyList<string> FunctionalRoleCodes,
-    IReadOnlyList<string> ContextualRoles);
+    IReadOnlyList<string> ContextualRoles,
+    /// <summary>
+    /// What this person chose for themselves, where they have chosen. Null means the synced values above still
+    /// stand, and the client treats them as defaults rather than as decisions.
+    /// </summary>
+    string? PreferredLanguage = null,
+    string? PreferredTimeZone = null,
+    string? PreferredTheme = null,
+    /// <summary>
+    /// Whether the shell renders in Focus mode. Null means never chosen, and the client applies the default for
+    /// the person's role rather than guessing at false.
+    /// </summary>
+    bool? FocusMode = null);
+
+/// <summary>
+/// A person's own display preferences.
+/// </summary>
+/// <remarks>
+/// Every field is optional, and null clears rather than skips: "use whatever the directory says" is a choice
+/// somebody may want to make again after having made a different one, and a partial-update shape would leave them
+/// no way to express it.
+/// </remarks>
+public sealed record UpdatePreferencesRequest(
+    string? Language,
+    string? TimeZone,
+    string? Theme,
+    bool? FocusMode = null);
 
 /// <summary>
 /// Reads for the directory.
@@ -32,6 +58,9 @@ public sealed record MeResponse(
 public interface IDirectoryQueryService
 {
     Task<MeResponse> GetMeAsync(CancellationToken ct);
+
+    /// <summary>Records the caller's own display preferences. Only ever their own row.</summary>
+    Task<MeResponse> UpdateMyPreferencesAsync(UpdatePreferencesRequest request, CancellationToken ct);
 
     Task<IReadOnlyList<DepartmentSummary>> GetDepartmentsAsync(CancellationToken ct);
 
@@ -55,6 +84,94 @@ public sealed record FunctionalRoleSummary(Guid Id, string Code, string LabelKey
 
 internal sealed class DirectoryQueryService(DirectoryDbContext context, IUserContext user) : IDirectoryQueryService
 {
+    /// <summary>
+    /// Records the caller's preferences and hands back their refreshed record.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Scoped to <c>user.UserId</c> rather than taking a person id, so there is no parameter that could be pointed
+    /// at somebody else's row. RLS would refuse the write anyway; not offering the shape is better than relying on
+    /// it to say no.
+    /// </para>
+    /// <para>
+    /// Returns the whole <see cref="MeResponse"/> because the client's context is what actually changed — the
+    /// caller would otherwise have to follow every save with a re-read to get back in step.
+    /// </para>
+    /// </remarks>
+    public async Task<MeResponse> UpdateMyPreferencesAsync(UpdatePreferencesRequest request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var person = await context.People
+            .AsTracking()
+            .SingleOrDefaultAsync(candidate => candidate.Id == user.UserId, ct)
+            ?? throw new ResourceNotFoundException("You have no directory record to store preferences against.");
+
+        person.PreferredLanguage = NormalizeLanguage(request.Language);
+        person.PreferredTimeZone = NormalizeTimeZone(request.TimeZone);
+        person.PreferredTheme = NormalizeTheme(request.Theme);
+        // No normalization: a bool has no invalid value, and null already means what null means everywhere else
+        // on this record — "handed back, decide for me".
+        person.FocusMode = request.FocusMode;
+        person.ModifiedAt = DateTimeOffset.UtcNow;
+
+        await context.SaveChangesAsync(ct);
+
+        return await GetMeAsync(ct);
+    }
+
+    /// <summary>Null stays null — that is how somebody hands the choice back to the directory.</summary>
+    private static string? NormalizeLanguage(string? candidate)
+    {
+        if (string.IsNullOrWhiteSpace(candidate))
+        {
+            return null;
+        }
+
+        var twoLetter = candidate.Trim().Split('-', '_')[0].ToLowerInvariant();
+
+        // Checked rather than run through SupportedLanguages.Normalize, which falls back to French for anything it
+        // does not recognise. That is right for a synced LDAP attribute and wrong for a deliberate choice: storing
+        // "fr" for a request that said "de" would look like the setting had simply been ignored.
+        return SupportedLanguages.All.Contains(twoLetter, StringComparer.Ordinal)
+            ? twoLetter
+            : throw new DomainRuleViolationException(
+                $"'{candidate}' is not a supported language. Choose one of: {string.Join(", ", SupportedLanguages.All)}.");
+    }
+
+    private static string? NormalizeTimeZone(string? candidate)
+    {
+        if (string.IsNullOrWhiteSpace(candidate))
+        {
+            return null;
+        }
+
+        var trimmed = candidate.Trim();
+
+        // Asked of the platform rather than checked against a list we maintain: the zone database changes, and a
+        // hand-kept list would start refusing zones that are perfectly real.
+        if (!TimeZoneInfo.TryFindSystemTimeZoneById(trimmed, out _))
+        {
+            throw new DomainRuleViolationException($"'{candidate}' is not a time zone this system knows.");
+        }
+
+        return trimmed;
+    }
+
+    private static string? NormalizeTheme(string? candidate)
+    {
+        if (string.IsNullOrWhiteSpace(candidate))
+        {
+            return null;
+        }
+
+        var trimmed = candidate.Trim().ToLowerInvariant();
+
+        return trimmed is "light" or "dark"
+            ? trimmed
+            : throw new DomainRuleViolationException($"'{candidate}' is not a theme. Choose 'light' or 'dark'.");
+    }
+
     public async Task<MeResponse> GetMeAsync(CancellationToken ct)
     {
         var person = await context.People
@@ -69,6 +186,10 @@ internal sealed class DirectoryQueryService(DirectoryDbContext context, IUserCon
                 candidate.PrimaryDepartmentId,
                 candidate.TimeZone,
                 candidate.UiLanguage,
+                candidate.PreferredLanguage,
+                candidate.PreferredTimeZone,
+                candidate.PreferredTheme,
+                candidate.FocusMode,
             })
             .SingleOrDefaultAsync(ct);
 
@@ -120,7 +241,11 @@ internal sealed class DirectoryQueryService(DirectoryDbContext context, IUserCon
             functionalRoles,
             // Straight from the token. Contextual roles are an access concern, not a directory record — S2 owns
             // resolving them, and echoing them here only saves the client a second call.
-            user.Roles);
+            user.Roles,
+            person.PreferredLanguage,
+            person.PreferredTimeZone,
+            person.PreferredTheme,
+            person.FocusMode);
     }
 
     public async Task<IReadOnlyList<DepartmentSummary>> GetDepartmentsAsync(CancellationToken ct) =>

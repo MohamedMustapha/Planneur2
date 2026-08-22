@@ -133,6 +133,10 @@ namespace Cracra.Modules.Activities.Infrastructure.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("note");
 
+                    b.Property<int?>("PercentComplete")
+                        .HasColumnType("integer")
+                        .HasColumnName("percent_complete");
+
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid")
                         .HasColumnName("person_id");

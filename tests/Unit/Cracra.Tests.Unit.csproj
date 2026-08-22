@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="../../src/Bff/Cracra.Bff.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/Mediator/Cracra.BuildingBlocks.Mediator.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="../../src/BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />

@@ -1,0 +1,147 @@
+<ng-container *transloco="let t">
+  <div class="task-popup__scrim" (click)="cancelled.emit()"></div>
+
+  <aside
+    class="task-popup card"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="t('boards.newTask')"
+  >
+    <header class="task-popup__header">
+      <h2 class="task-popup__title">{{ t('boards.newTask') }}</h2>
+      <button type="button" class="btn btn--ghost" (click)="cancelled.emit()">
+        {{ t('common.close') }}
+      </button>
+    </header>
+
+    @if (error(); as message) {
+      <p class="task-popup__error" role="alert">{{ message }}</p>
+    }
+
+    <!-- What the gesture already answered. Shown so the popup is legible on its own, not asked again. -->
+    <p class="task-popup__gesture">
+      @if (seed().personName; as name) {
+        <span class="task-popup__who">{{ name }}</span>
+      }
+      <span class="mono">{{ startLabel() }}</span>
+    </p>
+
+    <div class="task-popup__form">
+      @if (!seed().personId) {
+        <label class="field task-popup__wide">
+          <span>{{ t('boards.person') }}</span>
+          <select class="select" [ngModel]="personId()" (ngModelChange)="personId.set($event)">
+            <option value="">{{ t('boards.choosePerson') }}</option>
+            @for (person of people(); track person.id) {
+              <option [value]="person.id">{{ person.name }}</option>
+            }
+          </select>
+        </label>
+      }
+
+      <!-- BUILD or RUN. A pair of buttons rather than a dropdown of two, because this is the distinction every
+           report in S8 and every cost line in S11 turns on and it deserves to be visible without opening it. -->
+      <fieldset class="field task-popup__wide">
+        <legend>{{ t('boards.nature') }}</legend>
+        <div class="tabs">
+          <button
+            type="button"
+            class="tab"
+            [class.is-active]="nature() === 'build'"
+            [attr.aria-pressed]="nature() === 'build'"
+            (click)="nature.set('build')"
+          >
+            {{ t(buildLabelKey()) }}
+          </button>
+          <button
+            type="button"
+            class="tab"
+            [class.is-active]="nature() === 'run'"
+            [attr.aria-pressed]="nature() === 'run'"
+            (click)="nature.set('run')"
+          >
+            {{ t(runLabelKey()) }}
+          </button>
+        </div>
+      </fieldset>
+
+      <!-- Required for both, and not conditionally: BUILD and RUN are the two canonical buckets that cannot be
+           logged against nothing, so a task on this board always has a project. -->
+      <label class="field task-popup__wide">
+        <span>{{ t('boards.project') }}</span>
+        <select class="select" [ngModel]="projectId()" (ngModelChange)="projectId.set($event)">
+          <option value="">{{ t('boards.chooseProject') }}</option>
+          @for (project of projects.projects(); track project.id) {
+            <option [value]="project.id">{{ project.code }} — {{ project.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field task-popup__wide">
+        <span>{{ t('boards.description') }}</span>
+        <input
+          class="input"
+          type="text"
+          maxlength="200"
+          [placeholder]="t('boards.descriptionHint')"
+          [ngModel]="description()"
+          (ngModelChange)="description.set($event)"
+        />
+      </label>
+
+      <label class="field">
+        <span>{{ t('activity.hours') }}</span>
+        <span class="field__row">
+          <input
+            class="input num"
+            type="number"
+            min="0.25"
+            max="24"
+            step="0.25"
+            [ngModel]="hours()"
+            (ngModelChange)="hours.set($event)"
+          />
+          <button
+            type="button"
+            class="btn btn--secondary btn--compact"
+            [class.is-active]="isFullDay()"
+            [attr.aria-pressed]="isFullDay()"
+            [title]="t('activity.allDayHint', { hours: fullDay() })"
+            (click)="toggleFullDay()"
+          >
+            {{ t('activity.allDay') }}
+          </button>
+        </span>
+      </label>
+
+      <label class="field task-popup__progress">
+        <span>{{ t('boards.percentComplete') }}</span>
+        <span class="task-popup__slider">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            [ngModel]="percentComplete()"
+            (ngModelChange)="percentComplete.set(+$event)"
+          />
+          <span class="num">{{ percentComplete() }}%</span>
+        </span>
+      </label>
+    </div>
+
+    <footer class="task-popup__actions">
+      <button type="button" class="btn btn--ghost" (click)="cancelled.emit()">
+        {{ t('common.cancel') }}
+      </button>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="!canSubmit() || busy()"
+        (click)="submit()"
+      >
+        {{ t('boards.addTask') }}
+      </button>
+    </footer>
+  </aside>
+</ng-container>

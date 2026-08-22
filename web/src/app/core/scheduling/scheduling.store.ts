@@ -34,6 +34,7 @@ export interface BoardEvent {
   readonly activityTypeCode: string | null;
   readonly projectId: string | null;
   readonly externalRef: string | null;
+  readonly note: string | null;
 }
 
 export interface BoardOverlay {
@@ -83,6 +84,22 @@ export interface BoardPayload {
   readonly pool: readonly WorkOrderView[];
   readonly coverage: readonly CoverageWarning[];
   readonly canAssign: boolean;
+}
+
+/**
+ * What the create popup collects, in the shape the endpoint takes.
+ *
+ * `activityTypeCode` rather than a build/run flag: BUILD and RUN are taxonomy codes the department owns, and a
+ * boolean here would have to be translated back into one somewhere — which is where the two would drift.
+ */
+export interface PlanTaskRequest {
+  readonly personId: string;
+  readonly activityTypeCode: string;
+  readonly projectId: string | null;
+  readonly start: string;
+  readonly end: string;
+  readonly note: string | null;
+  readonly percentComplete: number | null;
 }
 
 export interface ShiftTemplate {
@@ -211,6 +228,26 @@ export class SchedulingStore {
 
   async deleteShift(shiftId: string): Promise<void> {
     await firstValueFrom(this.http.delete(`/api/scheduling/shifts/${shiftId}`));
+    this.reload();
+  }
+
+  /** 6c: a task drawn on empty canvas. Returns the new entry's id. */
+  async planTask(request: PlanTaskRequest): Promise<string> {
+    const created = await firstValueFrom(
+      this.http.post<{ id: string }>('/api/scheduling/tasks', request),
+    );
+
+    this.reload();
+
+    return created.id;
+  }
+
+  /** 6c: how far along a task is, from the popup's slider or the bar's own handle. */
+  async setTaskProgress(entryId: string, percentComplete: number | null): Promise<void> {
+    await firstValueFrom(
+      this.http.put(`/api/scheduling/tasks/${entryId}/progress`, { percentComplete }),
+    );
+
     this.reload();
   }
 

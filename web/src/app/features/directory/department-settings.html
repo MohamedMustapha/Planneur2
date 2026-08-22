@@ -77,6 +77,22 @@
       </section>
 
       <section class="card settings__section">
+        <header class="card__header">{{ t('settings.workingDay') }}</header>
+        <div class="card__body">
+          <p class="settings__hint">{{ t('settings.workingDayHint') }}</p>
+          <textarea class="textarea mono settings__json" rows="8" [(ngModel)]="workingDayJson"></textarea>
+        </div>
+      </section>
+
+      <section class="card settings__section">
+        <header class="card__header">{{ t('settings.shiftTemplates') }}</header>
+        <div class="card__body">
+          <p class="settings__hint">{{ t('settings.shiftTemplatesHint') }}</p>
+          <textarea class="textarea mono settings__json" rows="8" [(ngModel)]="shiftTemplatesJson"></textarea>
+        </div>
+      </section>
+
+      <section class="card settings__section">
         <header class="card__header">{{ t('settings.iterationPresets') }}</header>
         <div class="card__body">
           <p class="settings__hint">{{ t('settings.iterationPresetsHint') }}</p>

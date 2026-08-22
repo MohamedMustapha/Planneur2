@@ -14,7 +14,11 @@
     "notifications": "Notificaciones",
     "logout": "Cerrar sesión",
     "noDepartment": "Sin departamento",
-    "unitCount": "{{count}} unidades"
+    "unitCount": "{{count}} unidades",
+    "focusEnter": "Modo enfoque",
+    "focusExit": "Salir del enfoque",
+    "focusPierced": "Esta página está oculta en modo enfoque — se muestra completa solo para esta navegación.",
+    "returnToFocus": "Volver al modo enfoque"
   },
   "nav": {
     "ariaLabel": "Navegación principal",
@@ -55,12 +59,12 @@
     "timelinePlaceholder": "La superficie de registro llega con los lotes S5 y S6. La cronología Mobiscroll está instalada y con licencia.",
     "legendPlanned": "Planificado",
     "legendActual": "Real",
-    "legendGrid": "Paso de 1 h · 7 h → 19 h",
     "summary": {
       "build": "BUILD",
       "run": "RUN",
       "qolTraining": "Bienestar + formación",
-      "variance": "Desviación planificado / real"
+      "variance": "Desviación planificado / real",
+      "admin": "Selección y administración"
     },
     "awaitingActivities": "A la espera del módulo Actividades",
     "myUnit": "Mi unidad",
@@ -69,7 +73,7 @@
     "upcomingEmpty": "Las reuniones y jornadas especiales llegan con el lote S7.",
     "shortcuts": "Atajos",
     "shortcutWeekNav": "Semana anterior / siguiente",
-    "shortcutDuplicate": "Duplicar la franja",
+    "shortcutDuplicate": "Duplicar ayer",
     "entriesTitle": "Actividad de la semana",
     "entryCount": "{{count}} entradas",
     "noEntries": "No se ha registrado nada esta semana.",
@@ -80,7 +84,22 @@
     "my": "Mi tablero",
     "team": "Mi equipo",
     "unit": "Mi unidad",
-    "department": "Departamento"
+    "department": "Departamento",
+    "clickToLog": "Haz clic en una franja para registrar",
+    "duplicated": "Los registros de ayer se han copiado a hoy.",
+    "nothingToDuplicate": "Nada que copiar: el día laborable anterior no tiene registros en la semana mostrada.",
+    "duplicateFailed": "No se han podido copiar los registros.",
+    "noProject": "Sin proyecto",
+    "page": {
+      "purpose": "Registre sus franjas de la semana — objetivo 35 h."
+    },
+    "guidance": {
+      "remaining": "Le quedan {{hours}} h por registrar esta semana.",
+      "complete": "Su semana está completa — nada que hacer.",
+      "overtime": "Semana {{hours}} h por encima del objetivo — se requiere una justificación."
+    },
+    "hoursShort": "{{hours}} h",
+    "noEntriesHelp": "Arrastre sobre un día de la cuadrícula o use Añadir rápido."
   },
   "common": {
     "noHours": "0,0 h",
@@ -106,7 +125,8 @@
       "run": "Operación",
       "support": "Soporte",
       "admin": "Administración"
-    }
+    },
+    "leadership": "Dirección"
   },
   "settings": {
     "title": "Ajustes del departamento",
@@ -132,7 +152,11 @@
     "tabDepartment": "Departamento",
     "tabAccess": "Roles y permisos",
     "tabMeetings": "Reuniones y eventos",
-    "tabIntegrations": "Integraciones"
+    "tabIntegrations": "Integraciones",
+    "workingDay": "Jornada laboral",
+    "workingDayHint": "Límites de la jornada y sus sesiones de mañana / tarde. Define el eje del tablero y los atajos de registro. Un objeto vacío significa los valores por defecto (06:00–20:00, 09:00–13:00, 14:00–18:00).",
+    "shiftTemplates": "Turnos",
+    "shiftTemplatesHint": "Turnos que ofrece la planificación y su dotación mínima. Consumido por el lote S6."
   },
   "directory": {
     "functionalRole": {
@@ -141,11 +165,20 @@
       "architecte": "Arquitecto",
       "chef-de-pole": "Jefe de unidad",
       "comptable": "Contable",
-      "expert-comptable": "Contable senior"
+      "expert-comptable": "Contable senior",
+      "ops": "Ingeniero de operaciones",
+      "rssi": "Responsable de seguridad",
+      "support": "Técnico de soporte",
+      "designer": "Diseñador",
+      "directeur": "Director",
+      "directeur-adjoint": "Director adjunto",
+      "product-owner": "Product owner",
+      "responsable-pmo": "Responsable de PMO"
     },
     "department": {
       "dsi": "Sistemas de Información",
-      "daf": "Dirección Financiera"
+      "daf": "Dirección Financiera",
+      "comm": "Comunicación"
     },
     "hiddenPerson": "Miembro no visible"
   },
@@ -291,7 +324,13 @@
       "integration": "Integración",
       "azuredevops": "Azure DevOps",
       "servicenow": "ServiceNow"
-    }
+    },
+    "allDay": "Jornada",
+    "allDayHint": "Rellenar una jornada completa ({{hours}} h)",
+    "session": "Franja",
+    "sessionMorning": "Mañana",
+    "sessionAfternoon": "Tarde",
+    "sessionDay": "Jornada"
   },
   "boards": {
     "title": "Planificaciones",
@@ -316,7 +355,13 @@
     "empty": "Nada que mostrar en este periodo.",
     "genericError": "La operación ha fallado.",
     "chooseProject": "Elegir un proyecto…",
-    "pickProject": "Elija un proyecto para ver su tablero."
+    "pickProject": "Elija un proyecto para ver su tablero.",
+    "newTask": "Nueva tarea",
+    "nature": "Tipo de trabajo",
+    "description": "Descripción",
+    "descriptionHint": "En una línea, de qué se trata",
+    "percentComplete": "Progreso",
+    "addTask": "Añadir tarea"
   },
   "shift": {
     "morning": "Mañana",
@@ -746,5 +791,22 @@
     "effectiveToHint": "Exclusivo. Vacío significa vigente.",
     "current": "vigente",
     "addRateCard": "Añadir la tarifa"
+  },
+  "preferences": {
+    "language": "Idioma",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "timeZone": "Zona horaria",
+    "saveFailed": "Aplicado aquí, pero no guardado. Inténtalo de nuevo.",
+    "languageName": {
+      "fr": "Francés",
+      "en": "Inglés",
+      "es": "Español"
+    }
+  },
+  "obligations": {
+    "weekOverTarget": "{{hours}} h por encima del objetivo",
+    "dismiss": "Ocultar hasta la próxima carga"
   }
 }

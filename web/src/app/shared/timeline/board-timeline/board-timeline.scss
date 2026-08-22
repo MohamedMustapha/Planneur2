@@ -26,6 +26,18 @@
   font-weight: 500;
 }
 
+// A category is a heading, and has to read as one at a glance: everything indented under it belongs to it. The
+// uppercase tracking rather than a bigger size, because the row height is the timeline's to decide and a larger
+// glyph would push the whole grid taller for a label nobody measures against.
+:host ::ng-deep .row--category {
+  font-weight: 700;
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
 // --- Events -------------------------------------------------------------------------------------------------------
 // Planned reads as an outline, actual as a solid fill — the same distinction the board header's legend has shown
 // since S0, so the two views teach each other rather than each inventing their own convention.
@@ -47,4 +59,83 @@
 :host ::ng-deep .shift--on-call {
   background: var(--activity-leave-bg) !important;
   color: var(--activity-leave-ink) !important;
+}
+
+// --- 6c: the progress block -----------------------------------------------------------------------------------
+// The bar is the event's own background rather than a strip beneath it, so a row of tasks reads as a row of part-
+// filled blocks at a glance — which is the one question a task board is asked from across the office.
+.progress {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  height: 100%;
+  padding: 2px var(--space-2);
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.progress__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: rgb(0 0 0 / 18%);
+  transition: width 60ms linear;
+}
+
+// Sits on the bar's leading edge, half outside it, so it is grabbable at 0% and at 100% alike.
+.progress__handle {
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  background: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.progress__content {
+  position: relative;
+  display: flex;
+  flex: 1;
+  gap: var(--space-2);
+  align-items: baseline;
+  min-width: 0;
+}
+
+.progress__title {
+  overflow: hidden;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// The description is context, not the label, so it yields first when the block is narrow.
+.progress__note {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-2xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.75;
+}
+
+.progress__label {
+  position: relative;
+  flex-shrink: 0;
+  font-size: var(--text-2xs);
+}
+
+.block {
+  width: 100%;
+  height: 100%;
+  padding: 2px var(--space-2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-radius: var(--radius-sm);
 }

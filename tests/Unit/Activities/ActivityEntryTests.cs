@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Abstractions;
+﻿using Cracra.BuildingBlocks.Abstractions;
 using Cracra.Modules.Activities.Domain;
 
 namespace Cracra.Tests.Unit.Activities;
@@ -206,6 +206,57 @@ public sealed class ActivityEntryTests
 
         entry.Week.ShouldBe(new IsoWeek(2026, 35));
         entry.Hours.ShouldBe(2m);
+    }
+
+    [Fact]
+    public void A_planned_slot_starts_with_no_stated_progress()
+    {
+        // Null rather than zero, because "nobody has said" and "started and nothing done" are different answers
+        // and the board draws them differently: one falls back to plan-versus-actual, the other does not.
+        var entry = Log(kind: ActivityKind.Planned);
+
+        entry.PercentComplete.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Progress_can_be_set_on_a_planned_slot()
+    {
+        var entry = Log(kind: ActivityKind.Planned);
+
+        entry.SetProgress(40, Person, Now);
+
+        entry.PercentComplete.ShouldBe(40);
+    }
+
+    [Fact]
+    public void Progress_can_be_cleared()
+    {
+        var entry = Log(kind: ActivityKind.Planned);
+
+        entry.SetProgress(40, Person, Now);
+        entry.SetProgress(null, Person, Now);
+
+        entry.PercentComplete.ShouldBeNull();
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(101)]
+    public void Progress_outside_nought_to_a_hundred_is_refused(int percent)
+    {
+        var entry = Log(kind: ActivityKind.Planned);
+
+        Should.Throw<DomainRuleViolationException>(() => entry.SetProgress(percent, Person, Now));
+    }
+
+    [Fact]
+    public void An_actual_carries_no_progress()
+    {
+        // An actual is a claim about time already spent; it is finished by definition, and a percentage on it
+        // would be a second answer to a question the hours have already settled.
+        var entry = Log(kind: ActivityKind.Actual);
+
+        Should.Throw<DomainRuleViolationException>(() => entry.SetProgress(50, Person, Now));
     }
 
     private static DateTimeOffset Hour(int hour) => new(2026, 8, 19, hour, 0, 0, TimeSpan.Zero);

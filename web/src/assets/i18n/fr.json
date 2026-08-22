@@ -14,7 +14,11 @@
     "notifications": "Notifications",
     "logout": "Se déconnecter",
     "noDepartment": "Aucun département",
-    "unitCount": "{{count}} unités"
+    "unitCount": "{{count}} unités",
+    "focusEnter": "Mode focus",
+    "focusExit": "Quitter le focus",
+    "focusPierced": "Cette page est masquée en mode focus — elle s'affiche en mode complet le temps de cette navigation.",
+    "returnToFocus": "Retour au mode focus"
   },
   "nav": {
     "ariaLabel": "Navigation principale",
@@ -55,12 +59,12 @@
     "timelinePlaceholder": "Surface de saisie livrée avec les lots S5 et S6. La timeline Mobiscroll est installée et sous licence.",
     "legendPlanned": "Planifié",
     "legendActual": "Réel",
-    "legendGrid": "Pas de 1 h · 7 h → 19 h",
     "summary": {
       "build": "BUILD",
       "run": "RUN",
       "qolTraining": "Confort + formation",
-      "variance": "Écart planifié / réel"
+      "variance": "Écart planifié / réel",
+      "admin": "Recrutement & administratif"
     },
     "awaitingActivities": "En attente du module Activités",
     "myUnit": "Mon unité",
@@ -69,7 +73,7 @@
     "upcomingEmpty": "Les réunions et journées spéciales arrivent avec le lot S7.",
     "shortcuts": "Raccourcis",
     "shortcutWeekNav": "Semaine précédente / suivante",
-    "shortcutDuplicate": "Dupliquer le créneau",
+    "shortcutDuplicate": "Dupliquer hier",
     "entriesTitle": "Activités de la semaine",
     "entryCount": "{{count}} entrées",
     "noEntries": "Aucune activité enregistrée cette semaine.",
@@ -80,7 +84,22 @@
     "my": "Mon tableau",
     "team": "Mon équipe",
     "unit": "Mon unité",
-    "department": "Département"
+    "department": "Département",
+    "clickToLog": "Cliquez un créneau pour saisir",
+    "duplicated": "Les saisies d'hier ont été copiées sur aujourd'hui.",
+    "nothingToDuplicate": "Rien à copier : le jour ouvré précédent n'a aucune saisie dans la semaine affichée.",
+    "duplicateFailed": "Les saisies n'ont pas pu être copiées.",
+    "noProject": "Sans projet",
+    "page": {
+      "purpose": "Renseignez vos créneaux de la semaine — objectif 35 h."
+    },
+    "guidance": {
+      "remaining": "Il vous reste {{hours}} h à saisir cette semaine.",
+      "complete": "Votre semaine est complète — rien à faire.",
+      "overtime": "Semaine au-delà de l’objectif de {{hours}} h — une justification est requise."
+    },
+    "hoursShort": "{{hours}} h",
+    "noEntriesHelp": "Glissez dans une journée de la grille, ou utilisez Ajout rapide."
   },
   "common": {
     "noHours": "0,0 h",
@@ -106,7 +125,8 @@
       "run": "Exploitation",
       "support": "Support",
       "admin": "Administratif"
-    }
+    },
+    "leadership": "Direction"
   },
   "settings": {
     "title": "Paramètres du département",
@@ -132,7 +152,11 @@
     "tabDepartment": "Département",
     "tabAccess": "Rôles et habilitations",
     "tabMeetings": "Réunions & événements",
-    "tabIntegrations": "Intégrations"
+    "tabIntegrations": "Intégrations",
+    "workingDay": "Journée de travail",
+    "workingDayHint": "Bornes de la journée et sessions matin / après-midi. Détermine l'axe du tableau et les raccourcis de saisie. Objet vide = valeurs par défaut (06:00–20:00, 09:00–13:00, 14:00–18:00).",
+    "shiftTemplates": "Créneaux de service",
+    "shiftTemplatesHint": "Créneaux proposés par le planning et leur effectif minimum. Consommé par le lot S6."
   },
   "directory": {
     "functionalRole": {
@@ -141,11 +165,20 @@
       "architecte": "Architecte",
       "chef-de-pole": "Chef de pôle",
       "comptable": "Comptable",
-      "expert-comptable": "Expert-comptable"
+      "expert-comptable": "Expert-comptable",
+      "ops": "Ingénieur exploitation",
+      "rssi": "RSSI",
+      "support": "Technicien support",
+      "designer": "Designer",
+      "directeur": "Directeur",
+      "directeur-adjoint": "Directeur adjoint",
+      "product-owner": "Product owner",
+      "responsable-pmo": "Responsable PMO"
     },
     "department": {
       "dsi": "Direction des Systèmes d'Information",
-      "daf": "Direction Financière"
+      "daf": "Direction Financière",
+      "comm": "Communication"
     },
     "hiddenPerson": "Membre non visible"
   },
@@ -291,7 +324,13 @@
       "integration": "Intégration",
       "azuredevops": "Azure DevOps",
       "servicenow": "ServiceNow"
-    }
+    },
+    "allDay": "Journée",
+    "allDayHint": "Remplir une journée complète ({{hours}} h)",
+    "session": "Créneau",
+    "sessionMorning": "Matin",
+    "sessionAfternoon": "Après-midi",
+    "sessionDay": "Journée"
   },
   "boards": {
     "title": "Plannings",
@@ -316,7 +355,13 @@
     "empty": "Rien à afficher pour cette période.",
     "genericError": "L'opération a échoué.",
     "chooseProject": "Choisir un projet…",
-    "pickProject": "Choisissez un projet pour afficher son planning."
+    "pickProject": "Choisissez un projet pour afficher son planning.",
+    "newTask": "Nouvelle tâche",
+    "nature": "Nature du travail",
+    "description": "Description",
+    "descriptionHint": "En une ligne, de quoi il s'agit",
+    "percentComplete": "Avancement",
+    "addTask": "Ajouter la tâche"
   },
   "shift": {
     "morning": "Matin",
@@ -746,5 +791,22 @@
     "effectiveToHint": "Exclu. Vide = toujours en vigueur.",
     "current": "en cours",
     "addRateCard": "Ajouter le taux"
+  },
+  "preferences": {
+    "language": "Langue",
+    "theme": "Thème",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "timeZone": "Fuseau horaire",
+    "saveFailed": "Préférence appliquée ici, mais pas enregistrée. Réessayez.",
+    "languageName": {
+      "fr": "Français",
+      "en": "Anglais",
+      "es": "Espagnol"
+    }
+  },
+  "obligations": {
+    "weekOverTarget": "{{hours}} h au-delà de l’objectif",
+    "dismiss": "Masquer jusqu’au prochain chargement"
   }
 }

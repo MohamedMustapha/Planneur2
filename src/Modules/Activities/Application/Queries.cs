@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Mediator;
+﻿using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Activities.Domain;
@@ -111,7 +111,8 @@ internal sealed class ListActivitiesHandler(
                 row.Hours,
                 row.SupersedesEntryId,
                 row.Reconciled,
-                row.Note)),
+                row.Note,
+                row.PercentComplete)),
         ];
     }
 
@@ -189,7 +190,8 @@ internal sealed class GetWeeklySummaryHandler(
             planned,
             verdict.Overtime,
             verdict.Outcome.ToString().ToLowerInvariant(),
-            byType);
+            byType,
+            policy.WorkingDay ?? WorkingDayPolicy.Default);
     }
 }
 

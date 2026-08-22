@@ -2,6 +2,9 @@
   <div class="page-header__row">
     <div class="page-header__identity">
       <h1 class="page-header__title">{{ title() }}</h1>
+      @if (purpose()) {
+        <p class="page-header__purpose">{{ purpose() }}</p>
+      }
       @if (subtitle()) {
         <p class="page-header__subtitle">{{ subtitle() }}</p>
       }
@@ -12,6 +15,8 @@
     <ng-content select="[slot=meter]" />
     <ng-content select="[slot=actions]" />
   </div>
+
+  <ng-content select="[slot=guidance]" />
 
   <div class="page-header__scope">
     <ng-content select="[slot=scope]" />

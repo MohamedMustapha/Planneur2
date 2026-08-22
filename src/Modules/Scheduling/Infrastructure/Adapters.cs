@@ -1,4 +1,4 @@
-using Cracra.Modules.Activities.Contracts;
+﻿using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Integrations.Contracts;
 using Cracra.Modules.Meetings.Contracts;
@@ -121,8 +121,22 @@ internal sealed class ActivitiesAdapter(IActivityScheduler scheduler) : IActivit
         string? note,
         string source,
         string? externalRef,
+        int? percentComplete,
         CancellationToken ct) =>
-        await scheduler.PlanAsync(personId, activityTypeCode, projectId, start, end, note, source, externalRef, ct);
+        await scheduler.PlanAsync(
+            personId,
+            activityTypeCode,
+            projectId,
+            start,
+            end,
+            note,
+            source,
+            externalRef,
+            percentComplete,
+            ct);
+
+    public async Task SetProgressAsync(Guid entryId, int? percentComplete, CancellationToken ct) =>
+        await scheduler.SetProgressAsync(entryId, percentComplete, ct);
 
     public async Task RescheduleAsync(Guid entryId, DateTimeOffset start, DateTimeOffset end, CancellationToken ct) =>
         await scheduler.RescheduleAsync(entryId, start, end, ct);

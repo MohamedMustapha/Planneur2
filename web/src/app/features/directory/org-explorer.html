@@ -38,41 +38,77 @@
     <section class="org__people card">
       <header class="card__header">
         <span>{{ selectedUnitName() ?? t('org.wholeDepartment') }}</span>
-        <span class="org__count num">{{ t('org.peopleCount', { count: people().length }) }}</span>
+        <span class="org__count num">{{ t('org.peopleCount', { count: peopleCount() }) }}</span>
       </header>
 
       @if (isLoading()) {
         <p class="org__status">{{ t('common.loading') }}</p>
-      } @else if (people().length === 0) {
+      } @else if (peopleCount() === 0) {
         <p class="org__status">{{ t('org.noPeople') }}</p>
       } @else {
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>{{ t('org.person') }}</th>
-              <th>{{ t('org.functionalRoles') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (person of people(); track person.id) {
+        <!-- The directorate first, in its own table. A department head is not the senior row of a unit; they are
+             above every unit, and one sorted list cannot say that. -->
+        @if (leadership().length > 0) {
+          <table class="data-table org__table">
+            <thead>
               <tr>
-                <td>
-                  <span class="org__person">
-                    <span class="avatar">{{ initials(person) }}</span>
-                    <span>{{ person.displayName }}</span>
-                  </span>
-                </td>
-                <td>
-                  @for (role of person.functionalRoleCodes; track role) {
-                    <span class="pill pill--considered">{{ t('directory.functionalRole.' + role) }}</span>
-                  } @empty {
-                    <span class="org__status">—</span>
-                  }
-                </td>
+                <th>{{ t('org.leadership') }}</th>
+                <th>{{ t('org.functionalRoles') }}</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (person of leadership(); track person.id) {
+                <tr class="org__row org__row--lead">
+                  <td>
+                    <span class="org__person">
+                      <span class="avatar avatar--lead">{{ initials(person) }}</span>
+                      <span>{{ person.displayName }}</span>
+                    </span>
+                  </td>
+                  <td>
+                    @for (role of person.functionalRoleCodes; track role) {
+                      <span class="pill pill--committed">{{
+                        t('directory.functionalRole.' + role)
+                      }}</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        @if (members().length > 0) {
+          <table class="data-table org__table">
+            <thead>
+              <tr>
+                <th>{{ t('org.person') }}</th>
+                <th>{{ t('org.functionalRoles') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (person of members(); track person.id) {
+                <tr class="org__row">
+                  <td>
+                    <span class="org__person">
+                      <span class="avatar">{{ initials(person) }}</span>
+                      <span>{{ person.displayName }}</span>
+                    </span>
+                  </td>
+                  <td>
+                    @for (role of person.functionalRoleCodes; track role) {
+                      <span class="pill pill--considered">{{
+                        t('directory.functionalRole.' + role)
+                      }}</span>
+                    } @empty {
+                      <span class="org__status">—</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
       }
     </section>
   </div>

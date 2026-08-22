@@ -1,5 +1,6 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
 import { HttpClient, httpResource } from '@angular/common/http';
+import { DEFAULT_WORKING_DAY, WorkingDay } from '../time/working-day';
 import { firstValueFrom } from 'rxjs';
 import { SessionStore } from '../session/session.store';
 import { isoWeekNumber, startOfWeek } from '../time/week';
@@ -37,6 +38,7 @@ export interface ActivityEntryView {
   readonly supersedesEntryId: string | null;
   readonly reconciled: boolean;
   readonly note: string | null;
+  readonly percentComplete: number | null;
 }
 
 export interface WeeklyTypeTotal {
@@ -59,6 +61,8 @@ export interface WeeklySummary {
   /** within | warned | blocked */
   readonly status: string;
   readonly byType: readonly WeeklyTypeTotal[];
+  /** Null where the server predates the field; the store defaults it rather than each caller. */
+  readonly workingDay: WorkingDay | null;
 }
 
 export interface AssignableTask {
@@ -146,9 +150,29 @@ export class ActivitiesStore {
   readonly summary = computed(() => this.summaryResource.value());
   readonly entries = computed<readonly ActivityEntryView[]>(() => this.feedResource.value() ?? []);
   readonly types = computed<readonly ActivityTypeOption[]>(() => this.typesResource.value() ?? []);
-  readonly isLoading = computed(() => this.summaryResource.isLoading() || this.feedResource.isLoading());
+  readonly isLoading = computed(
+    () => this.summaryResource.isLoading() || this.feedResource.isLoading(),
+  );
 
   readonly targetHours = computed(() => this.summary()?.targetHours ?? 35);
+
+  /**
+   * The department's working day, or the platform's where it has configured none.
+   *
+   * Defaulted here rather than at each caller: the board's axis, the quick-add's presets and the timeline's clamp
+   * all need the same answer, and three copies of the fallback is three chances for one of them to draw an axis
+   * the other two do not agree with.
+   */
+  readonly workingDay = computed<WorkingDay>(() => this.summary()?.workingDay ?? DEFAULT_WORKING_DAY);
+
+  /**
+   * A full day, derived from the department's own weekly target rather than hard-coded at seven.
+   *
+   * Five working days, because the boards run Monday to Friday and the target is expressed against that week. A
+   * department on 32 hours gets 6.4, not the statutory 7 — the whole point of the target being configuration is
+   * that nothing downstream assumes the default.
+   */
+  readonly dailyTargetHours = computed(() => Math.round((this.targetHours() / 5) * 4) / 4);
   readonly loggedHours = computed(() => this.summary()?.actualHours ?? 0);
   readonly plannedHours = computed(() => this.summary()?.plannedHours ?? 0);
   readonly overtime = computed(() => this.summary()?.overtime ?? 0);
@@ -159,7 +183,9 @@ export class ActivitiesStore {
 
   /** Hours by canonical bucket, for the summary tiles. */
   hoursFor(code: string): number {
-    return this.summary()?.byType.find((total) => total.activityTypeCode === code)?.actualHours ?? 0;
+    return (
+      this.summary()?.byType.find((total) => total.activityTypeCode === code)?.actualHours ?? 0
+    );
   }
 
   stepWeek(by: number): void {
@@ -191,7 +217,9 @@ export class ActivitiesStore {
   async assignableTasks(source?: ActivitySource): Promise<readonly AssignableTask[]> {
     const query = source ? `?source=${source}` : '';
 
-    return firstValueFrom(this.http.get<AssignableTask[]>(`/api/activities/assignable-tasks${query}`));
+    return firstValueFrom(
+      this.http.get<AssignableTask[]>(`/api/activities/assignable-tasks${query}`),
+    );
   }
 
   reload(): void {

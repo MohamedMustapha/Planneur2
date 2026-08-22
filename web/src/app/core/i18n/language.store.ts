@@ -10,6 +10,15 @@ export const DEFAULT_LANGUAGE: Language = 'fr';
 const STORAGE_KEY = 'cracra.language';
 
 /**
+ * Whether the stored language was chosen here rather than merely cached here.
+ *
+ * See ThemeStore for the same pair and the same reason. This one is a fix as much as an addition: the guard in
+ * adoptProfileLanguage used to read STORAGE_KEY, which the effect below writes on the very first render — so the
+ * profile language was never once adopted, and the feature had quietly never worked.
+ */
+const CHOICE_KEY = 'cracra.language.chosen';
+
+/**
  * The active UI language.
  *
  * French is the default and, per the design brief, the width reference — every layout is checked against French
@@ -37,6 +46,7 @@ export class LanguageStore {
 
   set(language: Language): void {
     this.language.set(language);
+    localStorage.setItem(CHOICE_KEY, 'true');
   }
 
   /**
@@ -44,7 +54,7 @@ export class LanguageStore {
    * A deliberate in-app switch should survive a page load.
    */
   adoptProfileLanguage(language: string): void {
-    if (localStorage.getItem(STORAGE_KEY)) {
+    if (localStorage.getItem(CHOICE_KEY)) {
       return;
     }
 

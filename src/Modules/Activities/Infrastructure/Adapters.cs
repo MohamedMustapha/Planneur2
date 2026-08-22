@@ -41,7 +41,8 @@ internal sealed class DirectoryAdapter(
             : new DepartmentPolicy(
                 ActivityTaxonomy.Resolve(config.ActivityTaxonomyJson),
                 config.WeeklyTargetHours,
-                config.EnforceWeeklyTarget);
+                config.EnforceWeeklyTarget,
+                WorkingDayPolicy.Resolve(config.WorkingDayJson));
     }
 
     /// <summary>The statutory French working week, and the platform's default where a department has said nothing.</summary>

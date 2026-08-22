@@ -47,10 +47,21 @@ public static class BffEndpoints
                 [OpenIdConnectDefaults.AuthenticationScheme]))
             .AllowAnonymous();
 
-        group.MapPost("/logout", () => Results.SignOut(
-                new AuthenticationProperties { RedirectUri = "/" },
-                [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]))
-            .RequireAuthorization();
+        group.MapPost("/logout", (HttpContext context) =>
+            {
+                // Anonymous rather than RequireAuthorization, because signing out of a session that has already
+                // ended is not an error — and a challenge here would answer "log me out" with a login page. That
+                // is reachable now that an unrenewable session drops its principal on the way in.
+                if (context.User.Identity is not { IsAuthenticated: true })
+                {
+                    return Results.Redirect("/");
+                }
+
+                return Results.SignOut(
+                    new AuthenticationProperties { RedirectUri = "/" },
+                    [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]);
+            })
+            .AllowAnonymous();
 
         return app;
     }

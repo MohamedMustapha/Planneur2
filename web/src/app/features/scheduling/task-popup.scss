@@ -1,0 +1,90 @@
+:host {
+  display: contents;
+}
+
+// A scrim, unlike S5's quick-add, because this popup is anchored to a gesture on a canvas: without one, the click
+// that dismisses it would land on the timeline and open a second popup underneath the first.
+.task-popup__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background: rgb(0 0 0 / 32%);
+}
+
+.task-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(440px, calc(100vw - var(--space-4) * 2));
+  max-height: calc(100vh - var(--space-4) * 2);
+  padding: var(--space-4);
+  overflow-y: auto;
+  transform: translate(-50%, -50%);
+}
+
+.task-popup__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.task-popup__title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.task-popup__error {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  color: var(--danger);
+  font-size: var(--text-xs);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+}
+
+.task-popup__gesture {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+}
+
+.task-popup__who {
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.task-popup__form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.task-popup__wide,
+.task-popup__progress {
+  grid-column: 1 / -1;
+}
+
+.task-popup__slider {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+
+  input {
+    flex: 1;
+  }
+}
+
+.task-popup__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}

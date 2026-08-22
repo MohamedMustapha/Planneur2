@@ -38,6 +38,12 @@ export interface Me {
   readonly primaryDepartmentId: string | null;
   readonly timeZone: string;
   readonly uiLanguage: string;
+  /** What the person chose for themselves. Null means the two synced values above still stand. */
+  readonly preferredLanguage: string | null;
+  readonly preferredTimeZone: string | null;
+  readonly preferredTheme: string | null;
+  /** Focus mode, as chosen by this person. Null means never chosen and the role default applies. */
+  readonly focusMode: boolean | null;
   readonly units: readonly UnitSummary[];
   readonly departments: readonly DepartmentSummary[];
   readonly functionalRoleCodes: readonly string[];
@@ -63,6 +69,8 @@ export interface DepartmentConfig {
   readonly kudoRulesJson: string;
   readonly defaultBoardLayout: string;
   readonly iterationPresetsJson: string;
+  readonly shiftTemplatesJson: string;
+  readonly workingDayJson: string;
   readonly weeklyTargetHours: number;
   readonly enforceWeeklyTarget: boolean;
   readonly version: number;

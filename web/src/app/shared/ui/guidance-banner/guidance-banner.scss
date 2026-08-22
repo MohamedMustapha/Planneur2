@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+.guidance {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+}
+
+.guidance__glyph {
+  flex: none;
+  color: var(--primary-ink);
+  font-size: var(--text-base);
+}
+
+.guidance__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.guidance__message {
+  color: var(--primary-ink);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+}
+
+.guidance__detail {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.guidance__obligation {
+  flex: none;
+  border: none;
+  cursor: pointer;
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    background: currentcolor;
+  }
+}

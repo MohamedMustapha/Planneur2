@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Abstractions;
+﻿using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Persistence.Behaviors;
 using Cracra.BuildingBlocks.Web.Users;
@@ -63,6 +63,56 @@ public sealed record MoveShiftCommand(Guid ShiftId, string TemplateCode, DateOnl
     : IRequest<Unit>, ITransactionalRequest;
 
 public sealed record DeleteShiftCommand(Guid ShiftId) : IRequest<Unit>, ITransactionalRequest;
+
+/// <summary>
+/// 6c: a task drawn straight onto the canvas.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The board's own create gesture. It carries only what the popup asks for — whose row, which project, BUILD or
+/// RUN, a sentence of description and how far along it already is — because everything else a full activity entry
+/// needs is either the click's own coordinates or the department's answer rather than the user's.
+/// </para>
+/// <para>
+/// A planned slot, like every other write this module makes. Drawing a rectangle on a schedule is a statement of
+/// intent; whether the hours were actually spent is still the owner's to claim in S5.
+/// </para>
+/// </remarks>
+public sealed record PlanTaskCommand(
+    Guid PersonId,
+    string ActivityTypeCode,
+    Guid? ProjectId,
+    DateTimeOffset Start,
+    DateTimeOffset End,
+    string? Note,
+    int? PercentComplete) : IRequest<Guid>, ITransactionalRequest;
+
+public sealed class PlanTaskValidator : AbstractValidator<PlanTaskCommand>
+{
+    public PlanTaskValidator()
+    {
+        RuleFor(command => command.PersonId).NotEmpty();
+        RuleFor(command => command.ActivityTypeCode).NotEmpty().MaximumLength(64);
+        RuleFor(command => command.Note).MaximumLength(2000);
+        RuleFor(command => command.End).GreaterThan(command => command.Start);
+        RuleFor(command => command.PercentComplete).InclusiveBetween(0, 100)
+            .When(command => command.PercentComplete is not null);
+    }
+}
+
+/// <summary>6c: the progress handle dragged, or a percentage typed into the popup.</summary>
+public sealed record SetTaskProgressCommand(Guid ActivityEntryId, int? PercentComplete)
+    : IRequest<Unit>, ITransactionalRequest;
+
+public sealed class SetTaskProgressValidator : AbstractValidator<SetTaskProgressCommand>
+{
+    public SetTaskProgressValidator()
+    {
+        RuleFor(command => command.ActivityEntryId).NotEmpty();
+        RuleFor(command => command.PercentComplete).InclusiveBetween(0, 100)
+            .When(command => command.PercentComplete is not null);
+    }
+}
 
 /// <summary>6c: dragging a planned block to a new time.</summary>
 public sealed record RescheduleTaskCommand(Guid ActivityEntryId, DateTimeOffset Start, DateTimeOffset End)
@@ -148,6 +198,7 @@ internal sealed class AssignWorkOrderHandler(
             $"{order.Reference} — {order.Title}",
             order.Source,
             order.ExternalRef,
+            percentComplete: null,
             ct);
 
         order.LinkActivity(entryId);
@@ -260,6 +311,36 @@ internal sealed class DeleteShiftHandler(IShiftRepository repository)
         var shift = await repository.GetAsync(request.ShiftId, ct);
 
         await repository.DeleteAsync(shift, ct);
+
+        return Unit.Value;
+    }
+}
+
+internal sealed class PlanTaskHandler(IActivitiesPort activities) : IRequestHandler<PlanTaskCommand, Guid>
+{
+    public async Task<Guid> Handle(PlanTaskCommand request, CancellationToken ct) =>
+        // Straight through, for the same reason a reschedule goes straight through: whether this person may be
+        // planned for, whether the department offers this type, and whether the type demands a project are all
+        // Activities' rulings, and re-stating any of them here would be a second copy to keep in step.
+        await activities.PlanAsync(
+            request.PersonId,
+            request.ActivityTypeCode,
+            request.ProjectId,
+            request.Start,
+            request.End,
+            request.Note,
+            source: "manual",
+            externalRef: null,
+            request.PercentComplete,
+            ct);
+}
+
+internal sealed class SetTaskProgressHandler(IActivitiesPort activities)
+    : IRequestHandler<SetTaskProgressCommand, Unit>
+{
+    public async Task<Unit> Handle(SetTaskProgressCommand request, CancellationToken ct)
+    {
+        await activities.SetProgressAsync(request.ActivityEntryId, request.PercentComplete, ct);
 
         return Unit.Value;
     }
