@@ -1,0 +1,65 @@
+using Cracra.BuildingBlocks.Messaging;
+
+namespace Cracra.Modules.Problems.Contracts;
+
+// =================================================================================================================
+// The Problems module's public surface (v2 §05).
+// =================================================================================================================
+
+public sealed record ProblemCard(
+    Guid Id,
+    string Code,
+    string Title,
+    string? Description,
+    string Category,
+    string OriginScopeType,
+    Guid OriginScopeId,
+    Guid NodeId,
+    Guid ReporterPersonId,
+    string? ReporterName,
+    decimal? ImpactTimeLoss,
+    string ImpactFrequency,
+    int? AffectedPeopleEstimate,
+    decimal AnnualHoursLost,
+    int VoteCount,
+    int ProposalCount,
+    bool VotedByMe,
+    string Status,
+    Guid? ConvertedItemId,
+    Guid? DuplicateOfProblemId,
+    string? DecisionReason,
+    DateTimeOffset CreatedAt);
+
+public sealed record ProposalView(
+    Guid Id,
+    Guid AuthorPersonId,
+    string? AuthorName,
+    string Description,
+    decimal? EffortGuess,
+    DateTimeOffset CreatedAt);
+
+public sealed record ProblemCommentView(
+    Guid Id,
+    Guid AuthorPersonId,
+    string? AuthorName,
+    string Body,
+    DateTimeOffset CreatedAt);
+
+public sealed record ProblemDetail(
+    ProblemCard Card,
+    IReadOnlyList<ProposalView> Proposals,
+    IReadOnlyList<ProblemCommentView> Comments);
+
+// --- Integration events ------------------------------------------------------------------------------------------
+
+/// <summary>
+/// A problem became work somebody owns.
+/// </summary>
+/// <remarks>
+/// Carries the item so Portfolio can show "originating problem" on the card without asking, and so a later
+/// resolution can find its way back. This is the "no shadow IT" seam: the pain and the project that answers it
+/// stay linked, in both directions, from the moment of conversion.
+/// </remarks>
+public sealed record ProblemConverted(Guid ProblemId, Guid ItemId, string Title) : IntegrationEvent;
+
+public sealed record ProblemResolved(Guid ProblemId, Guid? ItemId) : IntegrationEvent;
