@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -27,6 +27,10 @@ public sealed class ShellJourneyTests(AspireStackFixture stack)
         var page = await stack.SignInAsync("camille.villeneuve");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 })).ToContainTextAsync("Mon tableau");
+
+        // Camille is a member, and v2 §02 starts members in Focus mode, which folds the language switcher away
+        // with the rest of the top bar's secondary controls. Leaving it is what she would do to reach them.
+        await AspireStackFixture.LeaveFocusModeAsync(page);
 
         await page.GetByRole(AriaRole.Button, new() { Name = "EN", Exact = true }).ClickAsync();
 

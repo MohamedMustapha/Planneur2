@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -154,8 +154,12 @@ public sealed class KudosJourneyTests(AspireStackFixture stack)
 
         // The sentences, in full, grouped by category. That is the whole artefact: a count without them proves
         // nothing to whoever reads the review.
-        await Expect(page.Locator(".annual__item").First)
-            .ToContainTextAsync("accompagné", new() { Timeout = TimeoutMs });
+        //
+        // Filtered rather than taken first. The Aspire stack persists between runs and other journeys give Mehdi
+        // kudos too, so which item leads the list is not this test's to decide — only that its own sentence is
+        // among them.
+        await Expect(page.Locator(".annual__item").Filter(new() { HasTextString = "accompagné" }).First)
+            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 
     [Fact]

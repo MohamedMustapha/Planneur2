@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -41,10 +41,17 @@ public sealed class ProjectJourneyTests(AspireStackFixture stack)
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Projets", new() { Timeout = TimeoutMs });
 
-        // Mehdi is in the IS department but on no project. Being in the lead department is not enough — RLS wants
-        // membership or a head role, and he has neither, so the list is genuinely empty rather than filtered
-        // client-side.
-        await Expect(page.GetByText("Aucun projet visible.")).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+        // Mehdi is on PRJ-2026-001 and not on PRJ-2026-002, and the IS department leads both. That pair is what
+        // makes this a test of the rule rather than of the seed: being in the lead department is not enough — RLS
+        // wants membership or a head role — so the project he is not on has to be absent, not merely further down.
+        //
+        // It used to assert an empty list against somebody on no project at all. The dev seed now puts every
+        // seeded person on a team, so that arrangement is no longer reachable; asserting the boundary between two
+        // projects tests the same predicate and does not depend on somebody staying unassigned.
+        await Expect(page.GetByRole(AriaRole.Link, new() { Name = "PRJ-2026-001" }))
+            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+
+        await Expect(page.GetByRole(AriaRole.Link, new() { Name = "PRJ-2026-002" })).ToHaveCountAsync(0);
     }
 
     [Fact]

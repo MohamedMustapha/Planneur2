@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -69,11 +69,12 @@ public sealed class AccessJourneyTests(AspireStackFixture stack)
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Mon tableau", new() { Timeout = DirectoryTimeoutMs });
 
-        // The switcher is populated from /api/directory/departments, which RLS filtered. Two entries means the
-        // PMO's global role survived the whole chain: Keycloak group, sync, resolver, GUC, policy.
+        // The switcher is populated from /api/directory/departments, which RLS filtered. Every directorate in the
+        // realm means the PMO's global role survived the whole chain: Keycloak group, sync, resolver, GUC, policy.
+        // The count follows the realm — it was two before Communication was added beside DSI and DAF.
         await page.GetByRole(AriaRole.Button, new() { Name = "Direction" }).First.ClickAsync();
 
-        await Expect(page.GetByRole(AriaRole.Menuitemradio)).ToHaveCountAsync(2, new() { Timeout = DirectoryTimeoutMs });
+        await Expect(page.GetByRole(AriaRole.Menuitemradio)).ToHaveCountAsync(3, new() { Timeout = DirectoryTimeoutMs });
     }
 
     private static IPageAssertions Expect(IPage page) => Assertions.Expect(page);

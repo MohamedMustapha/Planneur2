@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -25,13 +25,23 @@ public sealed class ActivityJourneyTests(AspireStackFixture stack)
         // is exactly why the number is not asserted here: another journey in this shared stack may have changed
         // it, and a test that breaks when the data it does not own changes is testing the wrong thing. That the
         // configured value is honoured is pinned in the integration suite, where the config is controlled.
-        await Expect(page.GetByText(new System.Text.RegularExpressions.Regex(@"objectif \d+ h")))
-            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+        //
+        // Addressed by class rather than by text, because two elements carry this sentence and only one of them
+        // is the subject: the page header's purpose line, whose number is a literal inside the translation, and
+        // the live meter — the ring outside Focus mode, the bar inside it. Matching on text alone would let this
+        // pass against exactly the hard-coded constant the meter exists to replace.
+        var target = page.Locator(".board__focus-meter-label, .board__ring-text .section-label");
+
+        await Expect(target.First).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+        await Expect(target.First)
+            .ToContainTextAsync(new System.Text.RegularExpressions.Regex(@"objectif \d+ h"));
 
         // What this level can prove is that the meter is live rather than the S0 placeholder that always read
         // zero against a hard-coded 35.
-        await Expect(page.GetByText(new System.Text.RegularExpressions.Regex(@"\d+ / \d+ h")))
-            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+        var progress = page.Locator(".board__focus-meter-value, .board__ring-total");
+
+        await Expect(progress.First).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+        await Expect(progress.First).ToContainTextAsync(new System.Text.RegularExpressions.Regex(@"\d+ / \d+ h"));
     }
 
     [Fact]
@@ -40,6 +50,11 @@ public sealed class ActivityJourneyTests(AspireStackFixture stack)
         var page = await stack.SignInAsync("camille.villeneuve");
 
         await page.GotoAsync("/board");
+
+        // The week's list of entries is one of the panels Focus mode folds away, and members start in Focus mode
+        // (v2 §02). Logging works either way — that half of this journey is unaffected — but reading back what
+        // was logged needs the list, so this leaves Focus mode the way she would.
+        await AspireStackFixture.LeaveFocusModeAsync(page);
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Ajout rapide" })
             .ClickAsync(new() { Timeout = TimeoutMs });

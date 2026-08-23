@@ -106,6 +106,20 @@ internal sealed class DevDataSeeder(
             [DevSeedCatalogue.TransformationUnitId] = "ADVISORY",
         };
 
+        // The one part of this seed that genuinely depends on the Keycloak sync having landed. The rest does not
+        // — a project seeded before its people exist is briefly unnamed and correct the moment they arrive — but
+        // an attachment is a write onto a `unit` row, and on a fresh database those rows do not exist yet. Left
+        // to race, the seeder silently attached nothing and the dev box came up with no profiles anywhere, which
+        // looked exactly like the feature not working.
+        if (!await WaitForUnitsAsync(directory, [.. attachments.Keys], ct))
+        {
+            logger.LogWarning(
+                "Dev seed: the directory has no units yet, so no node profiles were attached. Re-run the seeder "
+                + "once the Keycloak sync has completed.");
+
+            return;
+        }
+
         var profiles = await directory.NodeProfiles
             .Where(profile => attachments.Values.Contains(profile.Code))
             .ToDictionaryAsync(profile => profile.Code, profile => profile.Id, ct);
@@ -138,6 +152,33 @@ internal sealed class DevDataSeeder(
             await directory.SaveChangesAsync(ct);
             logger.LogInformation("Dev seed: attached node profiles to {UnitCount} units.", changed);
         }
+    }
+
+    /// <summary>
+    /// Waits, briefly, for the directory sync to have created the units this seed attaches to.
+    /// </summary>
+    /// <remarks>
+    /// A bounded poll rather than a dependency on the sync service, because the two are separate background
+    /// services with no ordering between them and coupling the seeder to another module's schedule to fix a
+    /// startup race would be the larger sin. Giving up is logged and harmless: the profiles are attached on the
+    /// next boot, and every unattached node simply inherits platform behaviour in the meantime.
+    /// </remarks>
+    private static async Task<bool> WaitForUnitsAsync(
+        DirectoryDbContext directory,
+        IReadOnlyList<Guid> unitIds,
+        CancellationToken ct)
+    {
+        for (var attempt = 0; attempt < 60; attempt++)
+        {
+            if (await directory.Units.AnyAsync(unit => unitIds.Contains(unit.Id), ct))
+            {
+                return true;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(1), ct);
+        }
+
+        return false;
     }
 
     private async Task<bool> SeedProjectAsync(

@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -120,6 +120,16 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
 
         await agent.GotoAsync("/board");
 
+        // Read from the week's list rather than off the canvas. The note is rendered inside a Mobiscroll event
+        // bubble, which hides its text outright when the event is too narrow to carry it — so on the canvas this
+        // reference is present, laid out, and `visibility: hidden`, which is not something the test can assert
+        // around and not something a person could read either.
+        //
+        // The list is one of the panels Focus mode folds away and agents are members, so this leaves Focus mode
+        // to reach it. What the journey claims — that what the lead scheduled reached the agent's own week — is
+        // as true of the list as of the bubble, and the list is where a person would actually go to check.
+        await AspireStackFixture.LeaveFocusModeAsync(agent);
+
         await Expect(agent.GetByText(reference, new() { Exact = false }).First)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
@@ -219,7 +229,9 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
         // Rows are units here, not people: a head reading this wants to know where the department's effort is
         // going. Who individually is doing what is the unit board, one level down.
         await Expect(page.Locator(".mbsc-timeline").First).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
-        await Expect(page.GetByText("Infrastructure", new() { Exact = false }).First)
+        // The unit's display name, not the constant above: the realm renamed `infra` to `ops` and kept the id, so
+        // the id this class holds still resolves while the label a reader sees has changed.
+        await Expect(page.GetByText("Exploitation & Production", new() { Exact = false }).First)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 
