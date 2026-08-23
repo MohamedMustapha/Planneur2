@@ -22,6 +22,9 @@
         }
       </select>
     </label>
+    <button type="button" class="button" [disabled]="exporting()" (click)="export()">
+      {{ t('finance.consolidated.export') }}
+    </button>
   </app-page-header>
 
   @if (finance.isLoading()) {

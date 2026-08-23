@@ -1,5 +1,6 @@
 import { computed, Injectable, inject, signal } from '@angular/core';
-import { httpResource } from '@angular/common/http';
+import { HttpClient, httpResource } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { SessionStore } from '../session/session.store';
 
 /** Mirrors `Cracra.Modules.Finance.Services` (v2 §04). */
@@ -82,6 +83,7 @@ export interface ConsolidatedRow {
  */
 @Injectable({ providedIn: 'root' })
 export class ConsolidatedStore {
+  private readonly http = inject(HttpClient);
   private readonly session = inject(SessionStore);
 
   readonly nodeId = signal<string | null>(null);
@@ -150,6 +152,30 @@ export class ConsolidatedStore {
 
   drillTo(nodeId: string | null): void {
     this.nodeId.set(nodeId);
+  }
+
+  /**
+   * Exports what is on screen and hands back where the file is.
+   *
+   * The server answers with a presigned link rather than bytes, so the download inherits an expiry — a URL
+   * somebody forwards next month cannot outlive the entitlement that produced it.
+   */
+  async export(): Promise<string> {
+    const params = new URLSearchParams();
+    const nodeId = this.nodeId();
+
+    if (nodeId) {
+      params.set('nodeId', nodeId);
+    }
+
+    params.set('fy', String(this.fiscalYear()));
+    params.set('mode', this.mode());
+
+    const exported = await firstValueFrom(
+      this.http.get<{ url: string }>(`/api/finance/consolidated/export?${params.toString()}`),
+    );
+
+    return exported.url;
   }
 
   private flatten(node: ConsolidatedNode, depth: number): ConsolidatedRow[] {

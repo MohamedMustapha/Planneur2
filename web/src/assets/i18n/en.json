@@ -342,7 +342,15 @@
       "notConsumed": "Nothing leans on this.",
       "node": "Node",
       "awaitingBanner": "A {{version}} is queued behind what is live.",
-      "createFailed": "Could not create it. Check the name and type."
+      "createFailed": "Could not create it. Check the name and type.",
+      "epics": "Features",
+      "noEpics": "No features listed.",
+      "epicName": "Feature name",
+      "version": "Version",
+      "declareNext": "Declare the queued version",
+      "findDependency": "Search for what this consumes…",
+      "awaitFailed": "Not possible: at least one planned or deferred feature is needed.",
+      "dependencyFailed": "Dependency refused: it would close a loop."
     },
     "wizard": {
       "step1": "1. Type",
@@ -888,7 +896,8 @@
       "annual": "Annual cost",
       "renewal": "Renewal",
       "contractEnd": "Contract end",
-      "empty": "Nothing to show for this year."
+      "empty": "Nothing to show for this year.",
+      "export": "Export"
     }
   },
   "preferences": {

@@ -183,15 +183,100 @@
         }
       }
 
+      <h3>{{ t('portfolio.catalog.epics') }}</h3>
+      @if (detail.epics.length === 0) {
+        <p class="muted">{{ t('portfolio.catalog.noEpics') }}</p>
+      } @else {
+        <ul class="list">
+          @for (epic of detail.epics; track epic.id) {
+            <li>
+              {{ epic.name }}
+              <span class="muted">— {{ t('portfolio.epic.' + epic.status) }}</span>
+              @if (epic.targetVersion) {
+                <span class="chip">{{ epic.targetVersion }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="editor">
+        <input
+          class="control"
+          [ngModel]="epicName()"
+          (ngModelChange)="epicName.set($event)"
+          [placeholder]="t('portfolio.catalog.epicName')"
+        />
+        <select class="control" [ngModel]="epicStatus()" (ngModelChange)="epicStatus.set($event)">
+          @for (status of epicStatuses; track status) {
+            <option [value]="status">{{ t('portfolio.epic.' + status) }}</option>
+          }
+        </select>
+        <input
+          class="control control--narrow"
+          [ngModel]="epicVersion()"
+          (ngModelChange)="epicVersion.set($event)"
+          [placeholder]="t('portfolio.catalog.version')"
+        />
+        <button type="button" class="button" [disabled]="busy()" (click)="addEpic()">
+          {{ t('common.save') }}
+        </button>
+      </div>
+
+      @if (canDeclareNext(detail)) {
+        <div class="editor">
+          <input
+            class="control"
+            [ngModel]="nextVersion()"
+            (ngModelChange)="nextVersion.set($event)"
+            [placeholder]="t('portfolio.catalog.version')"
+          />
+          <button type="button" class="button button--primary" [disabled]="busy()" (click)="declareNextVersion()">
+            {{ t('portfolio.catalog.declareNext') }}
+          </button>
+        </div>
+      }
+
       <h3>{{ t('portfolio.catalog.consumes') }}</h3>
       @if (consumes(detail).length === 0) {
         <p class="muted">{{ t('portfolio.catalog.noDependencies') }}</p>
       } @else {
         <ul class="list">
           @for (edge of consumes(detail); track edge.id) {
-            <li>{{ edge.itemCode }} — {{ edge.itemName }} <span class="muted">({{ edge.kind }})</span></li>
+            <li>
+              {{ edge.itemCode }} — {{ edge.itemName }}
+              <span class="muted">({{ edge.kind }})</span>
+              <button type="button" class="link" (click)="removeDependency(edge.id)">
+                {{ t('common.delete') }}
+              </button>
+            </li>
           }
         </ul>
+      }
+
+      <div class="editor">
+        <input
+          class="control"
+          [ngModel]="dependencyQuery()"
+          (ngModelChange)="searchDependency($event)"
+          [placeholder]="t('portfolio.catalog.findDependency')"
+        />
+      </div>
+
+      @if (dependencyMatches().length > 0) {
+        <ul class="list">
+          @for (match of dependencyMatches(); track match.id) {
+            <li>
+              <button type="button" class="link" (click)="addDependency(match)">
+                {{ match.code }} — {{ match.name }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      @if (error(); as message) {
+        <p class="error">{{ t(message) }}</p>
       }
 
       <h3>{{ t('portfolio.catalog.consumedBy') }}</h3>

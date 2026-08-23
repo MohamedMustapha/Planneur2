@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -45,5 +45,29 @@ export class Consolidated {
 
   protected isCollapsed(nodeId: string): boolean {
     return this.finance.collapsed().has(nodeId);
+  }
+
+  protected readonly exporting = signal(false);
+
+  /**
+   * Opens the exported workbook.
+   *
+   * A new tab rather than an anchor with a download attribute: the file lives in object storage behind a
+   * presigned URL, so the browser is fetching from another origin and the attribute would be ignored anyway.
+   */
+  protected async export(): Promise<void> {
+    if (this.exporting()) {
+      return;
+    }
+
+    this.exporting.set(true);
+
+    try {
+      const url = await this.finance.export();
+
+      window.open(url, '_blank', 'noopener');
+    } finally {
+      this.exporting.set(false);
+    }
   }
 }

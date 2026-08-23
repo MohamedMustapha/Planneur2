@@ -327,3 +327,45 @@ public sealed class AddExternalWorkerEndpoint(ICommitmentService commitments)
                 ct)),
             ct);
 }
+
+public sealed class ExportConsolidatedRequestModel
+{
+    [QueryParam]
+    public Guid? NodeId { get; set; }
+
+    [QueryParam]
+    public int? Fy { get; set; }
+
+    [QueryParam]
+    public string? Mode { get; set; }
+
+    [QueryParam]
+    public string? Format { get; set; }
+}
+
+/// <summary>
+/// The consolidated view as a workbook (v2 §04.3).
+/// </summary>
+/// <remarks>
+/// Returns where the file is rather than the bytes: the object lands in storage under the caller's own session
+/// and the answer is a presigned link with an expiry, which is what keeps a forwarded URL from outliving the
+/// entitlement that produced it.
+/// </remarks>
+public sealed class ExportConsolidatedEndpoint(IConsolidatedExporter exporter)
+    : Endpoint<ExportConsolidatedRequestModel, ConsolidatedExportView>
+{
+    public override void Configure()
+    {
+        Get("/finance/consolidated/export");
+        Policies(CracraPolicies.AnyHead);
+        Description(builder => builder.WithTags("Finance").WithSummary("Export the consolidated view."));
+    }
+
+    public override async Task HandleAsync(ExportConsolidatedRequestModel request, CancellationToken ct) =>
+        await Send.OkAsync(
+            await exporter.ExportAsync(
+                new ConsolidatedRequest(request.NodeId, request.Fy, request.Mode, null),
+                request.Format,
+                ct),
+            ct);
+}

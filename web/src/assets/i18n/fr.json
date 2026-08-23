@@ -342,7 +342,15 @@
       "notConsumed": "Rien ne s’appuie dessus.",
       "node": "Entité",
       "awaitingBanner": "Une version {{version}} est en attente derrière ce qui est en production.",
-      "createFailed": "Création impossible. Vérifiez le nom et le type."
+      "createFailed": "Création impossible. Vérifiez le nom et le type.",
+      "epics": "Fonctionnalités",
+      "noEpics": "Aucune fonctionnalité listée.",
+      "epicName": "Nom de la fonctionnalité",
+      "version": "Version",
+      "declareNext": "Déclarer la version en attente",
+      "findDependency": "Chercher ce que cela consomme…",
+      "awaitFailed": "Impossible : il faut au moins une fonctionnalité planifiée ou reportée.",
+      "dependencyFailed": "Dépendance refusée : elle fermerait une boucle."
     },
     "wizard": {
       "step1": "1. Type",
@@ -888,7 +896,8 @@
       "annual": "Coût annuel",
       "renewal": "Renouvellement",
       "contractEnd": "Fin de contrat",
-      "empty": "Rien à afficher pour cet exercice."
+      "empty": "Rien à afficher pour cet exercice.",
+      "export": "Exporter"
     }
   },
   "preferences": {

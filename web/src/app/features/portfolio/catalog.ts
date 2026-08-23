@@ -42,6 +42,22 @@ export class Catalog {
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
 
+  // --- The drawer's editors (§03.6) ------------------------------------------------------------------------------
+
+  protected readonly epicName = signal('');
+  protected readonly epicStatus = signal<'idea' | 'planned' | 'deferred'>('planned');
+  protected readonly epicVersion = signal('');
+  protected readonly nextVersion = signal('');
+
+  protected readonly dependencyQuery = signal('');
+  protected readonly dependencyMatches = signal<readonly CatalogCard[]>([]);
+
+  protected readonly epicStatuses: readonly ('idea' | 'planned' | 'deferred')[] = [
+    'planned',
+    'deferred',
+    'idea',
+  ];
+
   // --- The create wizard -----------------------------------------------------------------------------------------
   //
   // Four steps, and only the first two are required (§03.3). The v1 complaint was that you could not create a
@@ -176,6 +192,109 @@ export class Catalog {
     }
 
     return [...groups.values()];
+  }
+
+  protected async addEpic(): Promise<void> {
+    const detail = this.selected();
+    const name = this.epicName().trim();
+
+    if (!detail || name.length === 0 || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+
+    try {
+      await this.catalog.addEpic(detail.card.id, name, this.epicStatus(), this.epicVersion().trim() || null);
+
+      this.epicName.set('');
+      this.selected.set(await this.catalog.get(detail.card.id));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  /**
+   * Declares the queued version. Offered only where something is already queued, because the server refuses it
+   * otherwise — a button whose only outcome is a refusal teaches people to distrust the buttons.
+   */
+  protected async declareNextVersion(): Promise<void> {
+    const detail = this.selected();
+    const version = this.nextVersion().trim();
+
+    if (!detail || version.length === 0 || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+    this.error.set(null);
+
+    try {
+      await this.catalog.awaitNextVersion(detail.card.id, version);
+
+      this.nextVersion.set('');
+      this.selected.set(await this.catalog.get(detail.card.id));
+    } catch {
+      this.error.set('portfolio.catalog.awaitFailed');
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  protected async searchDependency(query: string): Promise<void> {
+    this.dependencyQuery.set(query);
+
+    const detail = this.selected();
+    const found = await this.catalog.search(query);
+
+    // Never offer the item itself: the server refuses it, and a picker that lists an impossible choice is a
+    // picker somebody will click.
+    this.dependencyMatches.set(found.filter((card) => card.id !== detail?.card.id));
+  }
+
+  protected async addDependency(target: CatalogCard): Promise<void> {
+    const detail = this.selected();
+
+    if (!detail || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+    this.error.set(null);
+
+    try {
+      await this.catalog.addDependency(detail.card.id, target.id, 'consumes');
+
+      this.dependencyQuery.set('');
+      this.dependencyMatches.set([]);
+      this.selected.set(await this.catalog.get(detail.card.id));
+    } catch {
+      this.error.set('portfolio.catalog.dependencyFailed');
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  protected async removeDependency(dependencyId: string): Promise<void> {
+    const detail = this.selected();
+
+    if (!detail || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+
+    try {
+      await this.catalog.removeDependency(detail.card.id, dependencyId);
+
+      this.selected.set(await this.catalog.get(detail.card.id));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  protected canDeclareNext(detail: CatalogItemDetail): boolean {
+    return detail.card.state === 'active' && this.queuedEpics(detail).length > 0;
   }
 
   protected queuedEpics(detail: CatalogItemDetail): readonly { name: string; status: string }[] {

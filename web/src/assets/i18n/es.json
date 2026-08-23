@@ -342,7 +342,15 @@
       "notConsumed": "Nada se apoya en esto.",
       "node": "Entidad",
       "awaitingBanner": "Hay una versión {{version}} en cola detrás de lo que está en producción.",
-      "createFailed": "No se pudo crear. Revise el nombre y el tipo."
+      "createFailed": "No se pudo crear. Revise el nombre y el tipo.",
+      "epics": "Funcionalidades",
+      "noEpics": "Sin funcionalidades listadas.",
+      "epicName": "Nombre de la funcionalidad",
+      "version": "Versión",
+      "declareNext": "Declarar la versión en cola",
+      "findDependency": "Buscar lo que esto consume…",
+      "awaitFailed": "No es posible: hace falta al menos una funcionalidad planificada o aplazada.",
+      "dependencyFailed": "Dependencia rechazada: cerraría un bucle."
     },
     "wizard": {
       "step1": "1. Tipo",
@@ -888,7 +896,8 @@
       "annual": "Coste anual",
       "renewal": "Renovación",
       "contractEnd": "Fin de contrato",
-      "empty": "Nada que mostrar para este ejercicio."
+      "empty": "Nada que mostrar para este ejercicio.",
+      "export": "Exportar"
     }
   },
   "preferences": {
