@@ -1,6 +1,7 @@
 ﻿using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
+using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Scheduling.Contracts;
 using Cracra.Modules.Scheduling.Domain;
 
@@ -114,15 +115,26 @@ internal sealed class BoardComposer(
 
         var departmentId = people.Select(person => person.DepartmentId).FirstOrDefault(id => id is not null);
 
+        // Resolved once and handed to both consumers below. The walk is a couple of queries, and doing it twice
+        // per board would also make it possible for the archetype and the capabilities on one screen to come
+        // from two different reads.
+        var profile = departmentId is { } profiled
+            ? await directory.GetNodeProfileAsync(scope, profiled, ct)
+            : null;
+
         var archetype = departmentId is { } department
-            ? await ArchetypeForAsync(department, ct)
+            ? await ArchetypeForAsync(profile, department, ct)
             : BoardArchetypes.TaskProgress;
 
-        var pool = archetype == BoardArchetypes.WorkOrders
+        // Archetype and capability are checked separately because they answer different questions: the archetype
+        // is what this board looks like, the capability is whether this branch does that work at all. A profile
+        // that names the work-order board but switches the pool off gets the board without the unassigned row,
+        // which is a coherent thing for a unit that receives its orders already assigned.
+        var pool = archetype == BoardArchetypes.WorkOrders && Allows(profile, NodeCapabilities.WorkOrderPool)
             ? await PoolForAsync(scope, ct)
             : [];
 
-        var unitShifts = archetype == BoardArchetypes.Shifts
+        var unitShifts = archetype == BoardArchetypes.Shifts && Allows(profile, NodeCapabilities.ShiftScheduling)
             ? await shifts.GetForUnitAsync(scope, from, to, ct)
             : [];
 
@@ -380,8 +392,55 @@ internal sealed class BoardComposer(
 
     // --- Shared shaping ----------------------------------------------------------------------------------------
 
-    private async Task<string> ArchetypeForAsync(Guid departmentId, CancellationToken ct)
+    /// <summary>
+    /// Which board this node renders with.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The profile decides, and it decides by naming an archetype rather than by having a code this method
+    /// recognises — which is the difference v2 §10.0 draws between behaviour that is data and behaviour that is a
+    /// branch. Two sibling units under one department reach here with different profiles and leave with different
+    /// boards, and nothing in this file knows or cares what either of them does for a living.
+    /// </para>
+    /// <para>
+    /// First entry wins where a profile names several. The list is ordered by preference precisely so an
+    /// administrator can express "work orders, or task progress if that is not available" without the platform
+    /// having an opinion about which is more appropriate for them.
+    /// </para>
+    /// <para>
+    /// The fallback is the pre-v2 department layout, kept because a deployment that has authored no profiles must
+    /// keep the boards it had. It maps the two legacy layout values onto archetypes and is the only place that
+    /// still reads them.
+    /// </para>
+    /// </remarks>
+    private async Task<string> ArchetypeForAsync(
+        NodeProfileSnapshot? profile,
+        Guid departmentId,
+        CancellationToken ct)
     {
+        if (profile is not null)
+        {
+            foreach (var archetype in profile.BoardArchetypes)
+            {
+                // Mapping archetype names onto the components that exist is a rendering concern, not an
+                // organizational one, so it is allowed to be a branch — what v2 §10.6 forbids is branching on the
+                // profile's *code*. "week-grid" is the plain canvas, which is the task-progress board with
+                // neither a pool nor shifts on it; there is no fourth component to render.
+                var renderable = archetype.Trim().ToLowerInvariant() switch
+                {
+                    BoardArchetypes.WorkOrders => BoardArchetypes.WorkOrders,
+                    BoardArchetypes.Shifts => BoardArchetypes.Shifts,
+                    BoardArchetypes.TaskProgress or "week-grid" => BoardArchetypes.TaskProgress,
+                    _ => null,
+                };
+
+                if (renderable is not null)
+                {
+                    return renderable;
+                }
+            }
+        }
+
         var layout = await directory.GetDefaultBoardLayoutAsync(departmentId, ct);
 
         return layout.Trim().ToLowerInvariant() switch
@@ -391,6 +450,16 @@ internal sealed class BoardComposer(
             _ => BoardArchetypes.TaskProgress,
         };
     }
+
+    /// <summary>
+    /// Whether a capability is on for a node, defaulting to on where no profile is in force.
+    /// </summary>
+    /// <remarks>
+    /// On by default so this slice never removes a control from a deployment that has authored nothing. A branch
+    /// loses the work-order pool because an administrator switched it off, not because profiles shipped.
+    /// </remarks>
+    private static bool Allows(NodeProfileSnapshot? profile, string capability) =>
+        profile is null || profile.Allows(capability);
 
     private async Task<IReadOnlyList<WorkOrderView>> PoolForAsync(Guid unitId, CancellationToken ct)
     {

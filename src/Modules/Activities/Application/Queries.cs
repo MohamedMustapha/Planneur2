@@ -87,7 +87,7 @@ internal sealed class ListActivitiesHandler(
 
         foreach (var departmentId in rows.Select(row => row.DepartmentId).Distinct())
         {
-            policies[departmentId] = await directory.GetPolicyAsync(departmentId, ct);
+            policies[departmentId] = await directory.GetPolicyAsync(departmentId, null, ct);
         }
 
         return
@@ -148,7 +148,7 @@ internal sealed class GetWeeklySummaryHandler(
         var placement = await directory.GetPlacementAsync(personId, ct);
 
         var policy = placement is { } found
-            ? await directory.GetPolicyAsync(found.DepartmentId, ct)
+            ? await directory.GetPolicyAsync(found.DepartmentId, found.UnitId, ct)
             // Someone no longer in the directory still has a history worth reading; the canonical taxonomy and no
             // target is the honest answer rather than a failure.
             : new DepartmentPolicy(ActivityTaxonomy.Resolve(null), 0m, false);
@@ -203,9 +203,14 @@ internal sealed class GetActivityTypesHandler(IDirectoryPort directory, IUserCon
         var departmentId = request.DepartmentId
             ?? user.DepartmentIds.FirstOrDefault();
 
+        // The caller's own unit, but only when they did not name a department. Asking about a department is
+        // asking a question about that whole department, and answering it with the vocabulary of whichever unit
+        // the asker happens to sit in would be quietly wrong for every other unit under it (v2 §10.2).
+        var unitId = request.DepartmentId is null ? user.UnitId : null;
+
         var policy = departmentId == Guid.Empty
             ? new DepartmentPolicy(ActivityTaxonomy.Resolve(null), 0m, false)
-            : await directory.GetPolicyAsync(departmentId, ct);
+            : await directory.GetPolicyAsync(departmentId, unitId, ct);
 
         return
         [

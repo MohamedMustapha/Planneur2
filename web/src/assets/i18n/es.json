@@ -156,7 +156,8 @@
     "workingDay": "Jornada laboral",
     "workingDayHint": "Límites de la jornada y sus sesiones de mañana / tarde. Define el eje del tablero y los atajos de registro. Un objeto vacío significa los valores por defecto (06:00–20:00, 09:00–13:00, 14:00–18:00).",
     "shiftTemplates": "Turnos",
-    "shiftTemplatesHint": "Turnos que ofrece la planificación y su dotación mínima. Consumido por el lote S6."
+    "shiftTemplatesHint": "Turnos que ofrece la planificación y su dotación mínima. Consumido por el lote S6.",
+    "tabProfiles": "Perfiles"
   },
   "directory": {
     "functionalRole": {
@@ -316,7 +317,22 @@
       "project-build": "Proyecto — BUILD",
       "project-run": "Proyecto — RUN",
       "quality-of-life": "Calidad de vida",
-      "recruitment-admin": "Selección y administración"
+      "recruitment-admin": "Selección y administración",
+      "dev": "Desarrollo",
+      "architecture": "Arquitectura",
+      "testing": "Pruebas",
+      "deployment": "Despliegue",
+      "incident": "Incidencia",
+      "request": "Solicitud",
+      "patching": "Parches",
+      "on-call": "Guardia",
+      "triage": "Clasificación",
+      "intervention": "Intervención",
+      "escalation": "Escalado",
+      "research": "Investigación",
+      "analysis": "Análisis",
+      "note": "Redacción de notas",
+      "watch": "Vigilancia"
     },
     "source": {
       "manual": "Registro manual",
@@ -808,5 +824,40 @@
   "obligations": {
     "weekOverTarget": "{{hours}} h por encima del objetivo",
     "dismiss": "Ocultar hasta la próxima carga"
+  },
+  "profiles": {
+    "title": "Perfiles de nodo",
+    "subtitle": "El comportamiento de una rama, como datos",
+    "existing": "Perfiles existentes",
+    "editor": "Editor",
+    "attach": "Asignación",
+    "new": "Nuevo",
+    "clone": "Duplicar",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "saved": "Perfil guardado.",
+    "none": "Todavía no hay perfiles.",
+    "code": "Código",
+    "labelKey": "Clave de etiqueta",
+    "boardArchetypes": "Tableros (separados por comas)",
+    "itemTypes": "Tipos de elementos",
+    "solvesCategories": "Categorías de problemas atendidas",
+    "headlinePattern": "Frase principal del informe",
+    "activityTaxonomy": "Taxonomía de actividades (JSON)",
+    "capabilities": "Capacidades (JSON)",
+    "budgetDefaults": "Tratamiento presupuestario (JSON)",
+    "inheritHint": "Déjalo vacío para heredar del nivel superior.",
+    "attachUnit": "Unidad",
+    "attachProfile": "Perfil",
+    "chooseUnit": "Elegir una unidad",
+    "inherit": "Heredar",
+    "applyAttachment": "Asignar",
+    "loadFailed": "No se han podido cargar los perfiles.",
+    "saveFailed": "No se ha podido guardar el perfil."
+  },
+  "profile": {
+    "delivery": "Delivery",
+    "dispatch": "Despacho",
+    "advisory": "Estudios"
   }
 }

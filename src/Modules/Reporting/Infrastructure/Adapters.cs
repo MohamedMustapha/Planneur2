@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Cracra.BuildingBlocks.Ai;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
@@ -61,7 +61,8 @@ internal sealed class ActivityAdapter(IActivityScheduler activities, IDepartment
     }
 }
 
-internal sealed class DirectoryAdapter(IDirectoryReader directory) : IDirectoryQueries
+internal sealed class DirectoryAdapter(IDirectoryReader directory, INodeProfileReader profiles)
+    : IDirectoryQueries
 {
     public async Task<PersonSummary?> PersonAsync(Guid personId, CancellationToken ct) =>
         await directory.GetPersonAsync(personId, ct);
@@ -81,6 +82,16 @@ internal sealed class DirectoryAdapter(IDirectoryReader directory) : IDirectoryQ
         departmentIds.Count == 0
             ? new Dictionary<Guid, string>()
             : await directory.GetDepartmentNameKeysAsync(departmentIds, ct);
+
+    public async Task<NodeProfileSnapshot?> NodeProfileAsync(
+        Guid? unitId,
+        Guid? departmentId,
+        CancellationToken ct) =>
+        unitId is { } unit
+            ? await profiles.ResolveForUnitAsync(unit, ct)
+            : departmentId is { } department
+                ? await profiles.ResolveForDepartmentAsync(department, ct)
+                : null;
 }
 
 internal sealed class ProjectAdapter(IProjectProvisioner projects, IProjectTeamReader teams) : IProjectQueries

@@ -20,7 +20,10 @@ namespace Cracra.Modules.Scheduling.Infrastructure;
 /// the whole "join of already-authorized sets" idea — so using the reference reader here would silently widen
 /// every board past what the matrix allows.
 /// </remarks>
-internal sealed class DirectoryAdapter(IDirectoryReader directory, IDepartmentConfigReader configs)
+internal sealed class DirectoryAdapter(
+    IDirectoryReader directory,
+    IDepartmentConfigReader configs,
+    INodeProfileReader profiles)
     : Application.IDirectoryPort
 {
     public async Task<PersonSummary?> GetPersonAsync(Guid personId, CancellationToken ct) =>
@@ -57,6 +60,14 @@ internal sealed class DirectoryAdapter(IDirectoryReader directory, IDepartmentCo
 
         return config?.DefaultBoardLayout ?? "week";
     }
+
+    public async Task<NodeProfileSnapshot?> GetNodeProfileAsync(
+        Guid? unitId,
+        Guid departmentId,
+        CancellationToken ct) =>
+        unitId is { } unit
+            ? await profiles.ResolveForUnitAsync(unit, ct)
+            : await profiles.ResolveForDepartmentAsync(departmentId, ct);
 }
 
 internal sealed class ProjectsAdapter(IProjectProvisioner projects, IProjectTeamReader teams)

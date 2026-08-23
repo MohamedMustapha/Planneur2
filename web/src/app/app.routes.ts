@@ -99,6 +99,15 @@ export const routes: Routes = [
       import('./features/integrations/integrations-admin').then((m) => m.IntegrationsAdmin),
   },
   {
+    // Fifth tab. Node profiles are the mechanism behind every other tab being editable rather than coded (v2
+    // §10), so they belong with the rest of the configuration an administrator owns — and the route stays
+    // reachable even where the integrations tab is hidden, because a branch without integrations still has a
+    // profile that says so.
+    path: 'settings/profiles',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/directory/node-profiles').then((m) => m.NodeProfiles),
+  },
+  {
     // Behind the same nav entry as department settings: the rail is fixed at ten sections by the design, and
     // both screens are the same job from an administrator's point of view.
     path: 'settings/access',

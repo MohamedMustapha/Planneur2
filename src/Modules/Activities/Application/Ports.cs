@@ -1,4 +1,4 @@
-using Cracra.Modules.Activities.Contracts;
+﻿using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Activities.Domain;
 
 namespace Cracra.Modules.Activities.Application;
@@ -39,8 +39,16 @@ public interface IDirectoryPort
     /// <summary>Where a person sits right now. The entry copies this onto the row for RLS.</summary>
     Task<(Guid UnitId, Guid DepartmentId)?> GetPlacementAsync(Guid personId, CancellationToken ct);
 
-    /// <summary>The department's taxonomy and weekly target, merged over the canonical buckets.</summary>
-    Task<DepartmentPolicy> GetPolicyAsync(Guid departmentId, CancellationToken ct);
+    /// <summary>
+    /// The taxonomy and weekly target in force for a person, merged over the canonical buckets.
+    /// </summary>
+    /// <remarks>
+    /// <paramref name="unitId"/> is what makes v2 §10 work here: the taxonomy belongs to the node, so two units
+    /// under one department can offer different subtypes. It is optional because several callers genuinely have
+    /// only a department in hand — a cross-unit report grouping by department, or a person who has left. Those get
+    /// the department's answer, which is the same one they got before this slice.
+    /// </remarks>
+    Task<DepartmentPolicy> GetPolicyAsync(Guid departmentId, Guid? unitId, CancellationToken ct);
 
     Task<IReadOnlyDictionary<Guid, string>> GetPersonNamesAsync(IReadOnlyList<Guid> personIds, CancellationToken ct);
 }

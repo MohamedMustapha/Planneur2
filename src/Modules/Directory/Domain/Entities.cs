@@ -20,6 +20,16 @@ public sealed class Department
     /// <summary>Set when a department sits under another. Null for a top-level one.</summary>
     public Guid? ParentDepartmentId { get; set; }
 
+    /// <summary>
+    /// The behaviour profile this department points at, or null to inherit its parent's (v2 §10).
+    /// </summary>
+    /// <remarks>
+    /// Null is not "no profile" — it is "ask upward". A deployment that has authored one profile at the root gets
+    /// consistent behaviour everywhere without touching another row, which is what makes profiles adoptable
+    /// incrementally rather than as a big-bang configuration exercise.
+    /// </remarks>
+    public Guid? ProfileId { get; set; }
+
     public bool Active { get; set; } = true;
 
     public DateTimeOffset CreatedAt { get; set; }
@@ -61,6 +71,16 @@ public sealed class Unit
     public string? LdapFonction { get; set; }
 
     public UnitKind Kind { get; set; } = UnitKind.Delivery;
+
+    /// <summary>
+    /// The behaviour profile this unit points at, or null to inherit from its department upward (v2 §10).
+    /// </summary>
+    /// <remarks>
+    /// This is where two sibling units under one department stop being the same tool: one points at a dispatch
+    /// profile and gets the work-order pool, the other points at a delivery profile and gets task progress.
+    /// <see cref="Kind"/> stays for what LDAP sync reads it for and no longer decides anything about the board.
+    /// </remarks>
+    public Guid? ProfileId { get; set; }
 
     public bool Active { get; set; } = true;
 

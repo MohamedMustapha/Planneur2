@@ -156,7 +156,8 @@
     "workingDay": "Journée de travail",
     "workingDayHint": "Bornes de la journée et sessions matin / après-midi. Détermine l'axe du tableau et les raccourcis de saisie. Objet vide = valeurs par défaut (06:00–20:00, 09:00–13:00, 14:00–18:00).",
     "shiftTemplates": "Créneaux de service",
-    "shiftTemplatesHint": "Créneaux proposés par le planning et leur effectif minimum. Consommé par le lot S6."
+    "shiftTemplatesHint": "Créneaux proposés par le planning et leur effectif minimum. Consommé par le lot S6.",
+    "tabProfiles": "Profils"
   },
   "directory": {
     "functionalRole": {
@@ -316,7 +317,22 @@
       "project-build": "Projet — BUILD",
       "project-run": "Projet — RUN",
       "quality-of-life": "Qualité de vie",
-      "recruitment-admin": "Recrutement & administratif"
+      "recruitment-admin": "Recrutement & administratif",
+      "dev": "Développement",
+      "architecture": "Architecture",
+      "testing": "Tests",
+      "deployment": "Déploiement",
+      "incident": "Incident",
+      "request": "Demande",
+      "patching": "Correctifs",
+      "on-call": "Astreinte",
+      "triage": "Tri",
+      "intervention": "Intervention",
+      "escalation": "Escalade",
+      "research": "Recherche",
+      "analysis": "Analyse",
+      "note": "Production de notes",
+      "watch": "Veille"
     },
     "source": {
       "manual": "Saisie manuelle",
@@ -808,5 +824,40 @@
   "obligations": {
     "weekOverTarget": "{{hours}} h au-delà de l’objectif",
     "dismiss": "Masquer jusqu’au prochain chargement"
+  },
+  "profiles": {
+    "title": "Profils de nœud",
+    "subtitle": "Le comportement d'une branche, sous forme de données",
+    "existing": "Profils existants",
+    "editor": "Éditeur",
+    "attach": "Rattachement",
+    "new": "Nouveau",
+    "clone": "Dupliquer",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Profil enregistré.",
+    "none": "Aucun profil pour l'instant.",
+    "code": "Code",
+    "labelKey": "Clé de libellé",
+    "boardArchetypes": "Plannings (séparés par des virgules)",
+    "itemTypes": "Types d'objets",
+    "solvesCategories": "Catégories de problèmes traitées",
+    "headlinePattern": "Phrase d'accroche du rapport",
+    "activityTaxonomy": "Taxonomie d'activités (JSON)",
+    "capabilities": "Capacités (JSON)",
+    "budgetDefaults": "Traitement budgétaire (JSON)",
+    "inheritHint": "Laisser vide pour hériter du niveau supérieur.",
+    "attachUnit": "Unité",
+    "attachProfile": "Profil",
+    "chooseUnit": "Choisir une unité",
+    "inherit": "Hériter",
+    "applyAttachment": "Rattacher",
+    "loadFailed": "Impossible de charger les profils.",
+    "saveFailed": "Impossible d'enregistrer le profil."
+  },
+  "profile": {
+    "delivery": "Delivery",
+    "dispatch": "Dispatch",
+    "advisory": "Études"
   }
 }

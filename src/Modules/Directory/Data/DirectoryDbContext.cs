@@ -26,6 +26,8 @@ public sealed class DirectoryDbContext(DbContextOptions<DirectoryDbContext> opti
 
     public DbSet<DepartmentConfigAudit> DepartmentConfigAudits => Set<DepartmentConfigAudit>();
 
+    public DbSet<NodeProfile> NodeProfiles => Set<NodeProfile>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DirectoryDbContext).Assembly);
@@ -45,6 +47,14 @@ internal sealed class DepartmentConfiguration : IEntityTypeConfiguration<Departm
         builder.Property(department => department.NameKey).HasMaxLength(256).IsRequired();
 
         builder.HasIndex(department => department.Code).IsUnique();
+
+        // Restrict, not cascade: deleting a profile that branches still point at must fail loudly. Silently
+        // nulling the pointer would re-parent a whole branch's behaviour to whatever its ancestor happens to say,
+        // which is the kind of change nobody notices until a board renders the wrong archetype.
+        builder.HasOne<NodeProfile>()
+            .WithMany()
+            .HasForeignKey(department => department.ProfileId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(department => department.Units)
             .WithOne(unit => unit.Department)
@@ -71,6 +81,11 @@ internal sealed class UnitConfiguration : IEntityTypeConfiguration<Unit>
         builder.Property(unit => unit.Kind).HasConversion<string>().HasMaxLength(32);
 
         builder.HasIndex(unit => new { unit.DepartmentId, unit.Code }).IsUnique();
+
+        builder.HasOne<NodeProfile>()
+            .WithMany()
+            .HasForeignKey(unit => unit.ProfileId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // The reconciliation key. Unique so two departments cannot claim the same LDAP fonction — if that ever
         // happens the directory is ambiguous and sync should fail loudly rather than pick one.
@@ -196,5 +211,27 @@ internal sealed class DepartmentConfigAuditConfiguration : IEntityTypeConfigurat
         builder.Property(audit => audit.SnapshotJson).HasColumnType("jsonb").IsRequired();
 
         builder.HasIndex(audit => new { audit.DepartmentId, audit.Version });
+    }
+}
+
+internal sealed class NodeProfileConfiguration : IEntityTypeConfiguration<NodeProfile>
+{
+    public void Configure(EntityTypeBuilder<NodeProfile> builder)
+    {
+        builder.ToTable("node_profile");
+        builder.HasKey(profile => profile.Id);
+
+        builder.Property(profile => profile.Code).HasMaxLength(64).IsRequired();
+        builder.Property(profile => profile.LabelKey).HasMaxLength(256).IsRequired();
+        builder.Property(profile => profile.HeadlinePattern).HasMaxLength(512);
+        builder.Property(profile => profile.ModifiedBy).HasMaxLength(256);
+
+        // jsonb for the same reason the department config uses it: these are read whole but Postgres can still
+        // index into them, and a text column would make the taxonomy unqueryable the day a report needs it.
+        builder.Property(profile => profile.ActivityTaxonomyJson).HasColumnType("jsonb");
+        builder.Property(profile => profile.CapabilitiesJson).HasColumnType("jsonb");
+        builder.Property(profile => profile.BudgetDefaultsJson).HasColumnType("jsonb");
+
+        builder.HasIndex(profile => profile.Code).IsUnique();
     }
 }

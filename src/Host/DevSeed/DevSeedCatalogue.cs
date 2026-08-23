@@ -1,4 +1,4 @@
-using Cracra.Modules.Projects.Domain;
+﻿using Cracra.Modules.Projects.Domain;
 
 namespace Cracra.Host.DevSeed;
 
@@ -89,6 +89,19 @@ internal static class DevSeedCatalogue
         public static readonly Guid Finance = Guid.Parse("22222222-2222-2222-2222-222222222222");
         public static readonly Guid Communication = Guid.Parse("33333333-3333-3333-3333-333333333333");
     }
+
+    /// <summary>
+    /// The units the dev box attaches node profiles to (v2 §10).
+    /// </summary>
+    /// <remarks>
+    /// Exposed rather than left inside <see cref="Units"/> because the attachment happens in the seeder and the
+    /// E2E suite asserts on it. Two of them are siblings under DSI on purpose — that pair is the demonstration.
+    /// </remarks>
+    public static Guid DevelopmentUnitId => Units.Development;
+
+    public static Guid HelpdeskUnitId => Units.Helpdesk;
+
+    public static Guid TransformationUnitId => Units.Transformation;
 
     private static class Units
     {

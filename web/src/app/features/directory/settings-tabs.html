@@ -12,7 +12,12 @@
   <a class="tab" routerLink="/settings/meetings" routerLinkActive="is-active">{{
     t('settings.tabMeetings')
   }}</a>
-  <a class="tab" routerLink="/settings/integrations" routerLinkActive="is-active">{{
-    t('settings.tabIntegrations')
+  @if (integrations()) {
+    <a class="tab" routerLink="/settings/integrations" routerLinkActive="is-active">{{
+      t('settings.tabIntegrations')
+    }}</a>
+  }
+  <a class="tab" routerLink="/settings/profiles" routerLinkActive="is-active">{{
+    t('settings.tabProfiles')
   }}</a>
 </nav>

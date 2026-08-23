@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Web.Users;
+﻿using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Application;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Activities.Domain;
@@ -19,7 +19,8 @@ namespace Cracra.Modules.Activities.Infrastructure;
 /// </remarks>
 internal sealed class DirectoryAdapter(
     IDirectoryReferenceReader reference,
-    IDepartmentConfigReader configs) : IDirectoryPort
+    IDepartmentConfigReader configs,
+    INodeProfileReader profiles) : IDirectoryPort
 {
     public async Task<(Guid UnitId, Guid DepartmentId)?> GetPlacementAsync(Guid personId, CancellationToken ct)
     {
@@ -30,16 +31,39 @@ internal sealed class DirectoryAdapter(
             : null;
     }
 
-    public async Task<DepartmentPolicy> GetPolicyAsync(Guid departmentId, CancellationToken ct)
+    /// <summary>
+    /// Resolves the knobs for one person's week.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Two sources, and the split is not arbitrary. The <em>taxonomy</em> comes from the node profile when one is
+    /// in force, because v2 §10 makes vocabulary a property of the branch: a dispatch unit and a delivery unit in
+    /// the same department genuinely log different things. The <em>weekly target</em> and the <em>working day</em>
+    /// stay on the department config, because those are an employment arrangement rather than a description of
+    /// the work, and they are the same for everyone the department employs.
+    /// </para>
+    /// <para>
+    /// The profile falls back to the department config, which falls back to the canonical buckets. Every step of
+    /// that is a degradation rather than a failure: an unreadable profile must not stop someone recording their
+    /// week, it should only cost them their branch's extra subtypes.
+    /// </para>
+    /// </remarks>
+    public async Task<DepartmentPolicy> GetPolicyAsync(Guid departmentId, Guid? unitId, CancellationToken ct)
     {
         var config = await configs.TryGetAsync(departmentId, ct);
 
-        // No readable config means the platform defaults apply: the canonical buckets and the statutory 35 hours,
-        // soft. Failing here instead would mean one unreadable row stops someone recording their week.
+        var profile = unitId is { } unit
+            ? await profiles.ResolveForUnitAsync(unit, ct)
+            : await profiles.ResolveForDepartmentAsync(departmentId, ct);
+
+        var taxonomy = ActivityTaxonomy.Resolve(profile?.ActivityTaxonomyJson ?? config?.ActivityTaxonomyJson);
+
+        // No readable config means the platform defaults apply: the statutory 35 hours, soft. Failing here instead
+        // would mean one unreadable row stops someone recording their week.
         return config is null
-            ? new DepartmentPolicy(ActivityTaxonomy.Resolve(null), DefaultWeeklyTargetHours, false)
+            ? new DepartmentPolicy(taxonomy, DefaultWeeklyTargetHours, false)
             : new DepartmentPolicy(
-                ActivityTaxonomy.Resolve(config.ActivityTaxonomyJson),
+                taxonomy,
                 config.WeeklyTargetHours,
                 config.EnforceWeeklyTarget,
                 WorkingDayPolicy.Resolve(config.WorkingDayJson));
@@ -101,9 +125,13 @@ internal sealed class ActivityTaxonomyReader(IDirectoryPort directory, IUserCont
     {
         var scope = departmentId ?? user.DepartmentIds.FirstOrDefault();
 
+        // The caller's own unit when they are asking about their own scope: the picker must offer the subtypes
+        // their branch defines, not the ones their department's first unit happens to.
+        var unitId = departmentId is null ? user.UnitId : null;
+
         var taxonomy = scope == Guid.Empty
             ? ActivityTaxonomy.Resolve(null)
-            : (await directory.GetPolicyAsync(scope, ct)).Taxonomy;
+            : (await directory.GetPolicyAsync(scope, unitId, ct)).Taxonomy;
 
         return
         [

@@ -156,7 +156,8 @@
     "workingDay": "Working day",
     "workingDayHint": "The day's bounds and its morning / afternoon sessions. Drives the board's axis and the quick-add presets. An empty object means the defaults (06:00–20:00, 09:00–13:00, 14:00–18:00).",
     "shiftTemplates": "Shift slots",
-    "shiftTemplatesHint": "Slots the scheduler offers and their minimum staffing. Consumed by slice S6."
+    "shiftTemplatesHint": "Slots the scheduler offers and their minimum staffing. Consumed by slice S6.",
+    "tabProfiles": "Profiles"
   },
   "directory": {
     "functionalRole": {
@@ -316,7 +317,22 @@
       "project-build": "Project — BUILD",
       "project-run": "Project — RUN",
       "quality-of-life": "Quality of life",
-      "recruitment-admin": "Recruitment & admin"
+      "recruitment-admin": "Recruitment & admin",
+      "dev": "Development",
+      "architecture": "Architecture",
+      "testing": "Testing",
+      "deployment": "Deployment",
+      "incident": "Incident",
+      "request": "Request",
+      "patching": "Patching",
+      "on-call": "On call",
+      "triage": "Triage",
+      "intervention": "Intervention",
+      "escalation": "Escalation",
+      "research": "Research",
+      "analysis": "Analysis",
+      "note": "Note production",
+      "watch": "Watch"
     },
     "source": {
       "manual": "Typed in",
@@ -808,5 +824,40 @@
   "obligations": {
     "weekOverTarget": "{{hours}} h over target",
     "dismiss": "Hide until the next load"
+  },
+  "profiles": {
+    "title": "Node profiles",
+    "subtitle": "A branch's behaviour, as data",
+    "existing": "Existing profiles",
+    "editor": "Editor",
+    "attach": "Attachment",
+    "new": "New",
+    "clone": "Clone",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Profile saved.",
+    "none": "No profiles yet.",
+    "code": "Code",
+    "labelKey": "Label key",
+    "boardArchetypes": "Boards (comma separated)",
+    "itemTypes": "Item types",
+    "solvesCategories": "Problem categories solved",
+    "headlinePattern": "Report headline pattern",
+    "activityTaxonomy": "Activity taxonomy (JSON)",
+    "capabilities": "Capabilities (JSON)",
+    "budgetDefaults": "Budget treatment (JSON)",
+    "inheritHint": "Leave empty to inherit from above.",
+    "attachUnit": "Unit",
+    "attachProfile": "Profile",
+    "chooseUnit": "Choose a unit",
+    "inherit": "Inherit",
+    "applyAttachment": "Attach",
+    "loadFailed": "Could not load the profiles.",
+    "saveFailed": "Could not save the profile."
+  },
+  "profile": {
+    "delivery": "Delivery",
+    "dispatch": "Dispatch",
+    "advisory": "Advisory"
   }
 }

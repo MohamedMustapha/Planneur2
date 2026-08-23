@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using Cracra.Modules.Reporting.Contracts;
 
@@ -51,6 +51,20 @@ public static class SummaryPrompt
         - Write as a colleague reporting to a colleague, not as an assistant addressing a user.
         """;
 
+    /// <summary>
+    /// The branch's own headline, handed to the model as vocabulary rather than as something to produce.
+    /// </summary>
+    /// <remarks>
+    /// v2 §10.5: the model receives the resolved profile's sentence as a hint so its narrative uses the branch's
+    /// words — incidents in a delivery branch, processed files in a casework one — instead of the platform's
+    /// generic vocabulary. It is stated as an already-written line, and the instruction's first rule already
+    /// forbids restating or recalculating a figure, so nothing here invites it to rewrite the numbers inside.
+    /// </remarks>
+    private static string Headline(ReportView report) =>
+        report.Headline is { Length: > 0 } headline
+            ? $"Branch headline (already computed, use its vocabulary): {headline}{Environment.NewLine}"
+            : string.Empty;
+
     /// <summary>Builds the two messages for a report.</summary>
     /// <param name="audience">
     /// The viewer's widest role, so the narrative is pitched at them. A unit head wants to hear about their
@@ -74,7 +88,7 @@ public static class SummaryPrompt
              Audience role: {audience}
              Period: {report.Period.From:yyyy-MM-dd} to {report.Period.To:yyyy-MM-dd}
              Output language (ISO 639-1): {language}
-
+             {Headline(report)}
              Figures:
              {projection}
              """,

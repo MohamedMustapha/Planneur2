@@ -1,0 +1,143 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('profiles.title')" [subtitle]="t('profiles.subtitle')">
+    <div slot="actions" class="profiles__actions">
+      <button type="button" class="btn btn--neutral" (click)="startNew()">
+        {{ t('profiles.new') }}
+      </button>
+      <button type="button" class="btn btn--neutral" [disabled]="!selected()" (click)="clone()">
+        {{ t('profiles.clone') }}
+      </button>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="saveState() === 'saving'"
+        (click)="save()"
+      >
+        {{ saveState() === 'saving' ? t('profiles.saving') : t('profiles.save') }}
+      </button>
+    </div>
+  </app-page-header>
+
+  <app-settings-tabs />
+
+  <div class="profiles">
+    @if (errorMessage(); as message) {
+      <p class="profiles__error" role="alert">{{ t(message) === message ? message : t(message) }}</p>
+    }
+
+    @if (saveState() === 'saved') {
+      <p class="profiles__saved" role="status">{{ t('profiles.saved') }}</p>
+    }
+
+    <section class="card profiles__section">
+      <header class="card__header">{{ t('profiles.existing') }}</header>
+      <div class="card__body profiles__list">
+        @for (profile of all(); track profile.id) {
+          <button
+            type="button"
+            class="profiles__item"
+            [class.is-active]="profile.id === selectedId()"
+            (click)="edit(profile)"
+          >
+            <span class="profiles__code">{{ profile.code }}</span>
+            <span class="profiles__label">{{ t(profile.labelKey) }}</span>
+          </button>
+        } @empty {
+          <p class="profiles__status">{{ t('profiles.none') }}</p>
+        }
+      </div>
+    </section>
+
+    <section class="card profiles__section">
+      <header class="card__header">{{ t('profiles.editor') }}</header>
+      <div class="card__body profiles__grid">
+        <label class="field">
+          <span class="field__label">{{ t('profiles.code') }}</span>
+          <input class="input" name="code" [(ngModel)]="code" />
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ t('profiles.labelKey') }}</span>
+          <input class="input" name="labelKey" [(ngModel)]="labelKey" />
+        </label>
+
+        <label class="field field--wide">
+          <span class="field__label">{{ t('profiles.boardArchetypes') }}</span>
+          <input class="input" name="boardArchetypes" [(ngModel)]="boardArchetypes" />
+          <span class="field__hint">{{ t('profiles.inheritHint') }}</span>
+        </label>
+
+        <label class="field field--wide">
+          <span class="field__label">{{ t('profiles.itemTypes') }}</span>
+          <input class="input" name="itemTypes" [(ngModel)]="itemTypes" />
+          <span class="field__hint">{{ t('profiles.inheritHint') }}</span>
+        </label>
+
+        <label class="field field--wide">
+          <span class="field__label">{{ t('profiles.solvesCategories') }}</span>
+          <input class="input" name="solvesCategories" [(ngModel)]="solvesCategories" />
+          <span class="field__hint">{{ t('profiles.inheritHint') }}</span>
+        </label>
+
+        <label class="field field--wide">
+          <span class="field__label">{{ t('profiles.headlinePattern') }}</span>
+          <input class="input" name="headlinePattern" [(ngModel)]="headlinePattern" />
+        </label>
+
+        <label class="field field--wide">
+          <span class="field__label">{{ t('profiles.activityTaxonomy') }}</span>
+          <textarea class="input input--code" rows="10" name="taxonomy" [(ngModel)]="activityTaxonomyJson"></textarea>
+          <span class="field__hint">{{ t('profiles.inheritHint') }}</span>
+        </label>
+
+        <label class="field field--wide">
+          <span class="field__label">{{ t('profiles.capabilities') }}</span>
+          <textarea class="input input--code" rows="8" name="capabilities" [(ngModel)]="capabilitiesJson"></textarea>
+          <span class="field__hint">{{ capabilityCodes().join(', ') }}</span>
+        </label>
+
+        <label class="field field--wide">
+          <span class="field__label">{{ t('profiles.budgetDefaults') }}</span>
+          <textarea class="input input--code" rows="5" name="budget" [(ngModel)]="budgetDefaultsJson"></textarea>
+          <span class="field__hint">{{ t('profiles.inheritHint') }}</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="card profiles__section">
+      <header class="card__header">{{ t('profiles.attach') }}</header>
+      <div class="card__body profiles__grid">
+        <label class="field">
+          <span class="field__label">{{ t('profiles.attachUnit') }}</span>
+          <select class="input" name="attachUnit" [(ngModel)]="attachUnitId">
+            <option value="">{{ t('profiles.chooseUnit') }}</option>
+            @for (unit of units(); track unit.id) {
+              <option [value]="unit.id">{{ unit.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field__label">{{ t('profiles.attachProfile') }}</span>
+          <select class="input" name="attachProfile" [(ngModel)]="attachProfileId">
+            <option value="">{{ t('profiles.inherit') }}</option>
+            @for (profile of all(); track profile.id) {
+              <option [value]="profile.id">{{ profile.code }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="field">
+          <button
+            type="button"
+            class="btn btn--primary"
+            [disabled]="!attachUnitId() || saveState() === 'saving'"
+            (click)="attach()"
+          >
+            {{ t('profiles.applyAttachment') }}
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</ng-container>

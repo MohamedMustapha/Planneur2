@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Messaging;
+﻿using Cracra.BuildingBlocks.Messaging;
 
 namespace Cracra.Modules.Reporting.Contracts;
 
@@ -136,7 +136,16 @@ public sealed record ReportView(
     IReadOnlyList<ReportSection> Sections,
     IReadOnlyList<string> AvailableScopes,
     ReportSummaryView? Summary,
-    DateTimeOffset GeneratedAt);
+    DateTimeOffset GeneratedAt,
+    /// <summary>
+    /// The node profile's headline sentence, rendered from this report's own figures (v2 §10.5).
+    /// </summary>
+    /// <remarks>
+    /// Null where no profile is in force, where the profile configures no pattern, or where the scope spans
+    /// branches. All three are the same answer from the reader's point of view — the report opens with its own
+    /// heading — so they are one nullable field rather than a state to distinguish.
+    /// </remarks>
+    string? Headline = null);
 
 /// <summary>A stored export and the short-lived link to fetch it.</summary>
 public sealed record ReportExportView(string ReportId, string Format, Uri Url, DateTimeOffset ExpiresAt, long Bytes);

@@ -28,6 +28,40 @@ export interface PersonSummary {
   readonly active: boolean;
 }
 
+/**
+ * Every capability a node profile can switch off (v2 §10.3).
+ *
+ * Mirrors `NodeCapabilities` on the server, and the mirroring is the point: this is the one map the UI consults,
+ * so a control that can be hidden is registered in exactly one place on each side. A capability that is off means
+ * the control is *absent*, never disabled — showing an advisory branch a greyed-out integration import tells them
+ * the platform is denying them something, which is not what is happening.
+ */
+export const NODE_CAPABILITIES = {
+  integrations: 'integrations',
+  shiftScheduling: 'shift_scheduling',
+  workOrderPool: 'work_order_pool',
+  taskProgress: 'task_progress',
+  kudos: 'kudos',
+  budget: 'budget',
+  strategy: 'strategy',
+} as const;
+
+export type NodeCapability = (typeof NODE_CAPABILITIES)[keyof typeof NODE_CAPABILITIES];
+
+/** The profile in force where the viewer works, already resolved through inheritance by the server. */
+export interface NodeProfileSnapshot {
+  /** The nearest attached profile's code. For display and support only — never branch on it. */
+  readonly sourceCode: string;
+  readonly labelKey: string;
+  readonly activityTaxonomyJson: string;
+  readonly boardArchetypes: readonly string[];
+  readonly itemTypes: readonly string[];
+  readonly capabilities: Readonly<Record<string, boolean>>;
+  readonly solvesCategories: readonly string[];
+  readonly budgetDefaultsJson: string;
+  readonly headlinePattern: string | null;
+}
+
 /** What `/api/directory/me` returns — the client's whole starting context. */
 export interface Me {
   readonly personId: string;
@@ -52,6 +86,11 @@ export interface Me {
    * disagree you see an empty table, never someone else's rows.
    */
   readonly contextualRoles: readonly string[];
+  /**
+   * The profile in force for this person's branch. Null means none is attached anywhere above them, and the
+   * client falls back to platform defaults rather than hiding everything.
+   */
+  readonly profile: NodeProfileSnapshot | null;
 }
 
 /** One job identity, as the rate-card picker needs it: the id it is stored by, the key it renders through. */

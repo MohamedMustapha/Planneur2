@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Abstractions;
+﻿using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Meetings.Contracts;
@@ -78,8 +78,86 @@ internal sealed class ReportComposer(
             sections,
             ReportScope.Available(user),
             Summary: null,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow,
+            await HeadlineAsync(descriptor.Scope, sections, ct));
     }
+
+    /// <summary>
+    /// The profile's headline sentence, rendered from figures this report already computed (v2 §10.5).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Read back out of <paramref name="sections"/> rather than recomputed from the entries. Two reasons, and the
+    /// second is the important one: it costs no extra query, and it makes a headline that disagrees with the body
+    /// of its own report impossible to write. A sentence that says "412 h" above a table totalling 380 destroys
+    /// confidence in every other number on the page, and re-deriving it from the same source would only make that
+    /// mismatch unlikely rather than unreachable.
+    /// </para>
+    /// <para>
+    /// Only for node-scoped reports. A project or a portfolio spans branches by construction, so there is no one
+    /// profile in force over it — rendering some contributor's sentence across a cross-department project would
+    /// be picking a branch's vocabulary arbitrarily and presenting it as the report's own.
+    /// </para>
+    /// </remarks>
+    private async Task<string?> HeadlineAsync(
+        string scope,
+        IReadOnlyList<ReportSection> sections,
+        CancellationToken ct)
+    {
+        if (scope is ReportScopes.Project or ReportScopes.Portfolio)
+        {
+            return null;
+        }
+
+        var profile = await directory.NodeProfileAsync(user.UnitId, user.DepartmentIds.FirstOrDefault(), ct);
+
+        if (profile?.HeadlinePattern is null)
+        {
+            return null;
+        }
+
+        var hours = sections.FirstOrDefault(section => section.Key == "hours");
+
+        // My-scope reports cover one person and carry no headcount metric, which is the correct answer rather
+        // than a missing one.
+        var people = (int)(MetricOf(sections, "headcount")
+            ?? MetricOf(sections, "members")
+            ?? 1m);
+
+        var leading = hours?.Tables
+            .FirstOrDefault(table => table.TitleKey == "reports.table.hoursByType")?.Rows
+            .Where(row => !CanonicalBuckets.Contains(row.Key))
+            .Select(row => (Code: row.Key, LabelKey: row.Label, Hours: row.Values.FirstOrDefault()))
+            .OrderByDescending(row => row.Hours)
+            .ToList() ?? [];
+
+        return HeadlinePattern.Render(
+            profile.HeadlinePattern,
+            HeadlinePattern.Values(
+                people,
+                MetricOf(sections, "actualHours") ?? 0m,
+                leading,
+                sections.Sum(section => section.Notes.Count(note => note.Severity is "critical" or "warning"))));
+    }
+
+    /// <summary>
+    /// The four buckets are excluded from the headline's subtypes on purpose.
+    /// </summary>
+    /// <remarks>
+    /// They are the platform's fixed vocabulary and appear in every branch's table, so binding <c>c1</c> to one
+    /// would give a delivery branch and a casework branch the same headline — which is exactly the sameness v2
+    /// §10 exists to remove. What distinguishes them is what they put <em>underneath</em> those buckets.
+    /// </remarks>
+    private static readonly HashSet<string> CanonicalBuckets = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "project-build", "project-run", "quality-of-life", "recruitment-admin",
+    };
+
+    private static decimal? MetricOf(IReadOnlyList<ReportSection> sections, string key) =>
+        sections
+            .SelectMany(section => section.Metrics)
+            .FirstOrDefault(metric => metric.Key == key)
+            ?.Value;
 
     // --- My work ---------------------------------------------------------------------------------------------
 

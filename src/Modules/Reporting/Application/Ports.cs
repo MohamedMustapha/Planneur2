@@ -1,4 +1,4 @@
-using Cracra.Modules.Activities.Contracts;
+﻿using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Meetings.Contracts;
 using Cracra.Modules.Portfolio.Contracts;
@@ -51,6 +51,9 @@ public interface IDirectoryQueries
     Task<IReadOnlyDictionary<Guid, string>> DepartmentNameKeysAsync(
         IReadOnlyList<Guid> departmentIds,
         CancellationToken ct);
+
+    /// <summary>The node profile in force for the caller's branch (v2 §10), or null where none is attached.</summary>
+    Task<NodeProfileSnapshot?> NodeProfileAsync(Guid? unitId, Guid? departmentId, CancellationToken ct);
 }
 
 public interface IProjectQueries

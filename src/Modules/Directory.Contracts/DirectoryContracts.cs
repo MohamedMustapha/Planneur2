@@ -53,6 +53,53 @@ public sealed record DepartmentConfigSnapshot(
     /// </summary>
     string WorkingDayJson = "{}");
 
+/// <summary>
+/// A node's behaviour, after the inheritance walk — what the branch actually gets (v2 §10).
+/// </summary>
+/// <remarks>
+/// <para>
+/// Every field is resolved, so a consumer never re-implements the walk and never has to decide what a null means.
+/// <paramref name="SourceCode"/> is present for display and support ("this unit is running the DELIVERY profile"),
+/// not for branching: an architecture test asserts no module switches on it.
+/// </para>
+/// <para>
+/// <paramref name="HeadlinePattern"/> stays nullable because "no pattern configured anywhere in my ancestry" is a
+/// real answer — the report then falls back to its own sentence rather than rendering an empty template.
+/// </para>
+/// </remarks>
+public sealed record NodeProfileSnapshot(
+    string SourceCode,
+    string LabelKey,
+    string ActivityTaxonomyJson,
+    IReadOnlyList<string> BoardArchetypes,
+    IReadOnlyList<string> ItemTypes,
+    IReadOnlyDictionary<string, bool> Capabilities,
+    IReadOnlyList<string> SolvesCategories,
+    string BudgetDefaultsJson,
+    string? HeadlinePattern)
+{
+    /// <summary>Whether a capability is on for this node. Unknown codes are off — a typo must not grant a feature.</summary>
+    public bool Allows(string capability) =>
+        Capabilities.TryGetValue(capability, out var enabled) && enabled;
+}
+
+/// <summary>
+/// Resolves the profile in force at a node, for modules outside Directory.
+/// </summary>
+/// <remarks>
+/// Caller-scoped like the rest of Directory's read surface, and it degrades rather than throws: a node with no
+/// profile anywhere in its ancestry returns null, and every consumer is expected to fall back to platform
+/// behaviour. Profiles refine the platform; not being able to read one must not stop someone working.
+/// </remarks>
+public interface INodeProfileReader
+{
+    /// <summary>The effective profile for a unit, walking unit to department to the department's ancestors.</summary>
+    Task<NodeProfileSnapshot?> ResolveForUnitAsync(Guid unitId, CancellationToken ct);
+
+    /// <summary>The effective profile for a department, walking it and its ancestors.</summary>
+    Task<NodeProfileSnapshot?> ResolveForDepartmentAsync(Guid departmentId, CancellationToken ct);
+}
+
 // --- Integration events ------------------------------------------------------------------------------------------
 
 /// <summary>

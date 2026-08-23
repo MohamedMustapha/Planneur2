@@ -5,6 +5,7 @@ import { FocusStore } from '../../core/focus/focus.store';
 import { LayoutStore } from '../../core/layout/layout.store';
 import { NAVIGATION } from '../../core/navigation/navigation';
 import { AccessStore } from '../../core/access/access.store';
+import { CapabilityStore } from '../../core/capabilities/capability.store';
 
 @Component({
   selector: 'app-nav-rail',
@@ -17,6 +18,7 @@ export class NavRail {
   protected readonly layout = inject(LayoutStore);
   protected readonly focus = inject(FocusStore);
   private readonly access = inject(AccessStore);
+  private readonly capabilities = inject(CapabilityStore);
 
   /**
    * Entries the viewer can act on. Recomputed from the session signal, so a role arriving late (the session
@@ -28,7 +30,11 @@ export class NavRail {
     const roles = this.access.roles();
 
     return NAVIGATION.filter(
-      (item) => !item.requiresAnyRole || item.requiresAnyRole.some((role) => roles.includes(role)),
+      (item) =>
+        (!item.requiresAnyRole || item.requiresAnyRole.some((role) => roles.includes(role))) &&
+        // v2 §10.3. ANDed with the role check because they hide for different reasons and both are real: the
+        // role says this viewer cannot use it, the capability says their branch does not do it.
+        (!item.requiresCapability || this.capabilities.allows(item.requiresCapability)),
     );
   });
 

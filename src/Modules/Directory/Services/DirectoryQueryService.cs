@@ -31,7 +31,17 @@ public sealed record MeResponse(
     /// Whether the shell renders in Focus mode. Null means never chosen, and the client applies the default for
     /// the person's role rather than guessing at false.
     /// </summary>
-    bool? FocusMode = null);
+    bool? FocusMode = null,
+    /// <summary>
+    /// The profile in force where this person works (v2 §10), already resolved through the inheritance walk.
+    /// </summary>
+    /// <remarks>
+    /// Delivered with the session rather than fetched separately because the client needs it before it can paint:
+    /// a capability that is off means the control is <em>absent</em>, and a nav that renders first and removes
+    /// entries afterwards has already shown someone a feature their branch does not have. Null means no profile
+    /// anywhere in their ancestry, and the client falls back to platform defaults.
+    /// </remarks>
+    NodeProfileSnapshot? Profile = null);
 
 /// <summary>
 /// A person's own display preferences.
@@ -82,7 +92,10 @@ public interface IDirectoryQueryService
 /// <summary>One functional role, as a picker needs it: the id it is stored by and the key it renders through.</summary>
 public sealed record FunctionalRoleSummary(Guid Id, string Code, string LabelKey, Guid? DepartmentId);
 
-internal sealed class DirectoryQueryService(DirectoryDbContext context, IUserContext user) : IDirectoryQueryService
+internal sealed class DirectoryQueryService(
+    DirectoryDbContext context,
+    IUserContext user,
+    INodeProfileReader profiles) : IDirectoryQueryService
 {
     /// <summary>
     /// Records the caller's preferences and hands back their refreshed record.
@@ -245,7 +258,15 @@ internal sealed class DirectoryQueryService(DirectoryDbContext context, IUserCon
             person.PreferredLanguage,
             person.PreferredTimeZone,
             person.PreferredTheme,
-            person.FocusMode);
+            person.FocusMode,
+            // Resolved from the unit where they actually work, falling back to their department: someone with no
+            // primary unit still belongs to a branch, and handing them no profile at all would strip their nav of
+            // everything a capability can hide rather than of the things their branch genuinely lacks.
+            person.PrimaryUnitId is { } unitId
+                ? await profiles.ResolveForUnitAsync(unitId, ct)
+                : person.PrimaryDepartmentId is { } departmentId
+                    ? await profiles.ResolveForDepartmentAsync(departmentId, ct)
+                    : null);
     }
 
     public async Task<IReadOnlyList<DepartmentSummary>> GetDepartmentsAsync(CancellationToken ct) =>

@@ -44,7 +44,7 @@ internal sealed class ActivityScheduler(
         var placement = await directory.GetPlacementAsync(personId, ct)
             ?? throw new DomainRuleViolationException("That person is not in the directory.");
 
-        var policy = await directory.GetPolicyAsync(placement.DepartmentId, ct);
+        var policy = await directory.GetPolicyAsync(placement.DepartmentId, placement.UnitId, ct);
 
         SourceCodes.TryParse(source, out var parsedSource);
 
@@ -101,7 +101,7 @@ internal sealed class ActivityScheduler(
             throw new DomainRuleViolationException("Only a planned slot can be rescheduled from a board.");
         }
 
-        var policy = await directory.GetPolicyAsync(entry.DepartmentId, ct);
+        var policy = await directory.GetPolicyAsync(entry.DepartmentId, entry.UnitId, ct);
 
         entry.Amend(
             policy.Taxonomy,
@@ -193,7 +193,7 @@ internal sealed class ActivityScheduler(
 
         foreach (var departmentId in rows.Select(row => row.DepartmentId).Distinct())
         {
-            policies[departmentId] = await directory.GetPolicyAsync(departmentId, ct);
+            policies[departmentId] = await directory.GetPolicyAsync(departmentId, null, ct);
         }
 
         return
