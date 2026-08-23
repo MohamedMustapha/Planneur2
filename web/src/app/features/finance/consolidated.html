@@ -1,0 +1,139 @@
+<ng-container *transloco="let t">
+  <app-page-header
+    [title]="t('finance.consolidated.title')"
+    [subtitle]="t('finance.consolidated.subtitle', { year: finance.fiscalYear() })"
+  >
+    <label class="inline-field">
+      <span class="visually-hidden">{{ t('finance.consolidated.mode') }}</span>
+      <select class="control" (change)="setMode($any($event.target).value)">
+        @for (mode of modes; track mode) {
+          <option [value]="mode" [selected]="finance.mode() === mode">
+            {{ mode === 'both' ? t('finance.consolidated.both') : t('finance.consolidated.' + mode) }}
+          </option>
+        }
+      </select>
+    </label>
+
+    <label class="inline-field">
+      <span class="visually-hidden">{{ t('finance.consolidated.subtitle', { year: '' }) }}</span>
+      <select class="control" (change)="setYear($any($event.target).value)">
+        @for (year of years(); track year) {
+          <option [value]="year" [selected]="finance.fiscalYear() === year">{{ year }}</option>
+        }
+      </select>
+    </label>
+  </app-page-header>
+
+  @if (finance.isLoading()) {
+    <p class="muted">{{ t('common.loading') }}</p>
+  } @else if (finance.view(); as view) {
+    @if (view.landed) {
+      <p class="muted">{{ t('finance.consolidated.landed') }}</p>
+    } @else {
+      <button type="button" class="button" (click)="finance.drillTo(null)">
+        {{ t('common.back') }}
+      </button>
+    }
+
+    <table class="rollup">
+      <thead>
+        <tr>
+          <th scope="col">{{ t('finance.consolidated.node') }}</th>
+          <th scope="col" class="num">{{ t('finance.consolidated.capex') }}</th>
+          <th scope="col" class="num">{{ t('finance.consolidated.opex') }}</th>
+          <th scope="col" class="num">{{ t('finance.consolidated.planned') }}</th>
+          <th scope="col" class="num">{{ t('finance.consolidated.variance') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of finance.rows(); track row.node.nodeId) {
+          <tr [class.rollup__root]="row.depth === 0">
+            <th scope="row">
+              <span class="rollup__name" [style.padding-inline-start]="indent(row.depth)">
+                @if (row.hasChildren) {
+                  <button
+                    type="button"
+                    class="rollup__toggle"
+                    [attr.aria-expanded]="!isCollapsed(row.node.nodeId)"
+                    (click)="finance.toggle(row.node.nodeId)"
+                  >
+                    {{ isCollapsed(row.node.nodeId) ? '▸' : '▾' }}
+                  </button>
+                }
+                <button type="button" class="link" (click)="finance.drillTo(row.node.nodeId)">
+                  {{ row.node.name || row.node.code }}
+                </button>
+              </span>
+            </th>
+            <td class="num">{{ row.node.subtree.capex | number: '1.0-0' }}</td>
+            <td class="num">{{ row.node.subtree.opex | number: '1.0-0' }}</td>
+            <td class="num">
+              @if (row.node.plannedAmount !== null) {
+                {{ row.node.plannedAmount | number: '1.0-0' }}
+              } @else {
+                <span class="muted">{{ t('finance.consolidated.noBudget') }}</span>
+              }
+            </td>
+            <td class="num" [class.over]="(row.node.variance ?? 0) < 0">
+              @if (row.node.variance !== null) {
+                {{ row.node.variance | number: '1.0-0' }}
+              } @else {
+                <span class="muted">{{ t('finance.consolidated.noBudget') }}</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <section class="calendars">
+      <article>
+        <h2>{{ t('finance.consolidated.renewing') }}</h2>
+        @if (finance.renewing().length === 0) {
+          <p class="muted">{{ t('finance.consolidated.empty') }}</p>
+        } @else {
+          <ul class="list">
+            @for (license of finance.renewing(); track license.id) {
+              <li>
+                <strong>{{ license.productName }}</strong>
+                <span class="muted">
+                  · {{ license.seats }} {{ t('finance.consolidated.seats') }}
+                  · {{ license.annualCost | number: '1.0-0' }} {{ license.currency }}
+                  @if (license.renewalDate) {
+                    · {{ license.renewalDate }}
+                  }
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+
+      <article>
+        <h2>{{ t('finance.consolidated.expiring') }}</h2>
+        @if (finance.expiring().length === 0) {
+          <p class="muted">{{ t('finance.consolidated.empty') }}</p>
+        } @else {
+          <ul class="list">
+            @for (worker of finance.expiring(); track worker.id) {
+              <li>
+                <strong>{{ worker.displayName }}</strong>
+                <span class="muted">
+                  @if (worker.role) {
+                    · {{ worker.role }}
+                  }
+                  · {{ worker.rate | number: '1.0-0' }} {{ worker.currency }}/{{ worker.rateUnit }}
+                  @if (worker.contractEnd) {
+                    · {{ worker.contractEnd }}
+                  }
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    </section>
+  } @else {
+    <p class="muted">{{ t('finance.consolidated.empty') }}</p>
+  }
+</ng-container>

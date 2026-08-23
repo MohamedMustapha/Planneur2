@@ -31,7 +31,8 @@
     "reports": "Reports",
     "kudos": "Kudos",
     "finance": "Finance",
-    "settings": "Settings"
+    "settings": "Settings",
+    "problems": "Problems"
   },
   "scope": {
     "ariaLabel": "Viewing scope",
@@ -107,7 +108,12 @@
     "close": "Close",
     "cancel": "Cancel",
     "delete": "Delete",
-    "choose": "Choose…"
+    "choose": "Choose…",
+    "next": "Next",
+    "back": "Back",
+    "hidden": "Hidden",
+    "save": "Save",
+    "none": "None"
   },
   "org": {
     "title": "Organisation directory",
@@ -293,6 +299,59 @@
     "scope": {
       "all": "All",
       "mine": "Mine"
+    },
+    "type": {
+      "project": "Project",
+      "platform": "Platform",
+      "product": "Product",
+      "run-service": "Run service",
+      "business-initiative": "Business initiative",
+      "intelligence": "Intelligence"
+    },
+    "classification": {
+      "build": "Build",
+      "run": "Run",
+      "mixed": "Mixed"
+    },
+    "epic": {
+      "idea": "Idea",
+      "planned": "Planned",
+      "in-progress": "In progress",
+      "done": "Done",
+      "deferred": "Deferred"
+    },
+    "catalog": {
+      "title": "Catalog",
+      "subtitle": "{{count}} items you can see",
+      "new": "New",
+      "facets": "Filters",
+      "type": "Type",
+      "classification": "Classification",
+      "state": "Lifecycle",
+      "category": "Category",
+      "any": "Any",
+      "sharedOnly": "Shared only",
+      "empty": "Nothing matches these filters.",
+      "team": "Team",
+      "consumes": "Consumes",
+      "consumedBy": "Consumed by",
+      "estimate": "Estimate",
+      "confidential": "Confidential",
+      "noTeam": "Nobody is on this yet.",
+      "noDependencies": "Depends on nothing.",
+      "notConsumed": "Nothing leans on this.",
+      "node": "Node",
+      "awaitingBanner": "A {{version}} is queued behind what is live.",
+      "createFailed": "Could not create it. Check the name and type."
+    },
+    "wizard": {
+      "step1": "1. Type",
+      "step2": "2. Identity",
+      "name": "Name",
+      "summary": "Summary",
+      "categoryHint": "infra, collaboration, security…",
+      "similar": "This may already exist:",
+      "create": "Create"
     }
   },
   "activity": {
@@ -806,7 +865,31 @@
     "effectiveTo": "Until",
     "effectiveToHint": "Exclusive. Empty means still current.",
     "current": "current",
-    "addRateCard": "Add the rate"
+    "addRateCard": "Add the rate",
+    "consolidated": {
+      "title": "Consolidated budget",
+      "subtitle": "Fiscal year {{year}}",
+      "node": "Node",
+      "capex": "Capex",
+      "opex": "Opex",
+      "planned": "Budget",
+      "variance": "Variance",
+      "own": "Own",
+      "subtree": "Total",
+      "mode": "View",
+      "both": "Capex and opex",
+      "landed": "Showing the highest node you head.",
+      "noBudget": "—",
+      "licenses": "Licences",
+      "externals": "Consultants",
+      "renewing": "Renewing within 90 days",
+      "expiring": "Contracts ending",
+      "seats": "Seats",
+      "annual": "Annual cost",
+      "renewal": "Renewal",
+      "contractEnd": "Contract end",
+      "empty": "Nothing to show for this year."
+    }
   },
   "preferences": {
     "language": "Language",
@@ -859,5 +942,59 @@
     "delivery": "Delivery",
     "dispatch": "Dispatch",
     "advisory": "Advisory"
+  },
+  "problems": {
+    "title": "Problems",
+    "subtitle": "What is costing you time",
+    "report": "Report a problem",
+    "sort": "Sort by",
+    "sortImpact": "Impact",
+    "sortVotes": "Votes",
+    "sortRecent": "Recent",
+    "empty": "Nothing reported yet.",
+    "votes": "votes",
+    "proposals": "proposals",
+    "hoursLost": "{{hours}} h/year lost",
+    "vote": "Me too",
+    "voted": "You voted",
+    "propose": "Propose a fix",
+    "triage": "Triage",
+    "accept": "Accept",
+    "decline": "Decline",
+    "duplicate": "Duplicate",
+    "convert": "Convert to a project",
+    "reason": "Reason",
+    "titleField": "What happens?",
+    "descriptionField": "Details",
+    "categoryField": "Category",
+    "timeLossField": "Hours lost each time",
+    "frequencyField": "How often",
+    "affectedField": "People affected",
+    "similar": "Already reported?",
+    "submit": "Send",
+    "converted": "Converted to a project",
+    "category": {
+      "work-process": "Work process",
+      "project": "Project",
+      "quality-of-life": "Quality of life",
+      "tooling": "Tooling",
+      "data": "Data",
+      "other": "Other"
+    },
+    "frequency": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "occasional": "Occasional"
+    },
+    "status": {
+      "new": "New",
+      "triaged": "Triaged",
+      "accepted": "Accepted",
+      "converted": "Converted",
+      "resolved": "Resolved",
+      "declined": "Declined",
+      "duplicate": "Duplicate"
+    }
   }
 }

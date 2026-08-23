@@ -31,7 +31,8 @@
     "reports": "Informes",
     "kudos": "Kudos",
     "finance": "Finanzas",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "problems": "Problemas"
   },
   "scope": {
     "ariaLabel": "Ámbito de consulta",
@@ -107,7 +108,12 @@
     "close": "Cerrar",
     "cancel": "Cancelar",
     "delete": "Eliminar",
-    "choose": "Elegir…"
+    "choose": "Elegir…",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "hidden": "Oculto",
+    "save": "Guardar",
+    "none": "Ninguno"
   },
   "org": {
     "title": "Directorio de la organización",
@@ -293,6 +299,59 @@
     "scope": {
       "all": "Todo",
       "mine": "Los míos"
+    },
+    "type": {
+      "project": "Proyecto",
+      "platform": "Plataforma",
+      "product": "Producto",
+      "run-service": "Servicio recurrente",
+      "business-initiative": "Iniciativa de negocio",
+      "intelligence": "Inteligencia económica"
+    },
+    "classification": {
+      "build": "Build",
+      "run": "Run",
+      "mixed": "Mixto"
+    },
+    "epic": {
+      "idea": "Idea",
+      "planned": "Planificado",
+      "in-progress": "En curso",
+      "done": "Hecho",
+      "deferred": "Aplazado"
+    },
+    "catalog": {
+      "title": "Catálogo",
+      "subtitle": "{{count}} elementos visibles para usted",
+      "new": "Nuevo",
+      "facets": "Filtros",
+      "type": "Tipo",
+      "classification": "Clasificación",
+      "state": "Ciclo de vida",
+      "category": "Categoría",
+      "any": "Todos",
+      "sharedOnly": "Solo compartidos",
+      "empty": "Nada coincide con estos filtros.",
+      "team": "Equipo",
+      "consumes": "Consume",
+      "consumedBy": "Consumido por",
+      "estimate": "Estimación",
+      "confidential": "Confidencial",
+      "noTeam": "Todavía no hay nadie asignado.",
+      "noDependencies": "No depende de nada.",
+      "notConsumed": "Nada se apoya en esto.",
+      "node": "Entidad",
+      "awaitingBanner": "Hay una versión {{version}} en cola detrás de lo que está en producción.",
+      "createFailed": "No se pudo crear. Revise el nombre y el tipo."
+    },
+    "wizard": {
+      "step1": "1. Tipo",
+      "step2": "2. Identidad",
+      "name": "Nombre",
+      "summary": "Resumen",
+      "categoryHint": "infra, colaboración, seguridad…",
+      "similar": "Puede que ya exista:",
+      "create": "Crear"
     }
   },
   "activity": {
@@ -806,7 +865,31 @@
     "effectiveTo": "Hasta",
     "effectiveToHint": "Exclusivo. Vacío significa vigente.",
     "current": "vigente",
-    "addRateCard": "Añadir la tarifa"
+    "addRateCard": "Añadir la tarifa",
+    "consolidated": {
+      "title": "Presupuesto consolidado",
+      "subtitle": "Ejercicio {{year}}",
+      "node": "Entidad",
+      "capex": "Capex",
+      "opex": "Opex",
+      "planned": "Presupuesto",
+      "variance": "Desviación",
+      "own": "Propio",
+      "subtree": "Total",
+      "mode": "Vista",
+      "both": "Capex y opex",
+      "landed": "Mostrando la entidad más alta que usted dirige.",
+      "noBudget": "—",
+      "licenses": "Licencias",
+      "externals": "Consultores",
+      "renewing": "Renovaciones en 90 días",
+      "expiring": "Contratos que terminan",
+      "seats": "Puestos",
+      "annual": "Coste anual",
+      "renewal": "Renovación",
+      "contractEnd": "Fin de contrato",
+      "empty": "Nada que mostrar para este ejercicio."
+    }
   },
   "preferences": {
     "language": "Idioma",
@@ -859,5 +942,59 @@
     "delivery": "Delivery",
     "dispatch": "Despacho",
     "advisory": "Estudios"
+  },
+  "problems": {
+    "title": "Problemas",
+    "subtitle": "Lo que le hace perder tiempo",
+    "report": "Reportar un problema",
+    "sort": "Ordenar por",
+    "sortImpact": "Impacto",
+    "sortVotes": "Votos",
+    "sortRecent": "Recientes",
+    "empty": "Nada reportado todavía.",
+    "votes": "votos",
+    "proposals": "propuestas",
+    "hoursLost": "{{hours}} h/año perdidas",
+    "vote": "Yo también",
+    "voted": "Ha votado",
+    "propose": "Proponer una solución",
+    "triage": "Clasificar",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "duplicate": "Duplicado",
+    "convert": "Convertir en proyecto",
+    "reason": "Motivo",
+    "titleField": "¿Qué ocurre?",
+    "descriptionField": "Detalles",
+    "categoryField": "Categoría",
+    "timeLossField": "Horas perdidas cada vez",
+    "frequencyField": "Frecuencia",
+    "affectedField": "Personas afectadas",
+    "similar": "¿Ya reportado?",
+    "submit": "Enviar",
+    "converted": "Convertido en proyecto",
+    "category": {
+      "work-process": "Proceso",
+      "project": "Proyecto",
+      "quality-of-life": "Calidad de vida",
+      "tooling": "Herramientas",
+      "data": "Datos",
+      "other": "Otro"
+    },
+    "frequency": {
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "monthly": "Mensual",
+      "occasional": "Ocasional"
+    },
+    "status": {
+      "new": "Nuevo",
+      "triaged": "Clasificado",
+      "accepted": "Aceptado",
+      "converted": "Convertido",
+      "resolved": "Resuelto",
+      "declined": "Rechazado",
+      "duplicate": "Duplicado"
+    }
   }
 }

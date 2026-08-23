@@ -22,6 +22,9 @@ const NEXT_ACTION: Record<PortfolioState, 'commit' | 'activate' | 'archive' | nu
   considered: 'commit',
   committed: 'activate',
   active: 'archive',
+  // A queued next version is still live, so the only forward move left is retirement. Declaring the version
+  // itself happens on the identity card, where the epics that justify it are visible.
+  'awaiting-vnext': 'archive',
   dephase: null,
 };
 

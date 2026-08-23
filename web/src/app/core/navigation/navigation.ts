@@ -49,6 +49,9 @@ export const NAVIGATION: readonly NavigationItem[] = [
   { id: 'projects', route: '/projects', labelKey: 'nav.projects', icon: '◈' },
   { id: 'portfolio', route: '/portfolio', labelKey: 'nav.portfolio', icon: '▦' },
   { id: 'reports', route: '/reports', labelKey: 'nav.reports', icon: '▥' },
+  // No role and no capability: anybody may report what wastes their week, and a branch that has configured
+  // nothing still gets the intake (v2 §05).
+  { id: 'problems', route: '/problems', labelKey: 'nav.problems', icon: '⚑' },
   {
     id: 'kudos',
     route: '/kudos',

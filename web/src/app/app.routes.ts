@@ -48,7 +48,15 @@ export const routes: Routes = [
     loadComponent: () => import('./features/projects/project-detail').then((m) => m.ProjectDetail),
   },
   {
+    // The catalog is the landing view now, and the flux board is one route away (v2 §03.2). The kanban answers
+    // "where is our work"; the question people arrive with is "does this already exist", and only one of those
+    // two is worth an empty screen when the answer is no.
     path: 'portfolio',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/portfolio/catalog').then((m) => m.Catalog),
+  },
+  {
+    path: 'portfolio/flux',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/portfolio/portfolio-board').then((m) => m.PortfolioBoard),
@@ -70,9 +78,24 @@ export const routes: Routes = [
   {
     // No scope in the route, for the same reason the report has none: which department's capitalization somebody
     // may read is a server fact, and a /finance/department/<id> URL would be a client-side claim about it.
+    // The consolidated view lands first (v2 §04.2): it opens on the highest node the caller heads and always
+    // shows something, where the capex/opex screen needed a project picked before it said anything at all. That
+    // one is still here, one route along, for the per-project split.
     path: 'finance',
     canActivate: [authGuard],
+    loadComponent: () => import('./features/finance/consolidated').then((m) => m.Consolidated),
+  },
+  {
+    path: 'finance/capex-opex',
+    canActivate: [authGuard],
     loadComponent: () => import('./features/finance/capex-opex').then((m) => m.CapexOpex),
+  },
+  {
+    // Reporting an irritant needs no role, which is the whole point: a platform where saying "this wastes my
+    // week" requires a hat is a platform where nobody says it (v2 §05).
+    path: 'problems',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/problems/problems').then((m) => m.Problems),
   },
   {
     path: 'settings',

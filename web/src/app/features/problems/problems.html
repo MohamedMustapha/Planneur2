@@ -1,0 +1,231 @@
+<ng-container *transloco="let t">
+  <app-page-header [title]="t('problems.title')" [subtitle]="t('problems.subtitle')">
+    <button type="button" class="button button--primary" (click)="openForm()">
+      {{ t('problems.report') }}
+    </button>
+  </app-page-header>
+
+  <section class="filters">
+    <label class="facet">
+      <span class="facet__label">{{ t('problems.sort') }}</span>
+      <select class="control" (change)="setSort($any($event.target).value)">
+        @for (sort of sorts; track sort) {
+          <option [value]="sort" [selected]="problems.sort() === sort">
+            {{ t('problems.sort' + (sort === 'impact' ? 'Impact' : sort === 'votes' ? 'Votes' : 'Recent')) }}
+          </option>
+        }
+      </select>
+    </label>
+
+    <label class="facet">
+      <span class="facet__label">{{ t('problems.categoryField') }}</span>
+      <select class="control" (change)="setCategory($any($event.target).value)">
+        <option value="">{{ t('common.none') }}</option>
+        @for (category of categories; track category) {
+          <option [value]="category" [selected]="problems.category() === category">
+            {{ t('problems.category.' + category) }}
+          </option>
+        }
+      </select>
+    </label>
+  </section>
+
+  @if (problems.isLoading()) {
+    <p class="muted">{{ t('common.loading') }}</p>
+  } @else if (problems.problems().length === 0) {
+    <p class="muted">{{ t('problems.empty') }}</p>
+  } @else {
+    <ul class="problems">
+      @for (card of problems.problems(); track card.id) {
+        <li class="problem">
+          <button type="button" class="problem__main" (click)="open(card)">
+            <header class="problem__head">
+              <span class="problem__code">{{ card.code }}</span>
+              <span class="pill" [class]="'pill pill--' + card.status">
+                {{ t('problems.status.' + card.status) }}
+              </span>
+            </header>
+
+            <h2 class="problem__title">{{ card.title }}</h2>
+
+            <p class="problem__meta">
+              <span class="chip">{{ t('problems.category.' + card.category) }}</span>
+              <span class="chip">{{ t('problems.frequency.' + card.impactFrequency) }}</span>
+              @if (card.annualHoursLost > 0) {
+                <span class="chip chip--impact">
+                  {{ t('problems.hoursLost', { hours: (card.annualHoursLost | number: '1.0-0') }) }}
+                </span>
+              }
+              <span class="muted">{{ card.proposalCount }} {{ t('problems.proposals') }}</span>
+            </p>
+          </button>
+
+          <button
+            type="button"
+            class="votes"
+            [class.votes--on]="card.votedByMe"
+            [attr.aria-pressed]="card.votedByMe"
+            (click)="vote(card)"
+          >
+            <span class="votes__count">{{ card.voteCount }}</span>
+            <span class="votes__label">{{ card.votedByMe ? t('problems.voted') : t('problems.vote') }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (selected(); as detail) {
+    <aside class="drawer" role="dialog" [attr.aria-label]="detail.card.title">
+      <header class="drawer__head">
+        <div>
+          <span class="problem__code">{{ detail.card.code }}</span>
+          <h2>{{ detail.card.title }}</h2>
+        </div>
+        <button type="button" class="button" (click)="close()">{{ t('common.close') }}</button>
+      </header>
+
+      @if (detail.card.description) {
+        <p>{{ detail.card.description }}</p>
+      }
+
+      @if (detail.card.convertedItemId) {
+        <p class="drawer__banner">{{ t('problems.converted') }}</p>
+      }
+
+      @if (detail.card.decisionReason) {
+        <p class="muted">{{ t('problems.reason') }}: {{ detail.card.decisionReason }}</p>
+      }
+
+      <h3>{{ t('problems.proposals') }}</h3>
+      @if (detail.proposals.length === 0) {
+        <p class="muted">{{ t('problems.empty') }}</p>
+      } @else {
+        <ul class="list">
+          @for (proposal of detail.proposals; track proposal.id) {
+            <li>
+              {{ proposal.description }}
+              <span class="muted">— {{ proposal.authorName ?? t('common.hidden') }}</span>
+            </li>
+          }
+        </ul>
+      }
+
+      @if (canTriage()) {
+        <div class="drawer__actions">
+          @if (detail.card.status === 'new' || detail.card.status === 'triaged') {
+            <button type="button" class="button" (click)="accept(detail.card)">
+              {{ t('problems.accept') }}
+            </button>
+          }
+          @if (detail.card.status === 'accepted') {
+            <button type="button" class="button button--primary" (click)="convert(detail.card)">
+              {{ t('problems.convert') }}
+            </button>
+          }
+        </div>
+      }
+    </aside>
+  }
+
+  @if (formOpen()) {
+    <aside class="drawer" role="dialog" [attr.aria-label]="t('problems.report')">
+      <header class="drawer__head">
+        <h2>{{ t('problems.report') }}</h2>
+        <button type="button" class="button" (click)="closeForm()">{{ t('common.close') }}</button>
+      </header>
+
+      <label class="field">
+        <span>{{ t('problems.titleField') }}</span>
+        <input
+          class="control control--big"
+          [ngModel]="draftTitle()"
+          (ngModelChange)="onTitleChanged($event)"
+        />
+      </label>
+
+      @if (similar().length > 0) {
+        <div class="similar">
+          <p>{{ t('problems.similar') }}</p>
+          <ul class="list">
+            @for (card of similar(); track card.id) {
+              <li>{{ card.code }} — {{ card.title }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <label class="field">
+        <span>{{ t('problems.descriptionField') }}</span>
+        <textarea
+          class="control control--big"
+          rows="3"
+          [ngModel]="draftDescription()"
+          (ngModelChange)="draftDescription.set($event)"
+        ></textarea>
+      </label>
+
+      <label class="field">
+        <span>{{ t('problems.categoryField') }}</span>
+        <select
+          class="control control--big"
+          [ngModel]="draftCategory()"
+          (ngModelChange)="draftCategory.set($event)"
+        >
+          @for (category of categories; track category) {
+            <option [value]="category">{{ t('problems.category.' + category) }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>{{ t('problems.timeLossField') }}</span>
+          <input
+            class="control control--big"
+            type="number"
+            step="0.25"
+            min="0"
+            [ngModel]="draftTimeLoss()"
+            (ngModelChange)="draftTimeLoss.set($event)"
+          />
+        </label>
+
+        <label class="field">
+          <span>{{ t('problems.frequencyField') }}</span>
+          <select
+            class="control control--big"
+            [ngModel]="draftFrequency()"
+            (ngModelChange)="draftFrequency.set($event)"
+          >
+            @for (frequency of frequencies; track frequency) {
+              <option [value]="frequency">{{ t('problems.frequency.' + frequency) }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>{{ t('problems.affectedField') }}</span>
+          <input
+            class="control control--big"
+            type="number"
+            min="0"
+            [ngModel]="draftAffected()"
+            (ngModelChange)="draftAffected.set($event)"
+          />
+        </label>
+      </div>
+
+      <div class="drawer__actions">
+        <button
+          type="button"
+          class="button button--primary"
+          [disabled]="!canSend() || busy()"
+          (click)="send()"
+        >
+          {{ t('problems.submit') }}
+        </button>
+      </div>
+    </aside>
+  }
+</ng-container>

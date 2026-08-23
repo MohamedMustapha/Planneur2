@@ -1,0 +1,199 @@
+.filters {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-block-end: var(--space-5);
+}
+
+.facet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  &__label {
+    font-size: var(--text-sm);
+    color: var(--fg-muted);
+  }
+}
+
+.problems {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.problem {
+  display: flex;
+  gap: var(--space-3);
+  align-items: stretch;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    text-align: start;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  &__code {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--fg-muted);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--text-md);
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+}
+
+/* Big enough to press without aiming — the "me too" is the one gesture most people will ever make here. */
+.votes {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-1);
+  min-inline-size: 6rem;
+  padding: var(--space-3);
+  border: 0;
+  border-inline-start: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  border-start-end-radius: var(--radius-lg);
+  border-end-end-radius: var(--radius-lg);
+
+  &--on {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  &__count {
+    font-size: var(--text-lg);
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__label {
+    font-size: var(--text-xs);
+  }
+}
+
+.chip {
+  padding: 0.1rem var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  font-size: var(--text-xs);
+
+  &--impact {
+    background: var(--warn-soft, var(--accent-soft));
+    border-color: transparent;
+  }
+}
+
+.pill {
+  padding: 0.1rem var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  background: var(--surface-sunken);
+
+  &--accepted,
+  &--converted {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  &--declined,
+  &--duplicate {
+    opacity: 0.7;
+  }
+}
+
+.drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: min(32rem, 100vw);
+  overflow-y: auto;
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  border-inline-start: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-block-end: var(--space-4);
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  &__banner {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--accent-soft);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    margin-block-start: var(--space-4);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-block-end: var(--space-4);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--space-3);
+}
+
+.similar {
+  padding: var(--space-3);
+  margin-block-end: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.list {
+  padding-inline-start: var(--space-4);
+  margin: 0;
+}
+
+.muted {
+  color: var(--fg-muted);
+}

@@ -1,0 +1,236 @@
+.facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+  margin-block-end: var(--space-5);
+}
+
+.facet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+
+  &__label {
+    font-size: var(--text-sm);
+    color: var(--fg-muted);
+  }
+}
+
+.group {
+  margin-block-end: var(--space-6);
+
+  &__title {
+    font-size: var(--text-lg);
+    margin-block-end: var(--space-3);
+  }
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  text-align: start;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--accent);
+  }
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__code {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--fg-muted);
+  }
+
+  &__name {
+    font-size: var(--text-md);
+    margin: 0;
+  }
+
+  &__summary {
+    color: var(--fg-muted);
+    font-size: var(--text-sm);
+    margin: 0;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  &__facts {
+    display: flex;
+    gap: var(--space-4);
+    margin: 0;
+
+    dt {
+      font-size: var(--text-xs);
+      color: var(--fg-muted);
+    }
+
+    dd {
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__iteration {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--accent);
+  }
+}
+
+.pill {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
+  padding: 0.1rem var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  background: var(--surface-sunken);
+
+  &--active {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  /* Live, with a next version queued. Visually a forward state, not a retired one. */
+  &--awaiting-vnext {
+    background: var(--warn-soft, var(--accent-soft));
+    color: var(--warn-strong, var(--accent-strong));
+  }
+
+  &--dephase {
+    opacity: 0.7;
+  }
+
+  &__version {
+    font-weight: 600;
+  }
+}
+
+.chip {
+  padding: 0.1rem var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: var(--text-xs);
+  cursor: pointer;
+
+  &--on {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  &--type {
+    background: var(--surface-sunken);
+  }
+
+  &--muted {
+    color: var(--fg-muted);
+  }
+}
+
+.drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: min(30rem, 100vw);
+  overflow-y: auto;
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  border-inline-start: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-block-end: var(--space-4);
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  &__banner {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--warn-soft, var(--accent-soft));
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+  }
+}
+
+.steps {
+  display: flex;
+  gap: var(--space-3);
+  padding: 0;
+  margin-block-end: var(--space-4);
+  list-style: none;
+  color: var(--fg-muted);
+
+  &__on {
+    color: var(--fg);
+    font-weight: 600;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-block-end: var(--space-4);
+}
+
+.similar {
+  padding: var(--space-3);
+  margin-block-end: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.team-group h4 {
+  margin-block: var(--space-3) var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+
+.list {
+  padding-inline-start: var(--space-4);
+  margin: 0;
+}
+
+.error {
+  color: var(--danger, crimson);
+}
+
+.muted {
+  color: var(--fg-muted);
+}
