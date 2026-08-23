@@ -143,7 +143,19 @@ public sealed record HomeNodeScope(Guid NodeId, IReadOnlyList<Guid> NodePath);
 public interface IOrgNodeReader
 {
     Task<HomeNodeScope?> GetHomeScopeAsync(Guid personId, CancellationToken ct);
+
+    /// <summary>A node and everything beneath it, in no particular order. RLS decides what the caller sees.</summary>
+    Task<IReadOnlyList<OrgNodeSummary>> GetSubtreeAsync(Guid nodeId, CancellationToken ct);
 }
+
+/// <summary>One node, as anything outside Directory sees it. Level is a number, never a name.</summary>
+public sealed record OrgNodeSummary(
+    Guid Id,
+    Guid? ParentId,
+    int LevelNo,
+    string Code,
+    string Name,
+    bool Active);
 
 public interface IDirectoryReader
 {

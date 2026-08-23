@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using Cracra.BuildingBlocks.Ai;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
@@ -35,6 +35,13 @@ internal sealed class ActivityAdapter(IActivityScheduler activities, IDepartment
         DateOnly to,
         CancellationToken ct) =>
         personIds.Count == 0 ? [] : await activities.GetForPeopleAsync(personIds, from, to, ct);
+
+    public async Task<IReadOnlyList<NodeHoursSlice>> HoursByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct) =>
+        await activities.GetHoursByNodeAsync(rootNodeId, from, to, ct);
 
     public async Task<IReadOnlyList<ActivityEntryView>> ForProjectAsync(
         Guid projectId,
@@ -289,4 +296,10 @@ internal sealed class SummaryStore(ReportingDbContext context, IUserContext user
         summary.Language,
         summary.PromptHash,
         summary.CreatedAt);
+}
+
+internal sealed class OrgNodeQueries(IOrgNodeReader nodes) : IOrgNodeQueries
+{
+    public async Task<IReadOnlyList<OrgNodeSummary>> SubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await nodes.GetSubtreeAsync(nodeId, ct);
 }

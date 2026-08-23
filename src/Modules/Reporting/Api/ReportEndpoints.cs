@@ -189,3 +189,58 @@ public sealed class ExportReportEndpoint(ISender sender) : Endpoint<ExportReport
     public override async Task HandleAsync(ExportReportRequest request, CancellationToken ct) =>
         await Send.OkAsync(await sender.Send(new ExportReportCommand(request.Id, request.Format), ct), ct);
 }
+
+public sealed class GetNodeBriefRequest
+{
+    [QueryParam]
+    public Guid NodeId { get; set; }
+
+    [QueryParam]
+    public string? Period { get; set; }
+
+    [QueryParam]
+    public DateOnly? From { get; set; }
+
+    [QueryParam]
+    public DateOnly? To { get; set; }
+
+    /// <summary>1 for the immediate children, all to expand the whole subtree. Defaults to 1.</summary>
+    [QueryParam]
+    public string? Depth { get; set; }
+}
+
+/// <summary>
+/// The rollup brief for one node (v2 §01.4).
+/// </summary>
+/// <remarks>
+/// Authenticated rather than head-gated, for the same reason as the report above and one more: what a caller may
+/// see is decided by RLS on the rows the brief counts, so asking for a node above you returns a brief with nothing
+/// in it rather than somebody else's numbers. A node the caller cannot read at all is a 404, the answer a
+/// non-existent id already gets.
+/// </remarks>
+public sealed class GetNodeBriefEndpoint(ISender sender) : Endpoint<GetNodeBriefRequest, NodeBriefView>
+{
+    public override void Configure()
+    {
+        Get("/reports/brief");
+        Policies(CracraPolicies.Authenticated);
+        Description(builder => builder.WithTags("Reports")
+            .WithSummary("A node's own aggregate, plus one block per child already rolled up."));
+    }
+
+    public override async Task HandleAsync(GetNodeBriefRequest request, CancellationToken ct)
+    {
+        var brief = await sender.Send(
+            new GetNodeBriefQuery(request.NodeId, request.Period, request.From, request.To, request.Depth),
+            ct);
+
+        if (brief is null)
+        {
+            await Send.NotFoundAsync(ct);
+
+            return;
+        }
+
+        await Send.OkAsync(brief, ct);
+    }
+}

@@ -45,7 +45,7 @@ export class ProjectDetail {
 
   /** Only a delivery lead sees the editing affordances. RLS still decides whether the write succeeds. */
   protected readonly canEdit = computed(() =>
-    this.access.roles().some((role) => ['project-lead', 'po', 'unit-head', 'dept-head', 'pmo'].includes(role)),
+    this.access.roles().some((role) => ['project-lead', 'po', 'node-head', 'pmo'].includes(role)),
   );
 
   protected readonly leadDepartment = computed(() =>

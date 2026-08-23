@@ -1,4 +1,4 @@
-﻿using Cracra.Modules.Activities.Contracts;
+using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Meetings.Contracts;
 using Cracra.Modules.Portfolio.Contracts;
@@ -38,6 +38,19 @@ public interface IActivityQueries
 
     /// <summary>The department's weekly target and whether it is enforced — the "35h status" line.</summary>
     Task<(decimal TargetHours, bool Enforced)> TargetAsync(Guid? departmentId, CancellationToken ct);
+
+    /// <summary>Hours over a window, one row per node in a subtree. The brief's only source of numbers.</summary>
+    Task<IReadOnlyList<NodeHoursSlice>> HoursByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct);
+}
+
+/// <summary>The org tree, for the one report whose shape is the tree itself.</summary>
+public interface IOrgNodeQueries
+{
+    Task<IReadOnlyList<OrgNodeSummary>> SubtreeAsync(Guid nodeId, CancellationToken ct);
 }
 
 public interface IDirectoryQueries

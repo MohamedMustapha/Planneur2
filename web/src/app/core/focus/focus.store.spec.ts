@@ -17,14 +17,16 @@ describe('focusRouteFor', () => {
     expect(focusRouteFor(['member'])).toBe('/board');
   });
 
-  it('lands a unit head on their team board', () => {
-    expect(focusRouteFor(['member', 'unit-head'])).toBe('/team');
+  it('lands a head on the screen that compares what is beneath them', () => {
+    // One landing for every head (v2 §01.2). Which branch it shows is the server's answer, not a second rule
+    // here: a pôle head and a service head open on the same screen and see different things in it.
+    expect(focusRouteFor(['member', 'node-head'])).toBe('/department');
   });
 
   it('prefers the widest responsibility when somebody wears two hats', () => {
     // Being a PMO is the job; being a member is how the payroll describes you. Opening on the personal week would
     // make the first click of every session "navigate away from here".
-    expect(focusRouteFor(['member', 'unit-head', 'pmo'])).toBe('/portfolio');
+    expect(focusRouteFor(['member', 'node-head', 'pmo'])).toBe('/portfolio');
   });
 
   it('falls back to the board for a viewer with no contextual role yet', () => {
@@ -39,7 +41,7 @@ describe('focusDefaultFor', () => {
   });
 
   it('is off for anyone whose day is comparison', () => {
-    expect(focusDefaultFor(['member', 'dept-head'])).toBe(false);
+    expect(focusDefaultFor(['member', 'node-head'])).toBe(false);
     expect(focusDefaultFor(['pmo'])).toBe(false);
     expect(focusDefaultFor(['po'])).toBe(false);
   });
@@ -112,7 +114,7 @@ describe('FocusStore', () => {
 
   it('applies the role default while nobody has chosen', () => {
     expect(storeFor(['member']).store.enabled()).toBe(true);
-    expect(storeFor(['member', 'dept-head']).store.enabled()).toBe(false);
+    expect(storeFor(['member', 'node-head']).store.enabled()).toBe(false);
   });
 
   it('lets a choice override the default in either direction', () => {
@@ -253,10 +255,10 @@ describe('FocusStore', () => {
   });
 
   it('sends the viewer back to their focus screen', () => {
-    const { store, navigated } = storeFor(['member', 'unit-head']);
+    const { store, navigated } = storeFor(['member', 'node-head']);
 
     store.returnToFocus();
 
-    expect(navigated).toEqual(['/team']);
+    expect(navigated).toEqual(['/department']);
   });
 });

@@ -17,4 +17,16 @@ internal sealed class OrgNodeReader(DirectoryDbContext context) : IOrgNodeReader
             ? null
             : new HomeNodeScope(found.HomeNodeId, found.NodeAncestorIds);
     }
+
+    public async Task<IReadOnlyList<OrgNodeSummary>> GetSubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await context.OrgNodes
+            .Where(node => node.AncestorIds.Contains(nodeId))
+            .Select(node => new OrgNodeSummary(
+                node.Id,
+                node.ParentId,
+                node.LevelNo,
+                node.Code,
+                node.Name,
+                node.Active))
+            .ToListAsync(ct);
 }

@@ -40,8 +40,7 @@ export class UpcomingStrip {
    */
   protected readonly canManage = computed(() =>
     this.session.hasAny(
-      CONTEXTUAL_ROLES.unitHead,
-      CONTEXTUAL_ROLES.departmentHead,
+      CONTEXTUAL_ROLES.nodeHead,
       CONTEXTUAL_ROLES.projectLead,
       CONTEXTUAL_ROLES.productOwner,
       CONTEXTUAL_ROLES.pmo,

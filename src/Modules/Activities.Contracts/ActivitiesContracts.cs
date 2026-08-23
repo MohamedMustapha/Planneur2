@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Messaging;
+using Cracra.BuildingBlocks.Messaging;
 
 namespace Cracra.Modules.Activities.Contracts;
 
@@ -169,7 +169,29 @@ public interface IActivityScheduler
         DateOnly from,
         DateOnly to,
         CancellationToken ct);
+
+    /// <summary>
+    /// Hours over a window, grouped by the node each entry is attached to, for every node in a subtree.
+    /// </summary>
+    /// <remarks>
+    /// Grouped rather than rolled up: the caller owns the tree and can fold these into any shape it needs, and a
+    /// per-node total that the caller sums itself is what makes the rollup invariant hold by construction instead
+    /// of by two aggregations agreeing. RLS still applies, so this returns the viewer's own view of the subtree.
+    /// </remarks>
+    Task<IReadOnlyList<NodeHoursSlice>> GetHoursByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct);
 }
+
+/// <summary>What one node's directly-attached people logged over a window.</summary>
+public sealed record NodeHoursSlice(
+    Guid NodeId,
+    decimal ActualHours,
+    decimal PlannedHours,
+    int EntryCount,
+    int PeopleCount);
 
 /// <summary>
 /// A department's activity types, as this module resolved them.

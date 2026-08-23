@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Abstractions;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Application;
 using Cracra.Modules.Activities.Contracts;
@@ -155,6 +155,44 @@ internal sealed class ActivityScheduler(
         DateOnly to,
         CancellationToken ct) =>
         await ProjectAsync(context.Entries.Where(entry => entry.ProjectId == projectId), from, to, ct);
+
+    public async Task<IReadOnlyList<NodeHoursSlice>> GetHoursByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
+    {
+        var start = from.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var end = to.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        var slices = await context.Entries
+            .Where(entry => entry.NodeAncestorIds.Contains(rootNodeId))
+            .Where(entry => entry.SlotStart < end && entry.SlotEnd > start)
+            .GroupBy(entry => entry.NodeId)
+            .Select(group => new
+            {
+                NodeId = group.Key,
+                ActualHours = group
+                    .Where(entry => entry.Kind == ActivityKind.Actual)
+                    .Sum(entry => (decimal?)entry.Hours) ?? 0m,
+                PlannedHours = group
+                    .Where(entry => entry.Kind == ActivityKind.Planned)
+                    .Sum(entry => (decimal?)entry.Hours) ?? 0m,
+                EntryCount = group.Count(),
+                PeopleCount = group.Select(entry => entry.PersonId).Distinct().Count(),
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. slices.Select(slice => new NodeHoursSlice(
+                slice.NodeId,
+                slice.ActualHours,
+                slice.PlannedHours,
+                slice.EntryCount,
+                slice.PeopleCount)),
+        ];
+    }
 
     /// <summary>
     /// Shapes entries for a board.

@@ -11,17 +11,16 @@ const STORAGE_KEY = 'cracra.focus';
 /**
  * Where each role's primary intent lives — v2 §02.1, mapped onto the routes this build actually has.
  *
- * The v2 nav table is written against the generic node tree from `01-org-model.md`, which is a later slice. Until
- * it lands, the same idea is expressed against the roles the access module already returns: the landing screen is
- * whichever one the person's job is *about*, and Focus mode shows that screen and nothing else.
+ * The landing screen is whichever one the person's job is *about*, and Focus mode shows that screen and nothing
+ * else. With the head roles collapsed (v2 §01.2) there is one head landing rather than two: a head at any depth
+ * opens on the screen that compares the things beneath them, and which things those are is the server's answer.
  *
  * Order matters — the first match wins, so somebody who is both a member and a PMO focuses on the portfolio
  * rather than on their own week. The widest responsibility is the one the tool should open on.
  */
 const FOCUS_ROUTE_BY_ROLE: readonly (readonly [string, string])[] = [
   [CONTEXTUAL_ROLES.pmo, '/portfolio'],
-  [CONTEXTUAL_ROLES.departmentHead, '/department'],
-  [CONTEXTUAL_ROLES.unitHead, '/team'],
+  [CONTEXTUAL_ROLES.nodeHead, '/department'],
   [CONTEXTUAL_ROLES.productOwner, '/projects'],
   [CONTEXTUAL_ROLES.projectLead, '/projects'],
   [CONTEXTUAL_ROLES.member, '/board'],
@@ -47,8 +46,7 @@ export function focusRouteFor(roles: readonly string[]): string {
  */
 export function focusDefaultFor(roles: readonly string[]): boolean {
   const wide: readonly string[] = [
-    CONTEXTUAL_ROLES.unitHead,
-    CONTEXTUAL_ROLES.departmentHead,
+    CONTEXTUAL_ROLES.nodeHead,
     CONTEXTUAL_ROLES.pmo,
     CONTEXTUAL_ROLES.productOwner,
     CONTEXTUAL_ROLES.projectLead,

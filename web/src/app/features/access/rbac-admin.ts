@@ -9,7 +9,7 @@ import { DepartmentScopeStore } from '../../core/scope/department-scope.store';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 import { SettingsTabs } from '../directory/settings-tabs';
 
-const GRANTABLE_ROLES = ['member', 'unit-head', 'dept-head', 'project-lead', 'po', 'pmo'] as const;
+const GRANTABLE_ROLES = ['member', 'node-head', 'admin', 'project-lead', 'po', 'pmo'] as const;
 
 /**
  * The RBAC fallback view: pick a person, see where each of their roles comes from, grant or deny one by hand.
@@ -40,7 +40,7 @@ export class RbacAdmin {
   protected readonly isBusy = signal(false);
 
   // The new-override form.
-  protected readonly formRole = signal<string>('unit-head');
+  protected readonly formRole = signal<string>('node-head');
   protected readonly formScopeType = signal<string>('Unit');
   protected readonly formIsGrant = signal(true);
   protected readonly formReason = signal('');

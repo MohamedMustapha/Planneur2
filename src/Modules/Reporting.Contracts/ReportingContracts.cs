@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Messaging;
+using Cracra.BuildingBlocks.Messaging;
 
 namespace Cracra.Modules.Reporting.Contracts;
 
@@ -167,3 +167,48 @@ public sealed record SummaryGenerated(
     string Model,
     int PromptCharacters,
     int CompletionCharacters) : IntegrationEvent;
+
+// =================================================================================================================
+// The node brief (v2 §01.4).
+//
+// One shape at every depth. A brief for a node returns what its directly-attached people did, plus one block per
+// direct child already aggregated over that child's whole subtree — so a head at any level can hand their brief
+// upward and it slots into their parent's report as a single block, instead of being copy-pasted into it.
+// =================================================================================================================
+
+/// <summary>Deterministic totals. Every number here is computed in code; the model only ever writes prose.</summary>
+public sealed record BriefTotals(
+    decimal ActualHours,
+    decimal PlannedHours,
+    int EntryCount,
+    int PeopleCount)
+{
+    public static readonly BriefTotals Zero = new(0m, 0m, 0, 0);
+
+    public static BriefTotals operator +(BriefTotals left, BriefTotals right) => new(
+        left.ActualHours + right.ActualHours,
+        left.PlannedHours + right.PlannedHours,
+        left.EntryCount + right.EntryCount,
+        left.PeopleCount + right.PeopleCount);
+}
+
+/// <param name="Own">What people attached directly to this node did.</param>
+/// <param name="Subtree">
+/// <paramref name="Own"/> plus every descendant's. The rollup invariant is that this equals Own plus the sum of
+/// the children's Subtree — which holds by construction because both are folded from the same per-node slices.
+/// </param>
+public sealed record NodeBriefBlock(
+    Guid NodeId,
+    Guid? ParentId,
+    int LevelNo,
+    string Code,
+    string Name,
+    BriefTotals Own,
+    BriefTotals Subtree,
+    IReadOnlyList<NodeBriefBlock> Children);
+
+public sealed record NodeBriefView(
+    Guid NodeId,
+    ReportPeriodView Period,
+    string Depth,
+    NodeBriefBlock Node);

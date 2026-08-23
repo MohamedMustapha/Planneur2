@@ -27,14 +27,19 @@ export interface NavigationItem {
 
 export const CONTEXTUAL_ROLES = {
   member: 'member',
-  unitHead: 'unit-head',
-  departmentHead: 'dept-head',
+  /**
+   * One role at every depth (v2 §01.2). A pôle head, a bureau head and a service head all arrive as this; what
+   * separates them is where their node sits, which the server has already applied by the time anything here reads
+   * a role. The client must not try to tell them apart.
+   */
+  nodeHead: 'node-head',
+  admin: 'admin',
   projectLead: 'project-lead',
   productOwner: 'po',
   pmo: 'pmo',
 } as const;
 
-const HEADS = [CONTEXTUAL_ROLES.unitHead, CONTEXTUAL_ROLES.departmentHead, CONTEXTUAL_ROLES.pmo] as const;
+const HEADS = [CONTEXTUAL_ROLES.nodeHead, CONTEXTUAL_ROLES.pmo] as const;
 
 export const NAVIGATION: readonly NavigationItem[] = [
   { id: 'board', route: '/board', labelKey: 'nav.myBoard', icon: '◧' },
@@ -56,8 +61,9 @@ export const NAVIGATION: readonly NavigationItem[] = [
     route: '/finance',
     labelKey: 'nav.finance',
     icon: '€',
-    // visibility-matrix.md §4: capex/opex is visible to dept-head (their department) and PMO. Nobody else.
-    requiresAnyRole: [CONTEXTUAL_ROLES.departmentHead, CONTEXTUAL_ROLES.pmo],
+    // visibility-matrix.md §4: capex/opex is a head's and the PMO's. Nobody else. Which head, and therefore
+    // whose budget, is the server's answer — RLS returns the nodes they run and nothing beside them.
+    requiresAnyRole: [CONTEXTUAL_ROLES.nodeHead, CONTEXTUAL_ROLES.pmo],
     // And v2 §10.3 on top of that: a branch whose profile carries no budget never shows the entry, even to the
     // head who would otherwise be entitled to it. Role and capability are ANDed because they are both true
     // reasons to hide — being allowed to see budgets does not conjure one for a branch that has none.

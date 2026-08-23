@@ -79,10 +79,10 @@ export class PortfolioBoard {
    * a courtesy, not the enforcement — that is RLS's and the endpoint policies' job.
    */
   protected readonly canPropose = computed(() =>
-    this.session.hasAny('project-lead', 'product-owner', 'unit-head', 'dept-head', 'pmo'),
+    this.session.hasAny('project-lead', 'product-owner', 'node-head', 'pmo'),
   );
 
-  protected readonly canDecide = computed(() => this.session.hasAny('unit-head', 'dept-head', 'pmo'));
+  protected readonly canDecide = computed(() => this.session.hasAny('node-head', 'pmo'));
 
   protected readonly canRevert = computed(() => this.session.has('pmo'));
 
