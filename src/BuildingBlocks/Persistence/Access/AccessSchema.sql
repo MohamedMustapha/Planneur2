@@ -97,6 +97,179 @@ create or replace function access.is_scoped() returns boolean
     as $$ select access.uid() is not null $$;
 
 -- -------------------------------------------------------------------------------------------------------------
+-- Node-tree plumbing (v2 01 3, 09 Ph.1-3). Lives here rather than in a module migration because every module's
+-- migration calls it and module migrations run in registration order, which puts some of them before Directory's.
+-- -------------------------------------------------------------------------------------------------------------
+
+create table if not exists access.node_scoped_table (
+    schema_name      text not null,
+    table_name       text not null,
+    node_column      text not null default 'node_id',
+    ancestors_column text not null default 'node_ancestor_ids',
+    primary key (schema_name, table_name)
+);
+
+create or replace function access.refresh_node_paths(p_node uuid) returns void
+    language plpgsql as $fn$
+declare
+    scoped record;
+begin
+    for scoped in select * from access.node_scoped_table loop
+        execute format(
+            'update %I.%I s set %I = n.ancestor_ids
+               from directory.org_node n
+              where n.id = s.%I and s.%I = $1
+                and s.%I is distinct from n.ancestor_ids',
+            scoped.schema_name, scoped.table_name, scoped.ancestors_column,
+            scoped.node_column, scoped.node_column, scoped.ancestors_column)
+        using p_node;
+    end loop;
+end
+$fn$;
+
+create or replace function access.copy_node_path() returns trigger
+    language plpgsql as $fn$
+declare
+    path uuid[];
+    derived uuid;
+begin
+    if new.node_id is null and tg_nargs > 0 then
+        execute format(
+            'select coalesce(%s)',
+            (select string_agg(format('($1).%I', arg), ', ')
+             from unnest(tg_argv) as arg))
+        into derived using new;
+
+        new.node_id := derived;
+    end if;
+
+    if new.node_id is null then
+        new.node_ancestor_ids := '{}'::uuid[];
+        return new;
+    end if;
+
+    select n.ancestor_ids into path from directory.org_node n where n.id = new.node_id;
+
+    if path is null then
+        raise exception 'node % is not in the org tree', new.node_id
+            using errcode = '23503';
+    end if;
+
+    new.node_ancestor_ids := path;
+    return new;
+end
+$fn$;
+
+create or replace function access.copy_person_node_path() returns trigger
+    language plpgsql as $fn$
+declare
+    path uuid[];
+begin
+    select n.ancestor_ids into path from directory.org_node n where n.id = new.home_node_id;
+
+    if path is null then
+        raise exception 'node % is not in the org tree', new.home_node_id
+            using errcode = '23503';
+    end if;
+
+    new.node_ancestor_ids := path;
+    return new;
+end
+$fn$;
+
+create or replace function access.attach_to_node_tree(
+    p_schema text,
+    p_table text,
+    p_unit_col text,
+    p_dept_col text,
+    p_required boolean default true)
+returns void language plpgsql as $fn$
+declare
+    source text;
+begin
+    execute format('alter table %I.%I add column if not exists node_id uuid', p_schema, p_table);
+    execute format(
+        'alter table %I.%I add column if not exists node_ancestor_ids uuid[] default ''{}''::uuid[]',
+        p_schema, p_table);
+
+    if p_unit_col is null then
+        source := quote_ident(p_dept_col);
+    elsif p_dept_col is null then
+        source := quote_ident(p_unit_col);
+    else
+        source := format('coalesce(%I, %I)', p_unit_col, p_dept_col);
+    end if;
+
+    execute format(
+        'update %I.%I s set node_id = n.id
+           from directory.org_node n
+          where n.id = %s and s.node_id is null',
+        p_schema, p_table, source);
+
+    execute format(
+        'update %I.%I s set node_ancestor_ids = coalesce(n.ancestor_ids, ''{}''::uuid[])
+           from directory.org_node n
+          where n.id = s.node_id
+            and s.node_ancestor_ids is distinct from n.ancestor_ids',
+        p_schema, p_table);
+
+    execute format(
+        'update %I.%I set node_ancestor_ids = ''{}''::uuid[] where node_ancestor_ids is null',
+        p_schema, p_table);
+
+    if p_required then
+        execute format('alter table %I.%I alter column node_id set not null', p_schema, p_table);
+    end if;
+
+    execute format(
+        'alter table %I.%I alter column node_ancestor_ids set not null', p_schema, p_table);
+
+    execute format(
+        'create index if not exists %I on %I.%I using gin (node_ancestor_ids)',
+        format('ix_%s_node_ancestor_ids', p_table), p_schema, p_table);
+
+    execute format(
+        'drop trigger if exists %I on %I.%I',
+        format('%s_copy_node_path', p_table), p_schema, p_table);
+
+    execute format(
+        'create trigger %I before insert or update of %s on %I.%I
+             for each row execute function access.copy_node_path(%s)',
+        format('%s_copy_node_path', p_table),
+        array_to_string(
+            array_remove(array['node_id', p_unit_col, p_dept_col], null), ', '),
+        p_schema,
+        p_table,
+        (select string_agg(quote_literal(c), ', ')
+         from unnest(array_remove(array[p_unit_col, p_dept_col], null)) as c));
+
+    insert into access.node_scoped_table (schema_name, table_name)
+    values (p_schema, p_table)
+    on conflict do nothing;
+end
+$fn$;
+
+create or replace function access.detach_from_node_tree(p_schema text, p_table text)
+returns void language plpgsql as $fn$
+begin
+    execute format(
+        'drop trigger if exists %I on %I.%I',
+        format('%s_copy_node_path', p_table), p_schema, p_table);
+
+    execute format('drop index if exists %I.%I', p_schema, format('ix_%s_node_ancestor_ids', p_table));
+
+    execute format(
+        'alter table %I.%I drop column if exists node_ancestor_ids, drop column if exists node_id',
+        p_schema, p_table);
+
+    delete from access.node_scoped_table
+        where schema_name = p_schema and table_name = p_table;
+end
+$fn$;
+
+grant select on access.node_scoped_table to app_rw;
+
+-- -------------------------------------------------------------------------------------------------------------
 -- Grants. app_rw executes the predicates but owns nothing, so FORCE ROW LEVEL SECURITY applies to it.
 -- -------------------------------------------------------------------------------------------------------------
 

@@ -1,4 +1,4 @@
-﻿namespace Cracra.Modules.Directory.Domain;
+namespace Cracra.Modules.Directory.Domain;
 
 /// <summary>
 /// A department — the top of the org tree and the unit of configuration. "Department-agnostic" in the positioning
@@ -118,6 +118,10 @@ public sealed class Person
 
     /// <summary>Denormalized for the same reason — it feeds <c>app.dept_ids</c> and the department predicates.</summary>
     public Guid? PrimaryDepartmentId { get; set; }
+
+    public Guid HomeNodeId { get; set; }
+
+    public Guid[] NodeAncestorIds { get; private set; } = [];
 
     public string TimeZone { get; set; } = "Europe/Paris";
 

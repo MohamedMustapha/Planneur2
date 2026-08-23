@@ -28,6 +28,10 @@ public sealed class DirectoryDbContext(DbContextOptions<DirectoryDbContext> opti
 
     public DbSet<NodeProfile> NodeProfiles => Set<NodeProfile>();
 
+    public DbSet<OrgLevel> OrgLevels => Set<OrgLevel>();
+
+    public DbSet<OrgNode> OrgNodes => Set<OrgNode>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DirectoryDbContext).Assembly);
@@ -116,7 +120,14 @@ internal sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(person => person.PreferredTimeZone).HasMaxLength(64);
         builder.Property(person => person.PreferredTheme).HasMaxLength(16);
 
+        builder.Property(person => person.NodeAncestorIds)
+            .HasColumnType("uuid[]")
+            .HasDefaultValueSql("'{}'::uuid[]")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsRequired();
+
         builder.HasIndex(person => person.LdapUid).IsUnique();
+        builder.HasIndex(person => person.HomeNodeId);
         builder.HasIndex(person => person.PrimaryUnitId);
         builder.HasIndex(person => person.PrimaryDepartmentId);
     }
@@ -233,5 +244,62 @@ internal sealed class NodeProfileConfiguration : IEntityTypeConfiguration<NodePr
         builder.Property(profile => profile.BudgetDefaultsJson).HasColumnType("jsonb");
 
         builder.HasIndex(profile => profile.Code).IsUnique();
+    }
+}
+
+internal sealed class OrgLevelConfiguration : IEntityTypeConfiguration<OrgLevel>
+{
+    public void Configure(EntityTypeBuilder<OrgLevel> builder)
+    {
+        builder.ToTable("org_level", t => t.HasCheckConstraint("ck_org_level_level_no", "level_no between 1 and 8"));
+        builder.HasKey(level => level.LevelNo);
+
+        builder.Property(level => level.LevelNo).ValueGeneratedNever();
+        builder.Property(level => level.Code).HasMaxLength(64).IsRequired();
+        builder.Property(level => level.LabelKey).HasMaxLength(256).IsRequired();
+        builder.Property(level => level.LabelPluralKey).HasMaxLength(256).IsRequired();
+        builder.Property(level => level.HeadLabelKey).HasMaxLength(256).IsRequired();
+
+        builder.HasIndex(level => level.Code).IsUnique();
+    }
+}
+
+internal sealed class OrgNodeConfiguration : IEntityTypeConfiguration<OrgNode>
+{
+    public void Configure(EntityTypeBuilder<OrgNode> builder)
+    {
+        builder.ToTable("org_node");
+        builder.HasKey(node => node.Id);
+
+        builder.Property(node => node.Id).ValueGeneratedNever();
+        builder.Property(node => node.Code).HasMaxLength(64).IsRequired();
+        builder.Property(node => node.Name).HasMaxLength(256).IsRequired();
+
+        builder.Property(node => node.AncestorIds)
+            .HasColumnType("uuid[]")
+            .HasDefaultValueSql("'{}'::uuid[]")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsRequired();
+
+        builder.HasOne<OrgNode>()
+            .WithMany()
+            .HasForeignKey(node => node.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<OrgLevel>()
+            .WithMany()
+            .HasForeignKey(node => node.LevelNo)
+            .HasPrincipalKey(level => level.LevelNo)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<NodeProfile>()
+            .WithMany()
+            .HasForeignKey(node => node.ProfileId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(node => new { node.ParentId, node.Code }).IsUnique();
+        builder.HasIndex(node => new { node.ParentId, node.LevelNo });
+        builder.HasIndex(node => node.ProfileId);
+        builder.HasIndex(node => node.HeadPersonId);
     }
 }

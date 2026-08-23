@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Web.Users;
+using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Directory.Domain;
 
 namespace Cracra.Modules.Directory.Sync;
@@ -106,6 +106,7 @@ public static class DirectoryMapping
         person.Email = mapped.Email;
         person.PrimaryUnitId = mapped.UnitId;
         person.PrimaryDepartmentId = mapped.DepartmentId;
+        person.HomeNodeId = mapped.UnitId;
         person.UiLanguage = mapped.UiLanguage;
         person.Active = mapped.Active;
         person.LastSyncedAt = now;
@@ -126,6 +127,7 @@ public static class DirectoryMapping
         Email = mapped.Email,
         PrimaryUnitId = mapped.UnitId,
         PrimaryDepartmentId = mapped.DepartmentId,
+        HomeNodeId = mapped.UnitId,
         UiLanguage = mapped.UiLanguage,
         Active = mapped.Active,
         LastSyncedAt = now,

@@ -3,6 +3,7 @@ using System;
 using Cracra.Modules.Directory.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Cracra.Modules.Directory.Data.Migrations
 {
     [DbContext(typeof(DirectoryDbContext))]
-    partial class DirectoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260823105341_AddOrgNodeTree")]
+    partial class AddOrgNodeTree
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -503,10 +506,6 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("focus_mode");
 
-                    b.Property<Guid>("HomeNodeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("home_node_id");
-
                     b.Property<DateTimeOffset?>("LastSyncedAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("last_synced_at");
@@ -520,13 +519,6 @@ namespace Cracra.Modules.Directory.Data.Migrations
                     b.Property<DateTimeOffset>("ModifiedAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("modified_at");
-
-                    b.PrimitiveCollection<Guid[]>("NodeAncestorIds")
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("uuid[]")
-                        .HasColumnName("node_ancestor_ids")
-                        .HasDefaultValueSql("'{}'::uuid[]");
 
                     b.Property<string>("PreferredLanguage")
                         .HasMaxLength(8)
@@ -565,9 +557,6 @@ namespace Cracra.Modules.Directory.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_person");
-
-                    b.HasIndex("HomeNodeId")
-                        .HasDatabaseName("ix_person_home_node_id");
 
                     b.HasIndex("LdapUid")
                         .IsUnique()
