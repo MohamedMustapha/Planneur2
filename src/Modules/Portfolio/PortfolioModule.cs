@@ -22,6 +22,9 @@ public static class PortfolioModule
         services.AddScoped<IPortfolioRepository, PortfolioRepository>();
         services.AddScoped<IProjectsPort, ProjectsAdapter>();
         services.AddScoped<IDirectoryPort, DirectoryAdapter>();
+        services.AddScoped<IDirectoryNodePort, DirectoryNodeAdapter>();
+        services.AddScoped<ICatalogReader, CatalogReader>();
+        services.AddScoped<Contracts.IPortfolioItemProvisioner, ItemProvisioner>();
 
         // Iteration ranges, drawn as overlays on the S6 project board.
         services.AddScoped<Contracts.IPortfolioIterationReader, PortfolioIterationReader>();

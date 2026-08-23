@@ -97,3 +97,104 @@ public interface IPortfolioBoardReader
 {
     Task<PortfolioBoard> GetBoardAsync(Guid? departmentId, CancellationToken ct);
 }
+
+// =================================================================================================================
+// The catalog (v2 §03.2).
+//
+// An identity card is what the organisation looks at to decide whether a thing already exists. It carries enough
+// to recognise the thing and to know who to ask, and stops short of anything that needs a second query per card —
+// the drawer is where the full team, the epics and the dependency graph live.
+// =================================================================================================================
+
+/// <summary>Every lifecycle state, as the wire spells them.</summary>
+public static class LifecycleStates
+{
+    public const string Considered = "considered";
+    public const string Committed = "committed";
+    public const string Active = "active";
+    public const string AwaitingVnext = "awaiting-vnext";
+    public const string Dephase = "dephase";
+
+    public static readonly IReadOnlyList<string> All =
+        [Considered, Committed, Active, AwaitingVnext, Dephase];
+}
+
+public sealed record CatalogCard(
+    Guid Id,
+    string Code,
+    string Name,
+    string Type,
+    string? Category,
+    string Classification,
+    string State,
+    string? AwaitingVersion,
+    Guid OwnerNodeId,
+    Guid? LeadPersonId,
+    Guid? PoPersonId,
+    string? Summary,
+    decimal? EstimateAmount,
+    string Currency,
+    int TeamHeadcount,
+    int DependencyCount,
+    int ConsumedByCount,
+    int QueuedEpicCount,
+    string? CurrentIterationName,
+    bool Confidential);
+
+/// <summary>One person on an item, grouped by where they contribute from.</summary>
+public sealed record ItemTeamMember(
+    Guid PersonId,
+    string? DisplayName,
+    Guid NodeId,
+    string? NodeName,
+    Guid? FunctionalRoleId,
+    int? AllocationPercent,
+    DateOnly From,
+    DateOnly? To);
+
+public sealed record ItemEpicView(
+    Guid Id,
+    string Name,
+    string? Description,
+    string Status,
+    string? TargetVersion,
+    Guid? IterationId,
+    int Sequence);
+
+/// <param name="Direction">consumes when this item leans on the other, consumed-by when the other leans on it.</param>
+public sealed record ItemDependencyView(
+    Guid Id,
+    Guid ItemId,
+    string ItemCode,
+    string ItemName,
+    string ItemType,
+    string Kind,
+    string Direction,
+    string? Note);
+
+public sealed record CatalogItemDetail(
+    CatalogCard Card,
+    IReadOnlyList<ItemTeamMember> Team,
+    IReadOnlyList<IterationSummary> Iterations,
+    IReadOnlyList<ItemEpicView> Epics,
+    IReadOnlyList<ItemDependencyView> Dependencies,
+    IReadOnlyList<TransitionRecord> History);
+
+/// <summary>
+/// Creates a portfolio item on behalf of another module.
+/// </summary>
+/// <remarks>
+/// Implemented by Portfolio, called by Problems when a pain is converted (v2 §05.2). Deliberately narrow: the
+/// caller says what the thing is and who owns it, and every rule about whether they may — including which node
+/// they can own it at — stays inside Portfolio and its RLS, exactly as if the wizard had been used.
+/// </remarks>
+public interface IPortfolioItemProvisioner
+{
+    Task<Guid> CreateAsync(
+        string name,
+        string? summary,
+        string? type,
+        string? category,
+        Guid ownerNodeId,
+        CancellationToken ct);
+}

@@ -15,7 +15,17 @@ public enum PortfolioState
     Considered = 0,
     Committed = 1,
     Active = 2,
-    Dephase = 3,
+
+    /// <summary>
+    /// Live, with a next version queued (v2 §03.1).
+    /// </summary>
+    /// <remarks>
+    /// Ordered between Active and Dephase deliberately: it is a forward step from active, and reverting to active
+    /// is what dropping the queued version means. It is not retirement — the thing is still in production and
+    /// still costs money, which is exactly why v1's four states could not express it.
+    /// </remarks>
+    AwaitingVnext = 3,
+    Dephase = 4,
 }
 
 /// <summary>
@@ -36,6 +46,9 @@ public enum PortfolioState
 public sealed class PortfolioItem
 {
     private readonly List<Iteration> _iterations = [];
+    private readonly List<Epic> _epics = [];
+    private readonly List<ItemMember> _members = [];
+    private readonly List<ItemDependency> _dependencies = [];
     private readonly List<object> _domainEvents = [];
 
     private PortfolioItem()
@@ -48,7 +61,42 @@ public sealed class PortfolioItem
     /// <summary>Null while the item is only a candidate. Set on commitment, and never cleared afterwards.</summary>
     public Guid? ProjectId { get; private set; }
 
+    /// <summary>Stable short code. What people say out loud and search by; never localized.</summary>
+    public string Code { get; private set; } = string.Empty;
+
     public string Name { get; private set; } = string.Empty;
+
+    public ItemType Type { get; private set; }
+
+    /// <summary>
+    /// Free text, offered from the branch's profile rather than fixed here (v2 §03.1).
+    /// </summary>
+    /// <remarks>
+    /// An enum would have to know that IT says "infra" and a bilateral service says "europe", which is precisely
+    /// the deployment-specific vocabulary §01 keeps out of the code.
+    /// </remarks>
+    public string? Category { get; private set; }
+
+    public ItemClassification Classification { get; private set; }
+
+    /// <summary>The node that owns this. Replaces the sponsoring department, at whatever depth it sits.</summary>
+    public Guid OwnerNodeId { get; private set; }
+
+    public Guid? LeadPersonId { get; private set; }
+
+    public Guid? PoPersonId { get; private set; }
+
+    public decimal? EstimateAmount { get; private set; }
+
+    public string Currency { get; private set; } = "EUR";
+
+    /// <summary>The label of the queued version — "v2". Set with <see cref="PortfolioState.AwaitingVnext"/>.</summary>
+    public string? AwaitingVersion { get; private set; }
+
+    public string? Summary { get; private set; }
+
+    /// <summary>Opt-out of the org-wide discovery projection (v2 §01 §3.1).</summary>
+    public bool Confidential { get; private set; }
 
     public PortfolioState State { get; private set; }
 
@@ -78,6 +126,12 @@ public sealed class PortfolioItem
     public DateTimeOffset ModifiedAt { get; private set; }
 
     public IReadOnlyCollection<Iteration> Iterations => _iterations;
+
+    public IReadOnlyCollection<Epic> Epics => _epics;
+
+    public IReadOnlyCollection<ItemMember> Members => _members;
+
+    public IReadOnlyCollection<ItemDependency> Dependencies => _dependencies;
 
     public IReadOnlyCollection<object> DomainEvents => _domainEvents;
 
@@ -371,6 +425,316 @@ public sealed class PortfolioItem
 
     public void ClearDomainEvents() => _domainEvents.Clear();
 
+    // --- v2 §03: identity, epics, dependencies and team ---------------------------------------------------------
+
+    /// <summary>
+    /// Creates any kind of portfolio item.
+    /// </summary>
+    /// <remarks>
+    /// Steps 1 and 2 of the wizard are enough: a type, a name and an owning node produce a real identity card
+    /// rather than the nameless stub v1's "propose a candidate" left behind. Everything else is optional and
+    /// fillable later, which is what makes the short path usable without making the long one a different entity.
+    /// </remarks>
+    public static PortfolioItem Create(
+        string code,
+        string name,
+        ItemType type,
+        string? category,
+        ItemClassification classification,
+        Guid ownerNodeId,
+        Guid? leadPersonId,
+        Guid? poPersonId,
+        string? summary,
+        decimal? estimateAmount,
+        string? currency,
+        int priority,
+        Guid createdBy,
+        DateTimeOffset now)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new DomainRuleViolationException("An item needs a name.");
+        }
+
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            throw new DomainRuleViolationException("An item needs a code.");
+        }
+
+        if (ownerNodeId == Guid.Empty)
+        {
+            throw new DomainRuleViolationException("An item needs an owning node.");
+        }
+
+        if (estimateAmount is < 0)
+        {
+            throw new DomainRuleViolationException("An estimate cannot be negative.");
+        }
+
+        var item = new PortfolioItem
+        {
+            Id = Guid.CreateVersion7(),
+            Code = code.Trim().ToUpperInvariant(),
+            Name = name.Trim(),
+            Type = type,
+            Category = Blank(category),
+            Classification = classification,
+            OwnerNodeId = ownerNodeId,
+            DepartmentId = ownerNodeId,
+            LeadPersonId = leadPersonId,
+            PoPersonId = poPersonId,
+            Summary = Blank(summary),
+            EstimateAmount = estimateAmount,
+            Currency = Blank(currency) ?? "EUR",
+            State = PortfolioState.Considered,
+            Priority = priority,
+            ConsideredAt = now,
+            CreatedBy = createdBy,
+            ModifiedBy = createdBy,
+            ModifiedAt = now,
+        };
+
+        item._domainEvents.Add(new ItemConsidered(item.Id, item.Name, ownerNodeId));
+
+        return item;
+    }
+
+    public void UpdateIdentity(
+        string? name,
+        string? category,
+        ItemClassification? classification,
+        Guid? leadPersonId,
+        Guid? poPersonId,
+        string? summary,
+        decimal? estimateAmount,
+        bool? confidential,
+        Guid modifiedBy,
+        DateTimeOffset now)
+    {
+        RefuseWhenArchived();
+
+        if (name is not null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new DomainRuleViolationException("An item needs a name.");
+            }
+
+            Name = name.Trim();
+        }
+
+        if (category is not null)
+        {
+            Category = Blank(category);
+        }
+
+        if (classification is { } axis)
+        {
+            Classification = axis;
+        }
+
+        if (leadPersonId is { } lead)
+        {
+            LeadPersonId = lead == Guid.Empty ? null : lead;
+        }
+
+        if (poPersonId is { } po)
+        {
+            PoPersonId = po == Guid.Empty ? null : po;
+        }
+
+        if (summary is not null)
+        {
+            Summary = Blank(summary);
+        }
+
+        if (estimateAmount is { } estimate)
+        {
+            if (estimate < 0)
+            {
+                throw new DomainRuleViolationException("An estimate cannot be negative.");
+            }
+
+            EstimateAmount = estimate;
+        }
+
+        if (confidential is { } hidden)
+        {
+            Confidential = hidden;
+        }
+
+        Touch(modifiedBy, now);
+    }
+
+    /// <summary>
+    /// Declares a next version queued behind what is live.
+    /// </summary>
+    /// <remarks>
+    /// Refused without at least one queued epic, and that is the whole point of the state. "Awaiting v2" with an
+    /// empty backlog is a wish; with epics behind it, it is a plan somebody can read. Making the backlog the
+    /// precondition means the pill on the card can never claim more than the list behind it.
+    /// </remarks>
+    public void AwaitNextVersion(string version, Guid decidedBy, DateTimeOffset now)
+    {
+        Require(PortfolioState.Active, PortfolioState.AwaitingVnext);
+
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            throw new DomainRuleViolationException("Awaiting a next version needs the version label.");
+        }
+
+        if (!_epics.Any(epic => epic.IsQueued))
+        {
+            throw new DomainRuleViolationException(
+                "Awaiting a next version needs at least one planned or deferred epic to put in it.");
+        }
+
+        State = PortfolioState.AwaitingVnext;
+        AwaitingVersion = version.Trim();
+
+        Touch(decidedBy, now);
+
+        _domainEvents.Add(new ItemAwaitingNextVersion(Id, AwaitingVersion));
+    }
+
+    public Epic AddEpic(
+        string name,
+        string? description,
+        EpicStatus status,
+        string? targetVersion,
+        Guid modifiedBy,
+        DateTimeOffset now)
+    {
+        RefuseWhenArchived();
+
+        var epic = Epic.For(Id, name, description, status, targetVersion, _epics.Count + 1, now);
+
+        _epics.Add(epic);
+
+        Touch(modifiedBy, now);
+
+        return epic;
+    }
+
+    public void UpdateEpic(
+        Guid epicId,
+        string? name,
+        string? description,
+        EpicStatus? status,
+        string? targetVersion,
+        Guid? iterationId,
+        Guid modifiedBy,
+        DateTimeOffset now)
+    {
+        RefuseWhenArchived();
+
+        var epic = _epics.SingleOrDefault(candidate => candidate.Id == epicId)
+                   ?? throw new ResourceNotFoundException($"No epic {epicId} on this item.");
+
+        if (iterationId is { } pinned && pinned != Guid.Empty && _iterations.All(it => it.Id != pinned))
+        {
+            throw new DomainRuleViolationException("That iteration is not on this item.");
+        }
+
+        epic.Update(name, description, status, targetVersion, iterationId, now);
+
+        Touch(modifiedBy, now);
+    }
+
+    /// <summary>
+    /// Records that this item leans on another.
+    /// </summary>
+    /// <param name="wouldCycle">
+    /// Whether adding this edge closes a loop. Only the caller can answer it — the aggregate holds its own edges
+    /// and a cycle is a property of the whole graph — so the answer is supplied rather than guessed at.
+    /// </param>
+    public ItemDependency DependOn(
+        Guid dependsOnItemId,
+        DependencyKind kind,
+        string? note,
+        bool wouldCycle,
+        Guid modifiedBy,
+        DateTimeOffset now)
+    {
+        RefuseWhenArchived();
+
+        if (wouldCycle)
+        {
+            throw new DomainRuleViolationException(
+                "That dependency would close a loop: the other item already depends on this one.");
+        }
+
+        if (_dependencies.Any(edge => edge.DependsOnItemId == dependsOnItemId))
+        {
+            throw new DomainRuleViolationException("This item already depends on that one.");
+        }
+
+        var dependency = ItemDependency.Between(Id, dependsOnItemId, kind, note, now);
+
+        _dependencies.Add(dependency);
+
+        Touch(modifiedBy, now);
+
+        return dependency;
+    }
+
+    public void RemoveDependency(Guid dependencyId, Guid modifiedBy, DateTimeOffset now)
+    {
+        var edge = _dependencies.SingleOrDefault(candidate => candidate.Id == dependencyId)
+                   ?? throw new ResourceNotFoundException($"No dependency {dependencyId} on this item.");
+
+        _dependencies.Remove(edge);
+
+        Touch(modifiedBy, now);
+    }
+
+    public ItemMember AddMember(
+        Guid personId,
+        Guid nodeId,
+        Guid? functionalRoleId,
+        int? allocationPercent,
+        DateOnly from,
+        DateOnly? to,
+        Guid modifiedBy,
+        DateTimeOffset now)
+    {
+        RefuseWhenArchived();
+
+        if (_members.Any(member => member.PersonId == personId && member.To is null))
+        {
+            throw new DomainRuleViolationException("That person is already on this item.");
+        }
+
+        var joined = ItemMember.Join(Id, personId, nodeId, functionalRoleId, allocationPercent, from, to);
+
+        _members.Add(joined);
+
+        Touch(modifiedBy, now);
+
+        return joined;
+    }
+
+    public void RemoveMember(Guid personId, DateOnly on, Guid modifiedBy, DateTimeOffset now)
+    {
+        var member = _members.SingleOrDefault(candidate => candidate.PersonId == personId && candidate.To is null)
+                     ?? throw new ResourceNotFoundException("That person is not currently on this item.");
+
+        member.Leave(on);
+
+        Touch(modifiedBy, now);
+    }
+
+    private void RefuseWhenArchived()
+    {
+        if (IsArchived)
+        {
+            throw new DomainRuleViolationException("A déphasé item is read-only.");
+        }
+    }
+
+    private static string? Blank(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     private Iteration Find(Guid iterationId) =>
         _iterations.SingleOrDefault(iteration => iteration.Id == iterationId)
         ?? throw new ResourceNotFoundException($"No iteration {iterationId} on this item.");
@@ -402,6 +766,8 @@ public sealed class PortfolioItem
 // --- Domain events -------------------------------------------------------------------------------------------
 
 public sealed record ItemConsidered(Guid ItemId, string Name, Guid DepartmentId);
+
+public sealed record ItemAwaitingNextVersion(Guid ItemId, string Version);
 
 public sealed record ItemCommitted(Guid ItemId, Guid ProjectId, string DecisionNotes);
 

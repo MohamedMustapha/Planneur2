@@ -311,16 +311,22 @@ begin
         'drop trigger if exists %I on %I.%I',
         format('%s_copy_node_path', p_table), p_schema, p_table);
 
+    -- The trigger's column list is de-duplicated, because a table whose node column *is* its source column would
+    -- otherwise name it twice and Postgres refuses a repeat. The argument list is NOT de-duplicated the same way:
+    -- its order is the coalesce order, so the unit column has to stay ahead of the department one. Sorting them —
+    -- which string_agg(distinct ...) quietly does — would derive every row's node from its department and undo
+    -- the whole point of attaching at the narrowest level somebody actually sits at.
     execute format(
         'create trigger %I before insert or update of %s on %I.%I
              for each row execute function access.copy_node_path(%s)',
         format('%s_copy_node_path', p_table),
-        array_to_string(
-            array_remove(array['node_id', p_unit_col, p_dept_col], null), ', '),
+        (select string_agg(quote_ident(c), ', ')
+         from (select distinct unnest(array_remove(array['node_id', p_unit_col, p_dept_col], null)) as c) as columns),
         p_schema,
         p_table,
-        (select string_agg(quote_literal(c), ', ')
-         from unnest(array_remove(array[p_unit_col, p_dept_col], null)) as c));
+        (select string_agg(quote_literal(c), ', ' order by ord)
+         from unnest(array_remove(array[nullif(p_unit_col, 'node_id'), nullif(p_dept_col, 'node_id')], null))
+             with ordinality as sources(c, ord)));
 
     insert into access.node_scoped_table (schema_name, table_name)
     values (p_schema, p_table)
