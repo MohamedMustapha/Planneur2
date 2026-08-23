@@ -183,6 +183,50 @@
         }
       }
 
+      <h3>{{ t('portfolio.catalog.iterations') }}</h3>
+      @if (detail.iterations.length === 0) {
+        <p class="muted">{{ t('portfolio.catalog.noIterations') }}</p>
+      } @else {
+        <ul class="list">
+          @for (iteration of detail.iterations; track iteration.id) {
+            <li>
+              {{ iteration.name }}
+              <span class="muted">
+                — {{ iteration.startsOn }} → {{ iteration.endsOn }} ({{ iteration.state }})
+              </span>
+              @if (iteration.state === 'active' || iteration.state === 'planned') {
+                <button type="button" class="link" (click)="closeIteration(iteration.id)">
+                  {{ t('portfolio.closeIteration') }}
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="editor">
+        <input
+          class="control"
+          [ngModel]="iterationName()"
+          (ngModelChange)="iterationName.set($event)"
+          [placeholder]="t('portfolio.iterationName')"
+        />
+        <select class="control" [ngModel]="iterationLength()" (ngModelChange)="iterationLength.set($event)">
+          @for (length of lengths; track length) {
+            <option [value]="length">{{ t('portfolio.lengthOption.' + length) }}</option>
+          }
+        </select>
+        <input
+          class="control control--narrow"
+          type="date"
+          [ngModel]="iterationStart()"
+          (ngModelChange)="iterationStart.set($event)"
+        />
+        <button type="button" class="button" [disabled]="busy()" (click)="addIteration()">
+          {{ t('portfolio.addIteration') }}
+        </button>
+      </div>
+
       <h3>{{ t('portfolio.catalog.epics') }}</h3>
       @if (detail.epics.length === 0) {
         <p class="muted">{{ t('portfolio.catalog.noEpics') }}</p>

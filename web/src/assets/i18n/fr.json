@@ -350,7 +350,10 @@
       "declareNext": "Déclarer la version en attente",
       "findDependency": "Chercher ce que cela consomme…",
       "awaitFailed": "Impossible : il faut au moins une fonctionnalité planifiée ou reportée.",
-      "dependencyFailed": "Dépendance refusée : elle fermerait une boucle."
+      "dependencyFailed": "Dépendance refusée : elle fermerait une boucle.",
+      "iterations": "Itérations",
+      "noIterations": "Aucune itération planifiée.",
+      "iterationFailed": "Itération refusée. Vérifiez la date de début."
     },
     "wizard": {
       "step1": "1. Type",

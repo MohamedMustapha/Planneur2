@@ -91,10 +91,20 @@ export interface ItemDependencyView {
   readonly note: string | null;
 }
 
+export interface CatalogIteration {
+  readonly id: string;
+  readonly sequence: number;
+  readonly name: string;
+  readonly length: string;
+  readonly startsOn: string;
+  readonly endsOn: string;
+  readonly state: string;
+}
+
 export interface CatalogItemDetail {
   readonly card: CatalogCard;
   readonly team: readonly ItemTeamMember[];
-  readonly iterations: readonly { readonly id: string; readonly name: string; readonly state: string }[];
+  readonly iterations: readonly CatalogIteration[];
   readonly epics: readonly ItemEpicView[];
   readonly dependencies: readonly ItemDependencyView[];
   readonly history: readonly { readonly toState: string; readonly reason: string }[];
@@ -243,6 +253,23 @@ export class CatalogStore {
     await firstValueFrom(
       this.http.post(`/api/portfolio/${itemId}/epics`, { name, status, targetVersion }),
     );
+  }
+
+  async addIteration(
+    itemId: string,
+    iteration: { name: string; length: string; startsOn: string },
+  ): Promise<void> {
+    await firstValueFrom(this.http.post(`/api/portfolio/${itemId}/iterations`, iteration));
+
+    this.refresh();
+  }
+
+  async closeIteration(itemId: string, iterationId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.post(`/api/portfolio/${itemId}/iterations/${iterationId}/close`, {}),
+    );
+
+    this.refresh();
   }
 
   async awaitNextVersion(itemId: string, version: string): Promise<void> {

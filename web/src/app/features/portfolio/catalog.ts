@@ -49,6 +49,12 @@ export class Catalog {
   protected readonly epicVersion = signal('');
   protected readonly nextVersion = signal('');
 
+  protected readonly iterationName = signal('');
+  protected readonly iterationLength = signal('twoweeks');
+  protected readonly iterationStart = signal('');
+
+  protected readonly lengths: readonly string[] = ['oneweek', 'twoweeks', 'onemonth'];
+
   protected readonly dependencyQuery = signal('');
   protected readonly dependencyMatches = signal<readonly CatalogCard[]>([]);
 
@@ -192,6 +198,52 @@ export class Catalog {
     }
 
     return [...groups.values()];
+  }
+
+  protected async addIteration(): Promise<void> {
+    const detail = this.selected();
+    const name = this.iterationName().trim();
+    const startsOn = this.iterationStart();
+
+    if (!detail || name.length === 0 || startsOn.length === 0 || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+    this.error.set(null);
+
+    try {
+      await this.catalog.addIteration(detail.card.id, {
+        name,
+        length: this.iterationLength(),
+        startsOn,
+      });
+
+      this.iterationName.set('');
+      this.selected.set(await this.catalog.get(detail.card.id));
+    } catch {
+      this.error.set('portfolio.catalog.iterationFailed');
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  protected async closeIteration(iterationId: string): Promise<void> {
+    const detail = this.selected();
+
+    if (!detail || this.busy()) {
+      return;
+    }
+
+    this.busy.set(true);
+
+    try {
+      await this.catalog.closeIteration(detail.card.id, iterationId);
+
+      this.selected.set(await this.catalog.get(detail.card.id));
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   protected async addEpic(): Promise<void> {

@@ -350,7 +350,10 @@
       "declareNext": "Declarar la versión en cola",
       "findDependency": "Buscar lo que esto consume…",
       "awaitFailed": "No es posible: hace falta al menos una funcionalidad planificada o aplazada.",
-      "dependencyFailed": "Dependencia rechazada: cerraría un bucle."
+      "dependencyFailed": "Dependencia rechazada: cerraría un bucle.",
+      "iterations": "Iteraciones",
+      "noIterations": "Sin iteraciones planificadas.",
+      "iterationFailed": "Iteración rechazada. Revise la fecha de inicio."
     },
     "wizard": {
       "step1": "1. Tipo",

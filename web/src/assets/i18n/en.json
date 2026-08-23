@@ -350,7 +350,10 @@
       "declareNext": "Declare the queued version",
       "findDependency": "Search for what this consumes…",
       "awaitFailed": "Not possible: at least one planned or deferred feature is needed.",
-      "dependencyFailed": "Dependency refused: it would close a loop."
+      "dependencyFailed": "Dependency refused: it would close a loop.",
+      "iterations": "Iterations",
+      "noIterations": "No iterations planned.",
+      "iterationFailed": "Iteration refused. Check the start date."
     },
     "wizard": {
       "step1": "1. Type",
