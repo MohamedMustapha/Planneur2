@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The only assembly other modules may reference. Integration events and read DTOs, nothing else. -->
+  <ItemGroup>
+    <ProjectReference Include="../../BuildingBlocks/Messaging/Cracra.BuildingBlocks.Messaging.csproj" />
+  </ItemGroup>
+</Project>

@@ -32,7 +32,8 @@
     "kudos": "Kudos",
     "finance": "Finanzas",
     "settings": "Ajustes",
-    "problems": "Problemas"
+    "problems": "Problemas",
+    "strategy": "Estrategia"
   },
   "scope": {
     "ariaLabel": "Ámbito de consulta",
@@ -1007,6 +1008,58 @@
       "resolved": "Resuelto",
       "declined": "Rechazado",
       "duplicate": "Duplicado"
+    }
+  },
+  "strategy": {
+    "title": "Estrategia",
+    "subtitle": "A qué nos comprometimos y qué lo hace avanzar",
+    "none": "Aún no se ha definido ninguna estrategia para su ámbito.",
+    "noObjectives": "Esta estrategia todavía no tiene objetivos.",
+    "addObjective": "Añadir un objetivo",
+    "progress": "{{percent}} % alcanzado",
+    "expected": "{{percent}} % esperado a día de hoy",
+    "attention": "{{count}} objetivo(s) requieren atención.",
+    "due": "vence",
+    "overridden": "estado forzado",
+    "noWork": "Nadie está trabajando en esto.",
+    "alignment": "Alineación",
+    "unlinkedObjectives": "Objetivos sin trabajo detrás",
+    "unlinkedItems": "Trabajo que no sirve a ningún objetivo",
+    "allLinked": "Todos los objetivos tienen trabajo detrás.",
+    "allServed": "Todos los elementos sirven a un objetivo.",
+    "link": "Vincular",
+    "unlink": "Desvincular",
+    "contributions": "Trabajo detrás de esto",
+    "keyResults": "Resultados clave",
+    "reading": "Situación actual",
+    "record": "Registrar",
+    "overrideStatus": "Estado",
+    "derived": "Deducirlo de las cifras",
+    "titleField": "¿Qué queremos conseguir?",
+    "descriptionField": "Detalles",
+    "metricField": "¿Cómo se mide?",
+    "baselineField": "Punto de partida",
+    "targetField": "Objetivo",
+    "unitField": "Unidad",
+    "dueField": "Vencimiento",
+    "weightField": "Peso",
+    "status": {
+      "draft": "Borrador",
+      "active": "Activa",
+      "closed": "Cerrada"
+    },
+    "objectiveStatus": {
+      "on-track": "En rumbo",
+      "at-risk": "En riesgo",
+      "off-track": "Desviado",
+      "done": "Logrado"
+    },
+    "metric": {
+      "number": "Un número",
+      "percent": "Un porcentaje",
+      "currency": "Un importe",
+      "milestone": "Un hito",
+      "qualitative": "Una valoración"
     }
   }
 }

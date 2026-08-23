@@ -63,3 +63,21 @@ public sealed record ProblemDetail(
 public sealed record ProblemConverted(Guid ProblemId, Guid ItemId, string Title) : IntegrationEvent;
 
 public sealed record ProblemResolved(Guid ProblemId, Guid? ItemId) : IntegrationEvent;
+
+// --- Problem lookup, for modules that reference a problem without drawing its card (v2 §06.1) --------------------
+
+/// <summary>The least a problem needs to be recognised somewhere else. See Portfolio's CatalogCardRef for why.</summary>
+public sealed record ProblemRef(Guid Id, string Code, string Title, string Status, Guid NodeId);
+
+/// <summary>
+/// Resolves problems by id.
+/// </summary>
+/// <remarks>
+/// Narrower than Portfolio's equivalent — there is no "problems in scope" call, because a
+/// problem nobody linked to an objective is not an alignment gap. Solving pains is what the intake is for; serving
+/// a strategy is a bonus, not an expectation.
+/// </remarks>
+public interface IProblemLookupReader
+{
+    Task<IReadOnlyList<ProblemRef>> GetByIdsAsync(IReadOnlyList<Guid> problemIds, CancellationToken ct);
+}

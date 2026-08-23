@@ -32,7 +32,8 @@
     "kudos": "Kudos",
     "finance": "Finance",
     "settings": "Paramètres",
-    "problems": "Problèmes"
+    "problems": "Problèmes",
+    "strategy": "Stratégie"
   },
   "scope": {
     "ariaLabel": "Périmètre de consultation",
@@ -1007,6 +1008,58 @@
       "resolved": "Résolu",
       "declined": "Refusé",
       "duplicate": "Doublon"
+    }
+  },
+  "strategy": {
+    "title": "Stratégie",
+    "subtitle": "Ce sur quoi nous nous sommes engagés, et ce qui le fait avancer",
+    "none": "Aucune stratégie n'a encore été définie pour votre périmètre.",
+    "noObjectives": "Cette stratégie n'a pas encore d'objectifs.",
+    "addObjective": "Ajouter un objectif",
+    "progress": "{{percent}} % atteint",
+    "expected": "{{percent}} % attendus à ce jour",
+    "attention": "{{count}} objectif(s) demandent votre attention.",
+    "due": "échéance",
+    "overridden": "statut forcé",
+    "noWork": "Rien n'y travaille.",
+    "alignment": "Alignement",
+    "unlinkedObjectives": "Objectifs sans travaux rattachés",
+    "unlinkedItems": "Travaux ne servant aucun objectif",
+    "allLinked": "Chaque objectif a des travaux derrière lui.",
+    "allServed": "Chaque élément sert un objectif.",
+    "link": "Rattacher",
+    "unlink": "Détacher",
+    "contributions": "Travaux rattachés",
+    "keyResults": "Résultats clés",
+    "reading": "Où en est-on ?",
+    "record": "Enregistrer",
+    "overrideStatus": "Statut",
+    "derived": "Le déduire des chiffres",
+    "titleField": "Que cherchons-nous à faire ?",
+    "descriptionField": "Détails",
+    "metricField": "Comment est-ce mesuré ?",
+    "baselineField": "Point de départ",
+    "targetField": "Cible",
+    "unitField": "Unité",
+    "dueField": "Échéance",
+    "weightField": "Poids",
+    "status": {
+      "draft": "Brouillon",
+      "active": "En cours",
+      "closed": "Clôturée"
+    },
+    "objectiveStatus": {
+      "on-track": "Dans les temps",
+      "at-risk": "À risque",
+      "off-track": "En retard",
+      "done": "Atteint"
+    },
+    "metric": {
+      "number": "Un nombre",
+      "percent": "Un pourcentage",
+      "currency": "Un montant",
+      "milestone": "Un jalon",
+      "qualitative": "Une appréciation"
     }
   }
 }

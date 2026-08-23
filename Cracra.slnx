@@ -74,6 +74,10 @@
     <Project Path="src/Modules/Problems.Contracts/Cracra.Modules.Problems.Contracts.csproj" />
     <Project Path="src/Modules/Problems/Cracra.Modules.Problems.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Strategy/">
+    <Project Path="src/Modules/Strategy.Contracts/Cracra.Modules.Strategy.Contracts.csproj" />
+    <Project Path="src/Modules/Strategy/Cracra.Modules.Strategy.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Kudos/">
     <Project Path="src/Modules/Kudos.Contracts/Cracra.Modules.Kudos.Contracts.csproj" />
     <Project Path="src/Modules/Kudos/Cracra.Modules.Kudos.csproj" />

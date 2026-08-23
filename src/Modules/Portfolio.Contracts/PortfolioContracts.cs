@@ -198,3 +198,38 @@ public interface IPortfolioItemProvisioner
         Guid ownerNodeId,
         CancellationToken ct);
 }
+
+// =================================================================================================================
+// Item lookup, for modules that reference an item without drawing its card (v2 §06.2).
+// =================================================================================================================
+
+/// <summary>
+/// The least an item needs to be recognised somewhere else.
+/// </summary>
+/// <remarks>
+/// Deliberately smaller than <see cref="CatalogCard"/>. An objective card shows what work is behind it and that
+/// work's own state; giving it the full card would have Strategy re-rendering the portfolio's screen, and the two
+/// would drift the first time either changed.
+/// </remarks>
+public sealed record CatalogCardRef(
+    Guid Id,
+    string Code,
+    string Name,
+    string Type,
+    string State,
+    Guid OwnerNodeId);
+
+/// <summary>
+/// Resolves items by id, and lists them under a node.
+/// </summary>
+/// <remarks>
+/// Caller-scoped like every other cross-module reader, which is what makes the alignment view honest: an item the
+/// reader may not see is neither a contribution they can read nor a gap they are told to fill.
+/// </remarks>
+public interface ICatalogLookupReader
+{
+    Task<IReadOnlyList<CatalogCardRef>> GetByIdsAsync(IReadOnlyList<Guid> itemIds, CancellationToken ct);
+
+    /// <summary>Every item the caller may see owned inside a node's subtree.</summary>
+    Task<IReadOnlyList<CatalogCardRef>> GetInScopeAsync(Guid nodeId, CancellationToken ct);
+}

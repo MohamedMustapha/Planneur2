@@ -32,7 +32,8 @@
     "kudos": "Kudos",
     "finance": "Finance",
     "settings": "Settings",
-    "problems": "Problems"
+    "problems": "Problems",
+    "strategy": "Strategy"
   },
   "scope": {
     "ariaLabel": "Viewing scope",
@@ -1007,6 +1008,58 @@
       "resolved": "Resolved",
       "declined": "Declined",
       "duplicate": "Duplicate"
+    }
+  },
+  "strategy": {
+    "title": "Strategy",
+    "subtitle": "What we committed to, and what is moving it",
+    "none": "No strategy has been set for your scope yet.",
+    "noObjectives": "This strategy has no objectives yet.",
+    "addObjective": "Add an objective",
+    "progress": "{{percent}}% done",
+    "expected": "{{percent}}% expected by now",
+    "attention": "{{count}} objective(s) need attention.",
+    "due": "due",
+    "overridden": "status set by hand",
+    "noWork": "Nothing is working on this.",
+    "alignment": "Alignment",
+    "unlinkedObjectives": "Objectives with no work behind them",
+    "unlinkedItems": "Work serving no objective",
+    "allLinked": "Every objective has work behind it.",
+    "allServed": "Every item serves an objective.",
+    "link": "Link",
+    "unlink": "Unlink",
+    "contributions": "Work behind this",
+    "keyResults": "Key results",
+    "reading": "Where it stands now",
+    "record": "Record",
+    "overrideStatus": "Status",
+    "derived": "Work it out from the numbers",
+    "titleField": "What are we trying to do?",
+    "descriptionField": "Details",
+    "metricField": "How is it measured?",
+    "baselineField": "Starting point",
+    "targetField": "Target",
+    "unitField": "Unit",
+    "dueField": "Due",
+    "weightField": "Weight",
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "closed": "Closed"
+    },
+    "objectiveStatus": {
+      "on-track": "On track",
+      "at-risk": "At risk",
+      "off-track": "Off track",
+      "done": "Done"
+    },
+    "metric": {
+      "number": "A number",
+      "percent": "A percentage",
+      "currency": "An amount",
+      "milestone": "A milestone",
+      "qualitative": "A judgement"
     }
   }
 }

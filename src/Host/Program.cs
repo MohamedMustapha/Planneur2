@@ -17,6 +17,7 @@ using Cracra.Modules.Portfolio;
 using Cracra.Modules.Projects;
 using Cracra.Modules.Reporting;
 using Cracra.Modules.Scheduling;
+using Cracra.Modules.Strategy;
 using Cracra.ServiceDefaults;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -71,6 +72,7 @@ builder.Services.AddReportingModule();
 builder.Services.AddIntegrationsModule();
 builder.Services.AddFinanceModule();
 builder.Services.AddProblemsModule();
+builder.Services.AddStrategyModule();
 
 // --- Development data ----------------------------------------------------------------------------------------
 // Two projects and a few weeks of activity, so a fresh dev box opens on populated boards rather than on empty

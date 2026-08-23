@@ -55,6 +55,8 @@ public sealed class ArchitectureRules
 
         typeof(Cracra.Modules.Problems.ProblemsModule).Assembly,
         typeof(Cracra.Modules.Problems.Contracts.ProblemCard).Assembly,
+        typeof(Cracra.Modules.Strategy.StrategyModule).Assembly,
+        typeof(Cracra.Modules.Strategy.Contracts.StrategyView).Assembly,
     ];
 
     /// <summary>

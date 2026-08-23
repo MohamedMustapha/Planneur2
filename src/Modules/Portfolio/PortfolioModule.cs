@@ -32,6 +32,9 @@ public static class PortfolioModule
         // The lifecycle board, counted by S8's department and portfolio reports.
         services.AddScoped<Contracts.IPortfolioBoardReader, PortfolioBoardReader>();
 
+        // Item references, read by Strategy when it draws an objective's contributions (v2 §06).
+        services.AddScoped<Contracts.ICatalogLookupReader, CatalogLookupReader>();
+
         services.AddMediatorHandlersFrom(typeof(PortfolioModule).Assembly);
 
         return services;

@@ -64,6 +64,12 @@ internal sealed class PortfolioItemConfiguration : IEntityTypeConfiguration<Port
 
         builder.HasIndex(item => item.Code).IsUnique();
         builder.HasIndex(item => item.OwnerNodeId);
+
+        // Trigger-maintained, exactly as on an activity entry: EF must read it and never write it.
+        builder.Property(item => item.NodeAncestorIds)
+            .HasColumnType("uuid[]")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsRequired();
         builder.HasIndex(item => new { item.Type, item.Category });
 
         // RLS reads the department on every row, and the board's default view orders by priority within it.

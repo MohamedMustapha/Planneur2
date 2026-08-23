@@ -91,6 +91,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/finance/capex-opex').then((m) => m.CapexOpex),
   },
   {
+    // Read by anybody, written by heads. A strategy nobody below the head can open is a poster rather than a
+    // spine, and the whole slice exists to make "what does my work serve" answerable (v2 §06).
+    path: 'strategy',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/strategy/strategy').then((m) => m.Strategy),
+  },
+  {
     // Reporting an irritant needs no role, which is the whole point: a platform where saying "this wastes my
     // week" requires a hat is a platform where nobody says it (v2 §05).
     path: 'problems',

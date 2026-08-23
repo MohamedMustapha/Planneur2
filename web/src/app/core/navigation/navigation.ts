@@ -49,6 +49,9 @@ export const NAVIGATION: readonly NavigationItem[] = [
   { id: 'projects', route: '/projects', labelKey: 'nav.projects', icon: '◈' },
   { id: 'portfolio', route: '/portfolio', labelKey: 'nav.portfolio', icon: '▦' },
   { id: 'reports', route: '/reports', labelKey: 'nav.reports', icon: '▥' },
+  // No role: a member reads the objectives their work serves, which is the point of having a spine at all.
+  // Writing one is a head's act and the screen hides its own controls accordingly (v2 §06.4).
+  { id: 'strategy', route: '/strategy', labelKey: 'nav.strategy', icon: '◎' },
   // No role and no capability: anybody may report what wastes their week, and a branch that has configured
   // nothing still gets the intake (v2 §05).
   { id: 'problems', route: '/problems', labelKey: 'nav.problems', icon: '⚑' },

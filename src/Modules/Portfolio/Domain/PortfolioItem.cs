@@ -82,6 +82,16 @@ public sealed class PortfolioItem
     /// <summary>The node that owns this. Replaces the sponsoring department, at whatever depth it sits.</summary>
     public Guid OwnerNodeId { get; private set; }
 
+    /// <summary>
+    /// The owning node's path, maintained by the node-tree trigger.
+    /// </summary>
+    /// <remarks>
+    /// Mapped rather than merely present in the database so a caller can ask "every item under this node" with one
+    /// array overlap instead of walking the tree itself. Written by <c>access.copy_node_path</c> on every insert
+    /// and update — never by this aggregate, which is why it has no setter anybody can reach.
+    /// </remarks>
+    public Guid[] NodeAncestorIds { get; private set; } = [];
+
     public Guid? LeadPersonId { get; private set; }
 
     public Guid? PoPersonId { get; private set; }
