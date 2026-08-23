@@ -138,6 +138,13 @@ public sealed record DepartmentConfigChanged(Guid DepartmentId, int Version) : I
 /// consumer can only resolve people it was already allowed to see — validation inherits the visibility rules
 /// instead of restating them.
 /// </remarks>
+public sealed record HomeNodeScope(Guid NodeId, IReadOnlyList<Guid> NodePath);
+
+public interface IOrgNodeReader
+{
+    Task<HomeNodeScope?> GetHomeScopeAsync(Guid personId, CancellationToken ct);
+}
+
 public interface IDirectoryReader
 {
     Task<PersonSummary?> GetPersonAsync(Guid personId, CancellationToken ct);

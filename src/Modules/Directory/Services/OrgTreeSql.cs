@@ -81,6 +81,8 @@ public static class OrgTreeSql
             from directory.unit u
             where u.id = n.id
               and n.parent_id is distinct from u.department_id;
+
+            perform access.refresh_stale_node_paths();
         end
         $proj$;
         """;

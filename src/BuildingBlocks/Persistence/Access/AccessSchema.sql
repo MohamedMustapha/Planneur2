@@ -73,6 +73,57 @@ create or replace function access.roles() returns text[]
     $$;
 
 -- -------------------------------------------------------------------------------------------------------------
+-- Node scope (v2 01 3). One path replaces every level-specific id: there is no app.bureau_id and no
+-- app.service_id, and no predicate below names a level.
+-- -------------------------------------------------------------------------------------------------------------
+
+create or replace function access.node() returns uuid
+    language sql stable
+    as $$ select nullif(current_setting('app.node_id', true), '')::uuid $$;
+
+create or replace function access.my_path() returns uuid[]
+    language sql stable
+    as $$
+        select coalesce(
+            string_to_array(nullif(current_setting('app.node_path', true), ''), ',')::uuid[],
+            '{}'::uuid[]
+        )
+    $$;
+
+create or replace function access.headed_nodes() returns uuid[]
+    language sql stable
+    as $$
+        select coalesce(
+            string_to_array(nullif(current_setting('app.headed_nodes', true), ''), ',')::uuid[],
+            '{}'::uuid[]
+        )
+    $$;
+
+-- The entire supervision rule. A head's node id appears in the ancestor_ids of every row beneath them at any
+-- depth, so one array overlap answers "is this inside a subtree I head" without recursion and without level logic.
+create or replace function access.in_my_subtree(p_ancestors uuid[]) returns boolean
+    language sql stable
+    as $$ select coalesce(p_ancestors && access.headed_nodes(), false) $$;
+
+create or replace function access.same_node(p_node uuid) returns boolean
+    language sql stable
+    as $$ select p_node is not null and p_node = access.node() $$;
+
+-- The node I hang off: the last entry of my path before myself.
+create or replace function access.my_branch() returns uuid
+    language sql stable
+    as $$
+        select case
+            when array_length(path, 1) > 1 then path[array_length(path, 1) - 1]
+        end
+        from (select access.my_path() as path) as me
+    $$;
+
+create or replace function access.in_my_branch(p_ancestors uuid[]) returns boolean
+    language sql stable
+    as $$ select coalesce(access.my_branch() = any(p_ancestors), false) $$;
+
+-- -------------------------------------------------------------------------------------------------------------
 -- Role predicates.
 -- -------------------------------------------------------------------------------------------------------------
 
@@ -82,7 +133,7 @@ create or replace function access.has(p_role text) returns boolean
 
 create or replace function access.is_head() returns boolean
     language sql stable
-    as $$ select access.has('unit-head') or access.has('dept-head') or access.has('pmo') $$;
+    as $$ select array_length(access.headed_nodes(), 1) > 0 or access.has('pmo') $$;
 
 -- Background jobs (sync, AI, outbox drain) run under this role. Policies opt in to it explicitly; it is never a
 -- blanket bypass, and the interceptor refuses to put it in a token-derived context.
@@ -132,6 +183,7 @@ create or replace function access.copy_node_path() returns trigger
 declare
     path uuid[];
     derived uuid;
+    from_legacy boolean := false;
 begin
     if new.node_id is null and tg_nargs > 0 then
         execute format(
@@ -141,6 +193,7 @@ begin
         into derived using new;
 
         new.node_id := derived;
+        from_legacy := true;
     end if;
 
     if new.node_id is null then
@@ -150,13 +203,39 @@ begin
 
     select n.ancestor_ids into path from directory.org_node n where n.id = new.node_id;
 
+    -- A node derived from the legacy columns may simply not be projected yet: during the shim a department can be
+    -- written in the same transaction that will produce its node. An empty path matches no subtree, so the row is
+    -- invisible rather than wrong, and the projection's sweep fills it in. A node_id somebody supplied explicitly
+    -- gets no such benefit of the doubt.
     if path is null then
+        if from_legacy then
+            new.node_ancestor_ids := '{}'::uuid[];
+            return new;
+        end if;
+
         raise exception 'node % is not in the org tree', new.node_id
             using errcode = '23503';
     end if;
 
     new.node_ancestor_ids := path;
     return new;
+end
+$fn$;
+
+create or replace function access.refresh_stale_node_paths() returns void
+    language plpgsql as $fn$
+declare
+    scoped record;
+begin
+    for scoped in select * from access.node_scoped_table loop
+        execute format(
+            'update %I.%I s set %I = n.ancestor_ids
+               from directory.org_node n
+              where n.id = s.%I
+                and (s.%I is null or s.%I = ''{}''::uuid[])',
+            scoped.schema_name, scoped.table_name, scoped.ancestors_column,
+            scoped.node_column, scoped.ancestors_column, scoped.ancestors_column);
+    end loop;
 end
 $fn$;
 
@@ -193,11 +272,11 @@ begin
         p_schema, p_table);
 
     if p_unit_col is null then
-        source := quote_ident(p_dept_col);
+        source := format('s.%I', p_dept_col);
     elsif p_dept_col is null then
-        source := quote_ident(p_unit_col);
+        source := format('s.%I', p_unit_col);
     else
-        source := format('coalesce(%I, %I)', p_unit_col, p_dept_col);
+        source := format('coalesce(s.%I, s.%I)', p_unit_col, p_dept_col);
     end if;
 
     execute format(

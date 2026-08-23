@@ -35,10 +35,13 @@ public sealed class RlsMatrixProbe(string connectionString) : IAsyncDisposable
         await using var command = _connection.CreateCommand();
 
         command.CommandText = """
-            select set_config('app.user_id',  @userId,  false),
-                   set_config('app.unit_id',  @unitId,  false),
-                   set_config('app.dept_ids', @deptIds, false),
-                   set_config('app.roles',    @roles,   false);
+            select set_config('app.user_id',      @userId,      false),
+                   set_config('app.unit_id',      @unitId,      false),
+                   set_config('app.dept_ids',     @deptIds,     false),
+                   set_config('app.node_id',      @nodeId,      false),
+                   set_config('app.node_path',    @nodePath,    false),
+                   set_config('app.headed_nodes', @headedNodes, false),
+                   set_config('app.roles',        @roles,       false);
             """;
 
         command.Parameters.AddWithValue("userId", user.IsAuthenticated && user.UserId != Guid.Empty
@@ -46,6 +49,9 @@ public sealed class RlsMatrixProbe(string connectionString) : IAsyncDisposable
             : string.Empty);
         command.Parameters.AddWithValue("unitId", user.UnitId?.ToString() ?? string.Empty);
         command.Parameters.AddWithValue("deptIds", string.Join(',', user.DepartmentIds));
+        command.Parameters.AddWithValue("nodeId", user.NodeId?.ToString() ?? string.Empty);
+        command.Parameters.AddWithValue("nodePath", string.Join(',', user.NodePath));
+        command.Parameters.AddWithValue("headedNodes", string.Join(',', user.HeadedNodes));
         command.Parameters.AddWithValue("roles", string.Join(',', user.Roles));
 
         await command.ExecuteNonQueryAsync(ct);

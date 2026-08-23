@@ -53,14 +53,14 @@ public sealed class AccessSchemaTests(PostgresFixture postgres)
         var connection = (NpgsqlConnection)context.Database.GetDbConnection();
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            select access.has('dept-head'),
+            select access.has('node-head'),
                    access.has('pmo'),
                    access.is_head(),
                    access.is_system(),
-                   access.unit() = @unit,
-                   @dept = any(access.depts())
+                   access.node() = @node,
+                   @dept = any(access.headed_nodes())
             """;
-        command.Parameters.AddWithValue("unit", SeedOrganisation.Units.Development);
+        command.Parameters.AddWithValue("node", SeedOrganisation.Units.Development);
         command.Parameters.AddWithValue("dept", SeedOrganisation.Departments.InformationSystems);
 
         await using var reader = await command.ExecuteReaderAsync(TestContext.Current.CancellationToken);

@@ -11,9 +11,13 @@ public static class RlsGucs
     public const string UserId = "app.user_id";
     public const string UnitId = "app.unit_id";
     public const string DepartmentIds = "app.dept_ids";
+    public const string NodeId = "app.node_id";
+    public const string NodePath = "app.node_path";
+    public const string HeadedNodes = "app.headed_nodes";
     public const string Roles = "app.roles";
 
-    public static readonly IReadOnlyList<string> All = [UserId, UnitId, DepartmentIds, Roles];
+    public static readonly IReadOnlyList<string> All =
+        [UserId, UnitId, DepartmentIds, NodeId, NodePath, HeadedNodes, Roles];
 }
 
 /// <summary>
@@ -64,30 +68,40 @@ public sealed class RlsSessionInterceptor(
 
         var unitId = userContext.UnitId?.ToString() ?? string.Empty;
         var departmentIds = string.Join(',', userContext.DepartmentIds);
+        var nodeId = userContext.NodeId?.ToString() ?? string.Empty;
+        var nodePath = string.Join(',', userContext.NodePath);
+        var headedNodes = string.Join(',', userContext.HeadedNodes);
         var roles = string.Join(',', userContext.Roles);
 
         await using var command = connection.CreateCommand();
 
-        // One round trip for all four. Parameterised so an identifier can never be concatenated into SQL.
+        // One round trip for all of them. Parameterised so an identifier can never be concatenated into SQL.
         command.CommandText = """
-            select set_config('app.user_id',  @userId,  false),
-                   set_config('app.unit_id',  @unitId,  false),
-                   set_config('app.dept_ids', @deptIds, false),
-                   set_config('app.roles',    @roles,   false);
+            select set_config('app.user_id',      @userId,      false),
+                   set_config('app.unit_id',      @unitId,      false),
+                   set_config('app.dept_ids',     @deptIds,     false),
+                   set_config('app.node_id',      @nodeId,      false),
+                   set_config('app.node_path',    @nodePath,    false),
+                   set_config('app.headed_nodes', @headedNodes, false),
+                   set_config('app.roles',        @roles,       false);
             """;
 
         AddParameter(command, "userId", userId);
         AddParameter(command, "unitId", unitId);
         AddParameter(command, "deptIds", departmentIds);
+        AddParameter(command, "nodeId", nodeId);
+        AddParameter(command, "nodePath", nodePath);
+        AddParameter(command, "headedNodes", headedNodes);
         AddParameter(command, "roles", roles);
 
         await command.ExecuteNonQueryAsync(ct);
 
         logger.LogTrace(
-            "RLS session set: user={UserId} unit={UnitId} depts={DepartmentIds} roles={Roles}",
+            "RLS session set: user={UserId} node={NodeId} path={NodePath} heads={HeadedNodes} roles={Roles}",
             userId,
-            unitId,
-            departmentIds,
+            nodeId,
+            nodePath,
+            headedNodes,
             roles);
     }
 

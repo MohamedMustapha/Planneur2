@@ -29,20 +29,20 @@ public sealed class ReportScopeTests
         ReportScope.Default(Person(ContextualRole.Member)).ShouldBe(ReportScopes.Team);
     }
 
+    /// <summary>
+    /// One role, and therefore one answer, at every depth (v2 §01.2).
+    /// </summary>
+    /// <remarks>
+    /// The pre-v2 rule offered "department" to a dept-head and "unit" to a unit-head. With the level-named roles
+    /// collapsed there is nothing left to tell those two apart from the role alone, so a head is offered both and
+    /// RLS decides what each one returns — a head who picks a scope above their own branch gets nothing, rather
+    /// than somebody else's rows. Narrowing the offer instead would need code that knows what a level is, which is
+    /// the one thing §01 forbids.
+    /// </remarks>
     [Fact]
-    public void A_unit_head_gets_their_unit()
+    public void A_head_gets_every_scope_a_head_can_run()
     {
-        var scopes = ReportScope.Available(Person(ContextualRole.Member, ContextualRole.UnitHead));
-
-        scopes.ShouldContain(ReportScopes.Unit);
-        scopes.ShouldNotContain(ReportScopes.Department);
-        scopes[0].ShouldBe(ReportScopes.Unit);
-    }
-
-    [Fact]
-    public void A_department_head_gets_their_department_and_everything_under_it()
-    {
-        var scopes = ReportScope.Available(Person(ContextualRole.Member, ContextualRole.DepartmentHead));
+        var scopes = ReportScope.Available(Person(ContextualRole.Member, ContextualRole.NodeHead));
 
         scopes[0].ShouldBe(ReportScopes.Department);
         scopes.ShouldContain(ReportScopes.Unit);

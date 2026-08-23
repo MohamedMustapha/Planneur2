@@ -12,12 +12,11 @@ public static class CracraPolicies
 {
     public const string Authenticated = "cracra:authenticated";
     public const string Member = "cracra:member";
-    public const string UnitHead = "cracra:unit-head";
-    public const string DepartmentHead = "cracra:dept-head";
+    public const string NodeHead = "cracra:node-head";
     public const string ProjectLead = "cracra:project-lead";
     public const string Pmo = "cracra:pmo";
 
-    /// <summary>Any role that governs beyond a single person — unit-head, dept-head or PMO.</summary>
+    /// <summary>Any role that governs beyond a single person — a node head at any depth, or the PMO.</summary>
     public const string AnyHead = "cracra:any-head";
 
     /// <summary>
@@ -36,8 +35,7 @@ public static class CracraPolicies
             .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
             .AddPolicy(Authenticated, policy => policy.RequireAuthenticatedUser())
             .AddPolicy(Member, policy => policy.RequireContextualRole(ContextualRole.Member))
-            .AddPolicy(UnitHead, policy => policy.RequireContextualRole(ContextualRole.UnitHead))
-            .AddPolicy(DepartmentHead, policy => policy.RequireContextualRole(ContextualRole.DepartmentHead))
+            .AddPolicy(NodeHead, policy => policy.RequireContextualRole(ContextualRole.NodeHead))
             .AddPolicy(ProjectLead, policy => policy.RequireContextualRole(ContextualRole.ProjectLead, ContextualRole.ProductOwner))
             .AddPolicy(Pmo, policy => policy.RequireContextualRole(ContextualRole.Pmo))
             .AddPolicy(AnyHead, policy => policy.RequireContextualRole([.. ContextualRole.Heads]))

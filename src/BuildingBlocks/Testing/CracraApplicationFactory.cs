@@ -176,6 +176,7 @@ internal sealed class TestAuthenticationHandler(
         }
 
         claims.AddRange(user.DepartmentIds.Select(id => new Claim(CracraClaims.DepartmentIds, id.ToString())));
+        claims.AddRange(user.HeadedNodes.Select(id => new Claim(CracraClaims.HeadedNodes, id.ToString())));
         claims.AddRange(user.Roles.Select(role => new Claim(CracraClaims.ContextualRoles, role)));
 
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, CracraApplicationFactory.TestScheme));

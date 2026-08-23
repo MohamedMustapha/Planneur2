@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Abstractions;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
@@ -156,7 +156,7 @@ internal sealed class BoardComposer(
             coverage,
             // A lead may drag; a member looking at their team's board may not. RLS refuses the write either way,
             // but a board that offers a gesture the server will reject is a board that feels broken.
-            CanAssign: user.HasAnyRole(ContextualRole.UnitHead, ContextualRole.DepartmentHead, ContextualRole.Pmo));
+            CanAssign: user.HasAnyRole(ContextualRole.NodeHead, ContextualRole.Pmo));
     }
 
     /// <summary>Unit board: the unit's people, their activity broken out by the project it was against.</summary>
@@ -220,7 +220,7 @@ internal sealed class BoardComposer(
             [.. await overlays.GetOverlaysAsync(scope, null, from, to, ct)],
             Pool: [],
             Coverage: [],
-            CanAssign: user.HasAnyRole(ContextualRole.UnitHead, ContextualRole.DepartmentHead, ContextualRole.Pmo));
+            CanAssign: user.HasAnyRole(ContextualRole.NodeHead, ContextualRole.Pmo));
     }
 
     /// <summary>
@@ -298,8 +298,7 @@ internal sealed class BoardComposer(
             CanAssign: user.HasAnyRole(
                 ContextualRole.ProjectLead,
                 ContextualRole.ProductOwner,
-                ContextualRole.UnitHead,
-                ContextualRole.DepartmentHead,
+                ContextualRole.NodeHead,
                 ContextualRole.Pmo));
     }
 

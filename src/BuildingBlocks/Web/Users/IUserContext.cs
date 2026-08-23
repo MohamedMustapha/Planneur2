@@ -16,6 +16,12 @@ public interface IUserContext
 
     IReadOnlyList<Guid> DepartmentIds { get; }
 
+    Guid? NodeId { get; }
+
+    IReadOnlyList<Guid> NodePath { get; }
+
+    IReadOnlyList<Guid> HeadedNodes { get; }
+
     /// <summary>Contextual roles — see <see cref="ContextualRole"/>.</summary>
     IReadOnlyList<string> Roles { get; }
 
@@ -65,6 +71,12 @@ public sealed record UserContext : IUserContext
     public Guid? UnitId { get; init; }
 
     public IReadOnlyList<Guid> DepartmentIds { get; init; } = [];
+
+    public Guid? NodeId { get; init; }
+
+    public IReadOnlyList<Guid> NodePath { get; init; } = [];
+
+    public IReadOnlyList<Guid> HeadedNodes { get; init; } = [];
 
     public IReadOnlyList<string> Roles { get; init; } = [];
 
@@ -118,6 +130,12 @@ internal sealed class UserContextProxy(IUserContextAccessor accessor) : IUserCon
     public Guid? UnitId => accessor.Current.UnitId;
 
     public IReadOnlyList<Guid> DepartmentIds => accessor.Current.DepartmentIds;
+
+    public Guid? NodeId => accessor.Current.NodeId;
+
+    public IReadOnlyList<Guid> NodePath => accessor.Current.NodePath;
+
+    public IReadOnlyList<Guid> HeadedNodes => accessor.Current.HeadedNodes;
 
     public IReadOnlyList<string> Roles => accessor.Current.Roles;
 

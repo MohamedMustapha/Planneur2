@@ -2,6 +2,9 @@ using Cracra.BuildingBlocks.Testing;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Access.Data;
 using Cracra.Modules.Access.Domain;
+using Cracra.Modules.Directory.Data;
+using Cracra.Modules.Directory.Domain;
+using Cracra.Modules.Directory.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -239,7 +242,7 @@ public sealed class VisibilityMatrixTests(PostgresFixture postgres)
                 SeedOrganisation.Sofia.UserId,
                 SeedOrganisation.Camille.UserId,
                 SeedOrganisation.Units.Infrastructure,
-                SeedOrganisation.Departments.InformationSystems,
+                Ancestors(SeedOrganisation.Units.Infrastructure),
             ],
             TestContext.Current.CancellationToken)).ShouldBeTrue();
     }
@@ -256,7 +259,7 @@ public sealed class VisibilityMatrixTests(PostgresFixture postgres)
                 SeedOrganisation.Thomas.UserId,
                 SeedOrganisation.Mehdi.UserId,
                 SeedOrganisation.Units.Infrastructure,
-                SeedOrganisation.Departments.InformationSystems,
+                Ancestors(SeedOrganisation.Units.Infrastructure),
             ],
             TestContext.Current.CancellationToken)).ShouldBeTrue();
     }
@@ -273,7 +276,7 @@ public sealed class VisibilityMatrixTests(PostgresFixture postgres)
                 SeedOrganisation.Sofia.UserId,
                 SeedOrganisation.Laurent.UserId,
                 SeedOrganisation.Units.Accounting,
-                SeedOrganisation.Departments.Finance,
+                Ancestors(SeedOrganisation.Units.Accounting),
             ],
             TestContext.Current.CancellationToken)).ShouldBeFalse();
     }
@@ -299,11 +302,13 @@ public sealed class VisibilityMatrixTests(PostgresFixture postgres)
     {
         await using var probe = await ProbeAsync();
 
-        (await probe.EvaluateAsync(SeedOrganisation.Thomas, "access.can_write_in_unit(@p0)",
-            [SeedOrganisation.Units.Infrastructure], TestContext.Current.CancellationToken)).ShouldBeTrue();
+        (await probe.EvaluateAsync(SeedOrganisation.Thomas, "access.can_write_in_node(@p0, @p1)",
+            [SeedOrganisation.Units.Infrastructure, Ancestors(SeedOrganisation.Units.Infrastructure)],
+            TestContext.Current.CancellationToken)).ShouldBeTrue();
 
-        (await probe.EvaluateAsync(SeedOrganisation.Camille, "access.can_write_in_unit(@p0)",
-            [SeedOrganisation.Units.Infrastructure], TestContext.Current.CancellationToken)).ShouldBeFalse();
+        (await probe.EvaluateAsync(SeedOrganisation.Camille, "access.can_write_in_node(@p0, @p1)",
+            [SeedOrganisation.Units.Infrastructure, Ancestors(SeedOrganisation.Units.Infrastructure)],
+            TestContext.Current.CancellationToken)).ShouldBeFalse();
     }
 
     // --- Helpers ------------------------------------------------------------------------------------------------
@@ -321,10 +326,19 @@ public sealed class VisibilityMatrixTests(PostgresFixture postgres)
             [
                 owner,
                 unit ?? SeedOrganisation.Units.Infrastructure,
+                Ancestors(unit ?? SeedOrganisation.Units.Infrastructure),
                 project,
-                department ?? SeedOrganisation.Departments.InformationSystems,
             ],
             TestContext.Current.CancellationToken);
+
+    /// <summary>The node path a row in this unit carries: root, its department, itself.</summary>
+    private static Guid[] Ancestors(Guid unitId) =>
+        [OrgTreeSql.UnclassifiedRootId, DepartmentOf(unitId), unitId];
+
+    private static Guid DepartmentOf(Guid unitId) =>
+        unitId == SeedOrganisation.Units.Accounting || unitId == SeedOrganisation.Units.Controlling
+            ? SeedOrganisation.Departments.Finance
+            : SeedOrganisation.Departments.InformationSystems;
 
     /// <summary>
     /// Brings up the schema, then seeds the project memberships the project-scoped predicates read.
@@ -341,8 +355,11 @@ public sealed class VisibilityMatrixTests(PostgresFixture postgres)
         {
             scope.ServiceProvider.GetRequiredService<IUserContextAccessor>().Current = UserContext.SystemJob;
 
-            var context = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
             var ct = TestContext.Current.CancellationToken;
+
+            await SeedTreeAsync(scope, ct);
+
+            var context = scope.ServiceProvider.GetRequiredService<AccessDbContext>();
 
             await context.ProjectMemberships.ExecuteDeleteAsync(ct);
 
@@ -357,6 +374,59 @@ public sealed class VisibilityMatrixTests(PostgresFixture postgres)
         // The probe connects as the runtime role, the same one the application uses, so FORCE ROW LEVEL SECURITY
         // applies exactly as it does in production.
         return new RlsMatrixProbe(RuntimeConnectionString(factory));
+    }
+
+    /// <summary>
+    /// The org as a tree, which is what the predicates now read.
+    /// </summary>
+    /// <remarks>
+    /// Written directly rather than through directory sync: this fixture asserts the predicates, and going through
+    /// Keycloak mapping to get four nodes would make a failure here ambiguous between the two.
+    /// </remarks>
+    private static async Task SeedTreeAsync(AsyncServiceScope scope, CancellationToken ct)
+    {
+        var directory = scope.ServiceProvider.GetRequiredService<DirectoryDbContext>();
+
+        if (await directory.OrgNodes.AnyAsync(node => node.Id == SeedOrganisation.Units.Infrastructure, ct))
+        {
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+
+        await directory.Database.ExecuteSqlRawAsync(
+            """
+            insert into directory.org_node (id, parent_id, level_no, code, name, active, created_at, modified_at)
+            values ({0}, null, 1, 'A-RECLASSER', 'À reclasser', true, now(), now())
+            on conflict (id) do nothing;
+            """.Replace("{0}", $"'{OrgTreeSql.UnclassifiedRootId}'"),
+            ct);
+
+        foreach (var (id, parent, level, code) in Nodes())
+        {
+            directory.OrgNodes.Add(new OrgNode
+            {
+                Id = id,
+                ParentId = parent,
+                LevelNo = level,
+                Code = code,
+                Name = code,
+                CreatedAt = now,
+                ModifiedAt = now,
+            });
+
+            await directory.SaveChangesAsync(ct);
+        }
+    }
+
+    private static IEnumerable<(Guid Id, Guid Parent, int Level, string Code)> Nodes()
+    {
+        yield return (SeedOrganisation.Departments.InformationSystems, OrgTreeSql.UnclassifiedRootId, 2, "IS");
+        yield return (SeedOrganisation.Departments.Finance, OrgTreeSql.UnclassifiedRootId, 2, "FIN");
+        yield return (SeedOrganisation.Units.Infrastructure, SeedOrganisation.Departments.InformationSystems, 3, "OPS");
+        yield return (SeedOrganisation.Units.Development, SeedOrganisation.Departments.InformationSystems, 3, "DEV");
+        yield return (SeedOrganisation.Units.Accounting, SeedOrganisation.Departments.Finance, 3, "ACC");
+        yield return (SeedOrganisation.Units.Controlling, SeedOrganisation.Departments.Finance, 3, "CTL");
     }
 
     private static ProjectMembership Membership(Guid personId, Guid projectId, Guid departmentId) => new()

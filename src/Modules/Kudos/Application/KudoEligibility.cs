@@ -33,7 +33,8 @@ internal sealed class KudoEligibility(IDirectoryPort directory, IProjectsPort pr
         }
 
         if (user.Has(ContextualRole.Pmo)
-            || (user.Has(ContextualRole.DepartmentHead) && user.DepartmentIds.Contains(receiverDepartmentId)))
+            || user.HeadedNodes.Contains(receiverDepartmentId)
+            || user.HeadedNodes.Contains(receiverUnitId))
         {
             return KudoRelation.HeadScope;
         }
@@ -79,9 +80,13 @@ internal sealed class KudoEligibility(IDirectoryPort directory, IProjectsPort pr
             }
         }
 
-        if (user.Has(ContextualRole.DepartmentHead) || user.Has(ContextualRole.Pmo))
+        var headed = user.Has(ContextualRole.Pmo)
+            ? user.DepartmentIds
+            : [.. user.DepartmentIds.Where(user.HeadedNodes.Contains)];
+
+        if (headed.Count > 0)
         {
-            foreach (var departmentId in user.DepartmentIds)
+            foreach (var departmentId in headed)
             {
                 foreach (var person in await directory.GetPeopleAsync(null, departmentId, ct))
                 {

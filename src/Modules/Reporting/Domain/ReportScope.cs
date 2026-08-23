@@ -48,18 +48,14 @@ public static class ReportScope
             scopes.Add(ReportScopes.Portfolio);
         }
 
-        if (user.Has(ContextualRole.DepartmentHead) || user.Has(ContextualRole.Pmo))
+        if (user.Has(ContextualRole.NodeHead) || user.Has(ContextualRole.Pmo))
         {
             scopes.Add(ReportScopes.Department);
-        }
-
-        if (user.Has(ContextualRole.UnitHead) || user.Has(ContextualRole.DepartmentHead) || user.Has(ContextualRole.Pmo))
-        {
             scopes.Add(ReportScopes.Unit);
         }
 
         if (user.HasAnyRole(ContextualRole.ProjectLead, ContextualRole.ProductOwner)
-            || user.Has(ContextualRole.DepartmentHead)
+            || user.Has(ContextualRole.NodeHead)
             || user.Has(ContextualRole.Pmo))
         {
             scopes.Add(ReportScopes.Project);
