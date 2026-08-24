@@ -3,6 +3,7 @@ using System;
 using Cracra.Modules.Access.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Cracra.Modules.Access.Data.Migrations
 {
     [DbContext(typeof(AccessDbContext))]
-    partial class AccessDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260824035635_AddAdminAudit")]
+    partial class AddAdminAudit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -167,7 +167,8 @@
     "workingDayHint": "The day's bounds and its morning / afternoon sessions. Drives the board's axis and the quick-add presets. An empty object means the defaults (06:00–20:00, 09:00–13:00, 14:00–18:00).",
     "shiftTemplates": "Shift slots",
     "shiftTemplatesHint": "Slots the scheduler offers and their minimum staffing. Consumed by slice S6.",
-    "tabProfiles": "Profiles"
+    "tabProfiles": "Profiles",
+    "tabOrg": "Organisation"
   },
   "directory": {
     "functionalRole": {
@@ -1180,6 +1181,52 @@
       "currency": "An amount",
       "milestone": "A milestone",
       "qualitative": "A judgement"
+    }
+  },
+  "admin": {
+    "title": "Organisation structure",
+    "page": {
+      "purpose": "The levels, the tree of branches, and the trail of what was done to them."
+    },
+    "tree": "Tree",
+    "levels": "Levels",
+    "audit": "Trail",
+    "noNodes": "No branch is visible to you.",
+    "noAudit": "Nothing recent.",
+    "inactive": "Inactive",
+    "noPeople": "No people",
+    "optional": "Optional",
+    "edit": "Edit",
+    "levelCode": "Code",
+    "levelLabel": "Label",
+    "headLabel": "Head's title",
+    "peopleAllowed": "People may attach here",
+    "isOptional": "Optional level",
+    "name": "Name",
+    "rename": "Rename",
+    "parent": "Hangs off",
+    "atTheTop": "At the top",
+    "move": "Move",
+    "head": "Head",
+    "addChild": "Create a branch under it",
+    "create": "Create",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "reparentHint": "Moving a branch moves everything beneath it, and re-scopes who sees what at once.",
+    "deactivateHint": "A deactivated branch keeps its history; nobody new attaches to it.",
+    "forbidden": "You can see this branch but not change it.",
+    "failed": "That did not work.",
+    "action": {
+      "node-created": "Branch created",
+      "node-renamed": "Renamed",
+      "node-reparented": "Moved",
+      "node-deactivated": "Deactivated",
+      "node-reactivated": "Reactivated",
+      "node-head-set": "Head",
+      "level-saved": "Level",
+      "role-granted": "Role granted",
+      "role-revoked": "Role revoked",
+      "member-moved": "Person moved"
     }
   }
 }

@@ -167,7 +167,8 @@
     "workingDayHint": "Bornes de la journée et sessions matin / après-midi. Détermine l'axe du tableau et les raccourcis de saisie. Objet vide = valeurs par défaut (06:00–20:00, 09:00–13:00, 14:00–18:00).",
     "shiftTemplates": "Créneaux de service",
     "shiftTemplatesHint": "Créneaux proposés par le planning et leur effectif minimum. Consommé par le lot S6.",
-    "tabProfiles": "Profils"
+    "tabProfiles": "Profils",
+    "tabOrg": "Organisation"
   },
   "directory": {
     "functionalRole": {
@@ -1180,6 +1181,52 @@
       "currency": "Un montant",
       "milestone": "Un jalon",
       "qualitative": "Une appréciation"
+    }
+  },
+  "admin": {
+    "title": "Structure de l'organisation",
+    "page": {
+      "purpose": "Les niveaux, l'arbre des branches, et la trace de ce qui y a été fait."
+    },
+    "tree": "Arbre",
+    "levels": "Niveaux",
+    "audit": "Journal",
+    "noNodes": "Aucune branche visible.",
+    "noAudit": "Rien de récent.",
+    "inactive": "Inactive",
+    "noPeople": "Sans personnes",
+    "optional": "Optionnel",
+    "edit": "Modifier",
+    "levelCode": "Code",
+    "levelLabel": "Libellé",
+    "headLabel": "Titre du responsable",
+    "peopleAllowed": "Des personnes peuvent y être rattachées",
+    "isOptional": "Niveau optionnel",
+    "name": "Nom",
+    "rename": "Renommer",
+    "parent": "Rattachée à",
+    "atTheTop": "Au sommet",
+    "move": "Déplacer",
+    "head": "Responsable",
+    "addChild": "Créer une sous-branche",
+    "create": "Créer",
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "reparentHint": "Déplacer une branche déplace tout ce qui est en dessous, et recalcule aussitôt qui voit quoi.",
+    "deactivateHint": "Une branche désactivée garde son histoire ; elle n'accueille plus personne.",
+    "forbidden": "Vous pouvez voir cette branche mais pas la modifier.",
+    "failed": "L'opération a échoué.",
+    "action": {
+      "node-created": "Branche créée",
+      "node-renamed": "Renommée",
+      "node-reparented": "Rattachée",
+      "node-deactivated": "Désactivée",
+      "node-reactivated": "Réactivée",
+      "node-head-set": "Responsable",
+      "level-saved": "Niveau",
+      "role-granted": "Rôle accordé",
+      "role-revoked": "Rôle retiré",
+      "member-moved": "Personne déplacée"
     }
   }
 }

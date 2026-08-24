@@ -20,6 +20,7 @@ public static class AccessModule
         services.AddSingleton<IEffectiveRoleResolver, EffectiveRoleResolver>();
 
         services.AddScoped<IRbacOverrideService, RbacOverrideService>();
+        services.AddScoped<IAdminAudit, AdminAuditWriter>();
         services.AddScoped<IRoleAssignmentWriter, RoleAssignmentWriter>();
         services.AddScoped<IRoleMaterializer, RoleMaterializer>();
 

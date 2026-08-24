@@ -39,6 +39,7 @@ public static class DirectoryModule
         services.AddScoped<Contracts.INodeProfileReader, NodeProfileResolver>();
         services.AddScoped<INodeProfileService, NodeProfileService>();
         services.AddScoped<IOrgTreeProjection, OrgTreeProjection>();
+        services.AddScoped<IOrgAdminService, OrgAdminService>();
         services.AddScoped<Contracts.IOrgNodeReader, OrgNodeReader>();
 
         // Singleton: it opens its own system-context scope per call, deliberately outside whatever

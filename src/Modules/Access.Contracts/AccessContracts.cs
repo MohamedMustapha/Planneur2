@@ -70,3 +70,69 @@ public interface IProjectMembershipProjection
     /// <summary>Replaces the whole membership for a project. An empty list clears it.</summary>
     Task ReplaceAsync(Guid projectId, IReadOnlyList<ProjectMembershipEntry> members, CancellationToken ct);
 }
+
+/// <summary>One line of the administrative trail (v2 §08.3).</summary>
+public sealed record AdminAuditDto(
+    Guid Id,
+    Guid ActorPersonId,
+    string Action,
+    string TargetType,
+    Guid TargetId,
+    Guid? NodeId,
+    string Detail,
+    DateTimeOffset OccurredAt);
+
+/// <summary>
+/// The administrative trail, written by whoever performed the act.
+/// </summary>
+/// <remarks>
+/// Exposed as a contract because the acts worth auditing happen in more than one module: Directory reshapes the
+/// tree and moves people, Access grants and revokes. Keeping one table means the trail reads as one story rather
+/// than as two half-answers a reader has to interleave.
+/// </remarks>
+public interface IAdminAudit
+{
+    Task RecordAsync(
+        string action,
+        string targetType,
+        Guid targetId,
+        Guid? nodeId,
+        string detail,
+        CancellationToken ct);
+
+    Task<IReadOnlyList<AdminAuditDto>> ReadAsync(
+        Guid? nodeId,
+        string? action,
+        DateOnly? from,
+        DateOnly? to,
+        CancellationToken ct);
+}
+
+/// <summary>The acts worth recording. Codes rather than an enum: another module adds one without a migration.</summary>
+public static class AuditActions
+{
+    public const string NodeCreated = "node-created";
+    public const string NodeRenamed = "node-renamed";
+    public const string NodeReparented = "node-reparented";
+    public const string NodeDeactivated = "node-deactivated";
+    public const string NodeReactivated = "node-reactivated";
+    public const string NodeHeadSet = "node-head-set";
+    public const string LevelSaved = "level-saved";
+    public const string RoleGranted = "role-granted";
+    public const string RoleRevoked = "role-revoked";
+    public const string MemberMoved = "member-moved";
+
+    public static readonly IReadOnlyList<string> All =
+    [
+        NodeCreated, NodeRenamed, NodeReparented, NodeDeactivated, NodeReactivated, NodeHeadSet,
+        LevelSaved, RoleGranted, RoleRevoked, MemberMoved,
+    ];
+}
+
+public static class AuditTargets
+{
+    public const string Node = "node";
+    public const string Level = "level";
+    public const string Person = "person";
+    public const string Override = "override";
+}

@@ -147,6 +147,14 @@ export const routes: Routes = [
   {
     // Behind the same nav entry as department settings: the rail is fixed at ten sections by the design, and
     // both screens are the same job from an administrator's point of view.
+    // First tab, and the one the whole v2 org model needs: how many levels there are, what they are called, and
+    // which branch hangs off which. Reachable by anybody — RLS decides whether the tree comes back with one
+    // branch or four hundred, and the server refuses a move nobody is entitled to make (v2 §08.1).
+    path: 'settings/org',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/admin/org-admin').then((m) => m.OrgAdmin),
+  },
+  {
     path: 'settings/access',
     canActivate: [authGuard],
     loadComponent: () => import('./features/access/rbac-admin').then((m) => m.RbacAdmin),

@@ -167,7 +167,8 @@
     "workingDayHint": "Límites de la jornada y sus sesiones de mañana / tarde. Define el eje del tablero y los atajos de registro. Un objeto vacío significa los valores por defecto (06:00–20:00, 09:00–13:00, 14:00–18:00).",
     "shiftTemplates": "Turnos",
     "shiftTemplatesHint": "Turnos que ofrece la planificación y su dotación mínima. Consumido por el lote S6.",
-    "tabProfiles": "Perfiles"
+    "tabProfiles": "Perfiles",
+    "tabOrg": "Organización"
   },
   "directory": {
     "functionalRole": {
@@ -1180,6 +1181,52 @@
       "currency": "Un importe",
       "milestone": "Un hito",
       "qualitative": "Una valoración"
+    }
+  },
+  "admin": {
+    "title": "Estructura de la organización",
+    "page": {
+      "purpose": "Los niveles, el árbol de ramas y el registro de lo que se hizo con ellas."
+    },
+    "tree": "Árbol",
+    "levels": "Niveles",
+    "audit": "Registro",
+    "noNodes": "No hay ninguna rama visible.",
+    "noAudit": "Nada reciente.",
+    "inactive": "Inactiva",
+    "noPeople": "Sin personas",
+    "optional": "Opcional",
+    "edit": "Editar",
+    "levelCode": "Código",
+    "levelLabel": "Etiqueta",
+    "headLabel": "Título del responsable",
+    "peopleAllowed": "Las personas pueden adscribirse aquí",
+    "isOptional": "Nivel opcional",
+    "name": "Nombre",
+    "rename": "Renombrar",
+    "parent": "Depende de",
+    "atTheTop": "En la cima",
+    "move": "Mover",
+    "head": "Responsable",
+    "addChild": "Crear una rama debajo",
+    "create": "Crear",
+    "deactivate": "Desactivar",
+    "reactivate": "Reactivar",
+    "reparentHint": "Mover una rama mueve todo lo que hay debajo y recalcula al instante quién ve qué.",
+    "deactivateHint": "Una rama desactivada conserva su historia; nadie nuevo se adscribe a ella.",
+    "forbidden": "Puede ver esta rama pero no modificarla.",
+    "failed": "La operación falló.",
+    "action": {
+      "node-created": "Rama creada",
+      "node-renamed": "Renombrada",
+      "node-reparented": "Movida",
+      "node-deactivated": "Desactivada",
+      "node-reactivated": "Reactivada",
+      "node-head-set": "Responsable",
+      "level-saved": "Nivel",
+      "role-granted": "Rol concedido",
+      "role-revoked": "Rol retirado",
+      "member-moved": "Persona movida"
     }
   }
 }

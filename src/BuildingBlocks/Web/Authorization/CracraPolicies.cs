@@ -19,6 +19,19 @@ public static class CracraPolicies
     /// <summary>Any role that governs beyond a single person — a node head at any depth, or the PMO.</summary>
     public const string AnyHead = "cracra:any-head";
 
+    /// <summary>Whoever may define the shape of the organisation itself: levels, and nothing narrower.</summary>
+    public const string Administrator = "cracra:administrator";
+
+    /// <summary>
+    /// Whoever may reshape some branch of the tree (v2 §08.1): a head, the PMO, or a global administrator.
+    /// </summary>
+    /// <remarks>
+    /// The door, not the lock. <c>access.can_write_org_node</c> decides <em>which</em> branch, which is why this
+    /// admits a head at all — a head who is refused there gets the refusal from the predicate, and the endpoint
+    /// stays a coarse gate (<c>conventions.md §3</c>).
+    /// </remarks>
+    public const string OrgAdministrator = "cracra:org-administrator";
+
     /// <summary>
     /// Anyone who may run delivery work: a project lead, a PO, or any head.
     /// </summary>
@@ -39,6 +52,9 @@ public static class CracraPolicies
             .AddPolicy(ProjectLead, policy => policy.RequireContextualRole(ContextualRole.ProjectLead, ContextualRole.ProductOwner))
             .AddPolicy(Pmo, policy => policy.RequireContextualRole(ContextualRole.Pmo))
             .AddPolicy(AnyHead, policy => policy.RequireContextualRole([.. ContextualRole.Heads]))
+            .AddPolicy(Administrator, policy => policy.RequireContextualRole(ContextualRole.Admin))
+            .AddPolicy(OrgAdministrator, policy => policy.RequireContextualRole(
+                [ContextualRole.Admin, .. ContextualRole.Heads]))
             .AddPolicy(DeliveryLead, policy => policy.RequireContextualRole(
                 [ContextualRole.ProjectLead, ContextualRole.ProductOwner, .. ContextualRole.Heads]));
 
