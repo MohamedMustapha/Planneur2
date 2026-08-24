@@ -974,6 +974,54 @@
       "contractEnd": "Contract end",
       "empty": "Nothing to show for this year.",
       "export": "Export"
+    },
+    "editor": {
+      "manage": "Manage",
+      "envelope": "Envelope",
+      "costs": "Costs",
+      "licenses": "Licences",
+      "externals": "Consultants",
+      "scope": "Scope",
+      "scopeOption": {
+        "node": "The branch",
+        "item": "An item"
+      },
+      "item": "Item",
+      "planned": "Planned amount",
+      "notes": "Note",
+      "noCosts": "No cost lines yet.",
+      "label": "Label",
+      "amount": "Amount",
+      "onTheBranch": "On the branch",
+      "add": "Add",
+      "product": "Product",
+      "vendor": "Vendor",
+      "seats": "Seats",
+      "unitCost": "Unit cost",
+      "consultant": "Name",
+      "role": "Role",
+      "rate": "Rate",
+      "licenceHint": "A licence records its own cost line: nothing to enter twice.",
+      "failed": "That did not save.",
+      "kindOption": {
+        "internal-effort": "Internal effort",
+        "license": "Licence",
+        "external-worker": "Consultant",
+        "cloud": "Cloud",
+        "hardware": "Hardware",
+        "service-fee": "Service fee",
+        "other": "Other"
+      },
+      "cycleOption": {
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly",
+        "one-off": "One-off"
+      },
+      "rateUnitOption": {
+        "day": "Per day",
+        "hour": "Per hour"
+      }
     }
   },
   "preferences": {

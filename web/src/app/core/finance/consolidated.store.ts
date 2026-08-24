@@ -68,6 +68,47 @@ export interface ExternalWorkerView {
   readonly active: boolean;
 }
 
+export interface CostComponentView {
+  readonly id: string;
+  readonly itemId: string | null;
+  readonly nodeId: string | null;
+  readonly ownerNodeId: string;
+  readonly kind: CostKind;
+  readonly label: string;
+  readonly treatment: string;
+  readonly treatmentOverridden: boolean;
+  readonly amount: number;
+  readonly currency: string;
+  readonly periodStart: string;
+  readonly periodEnd: string;
+}
+
+export type CostKind =
+  | 'internal-effort'
+  | 'license'
+  | 'external-worker'
+  | 'cloud'
+  | 'hardware'
+  | 'service-fee'
+  | 'other';
+
+export const COST_KINDS: readonly CostKind[] = [
+  'internal-effort',
+  'license',
+  'external-worker',
+  'cloud',
+  'hardware',
+  'service-fee',
+  'other',
+];
+
+export const BILLING_CYCLES = ['monthly', 'quarterly', 'yearly', 'one-off'] as const;
+
+export const RATE_UNITS = ['day', 'hour'] as const;
+
+/** node or item — v2 §04.1. An item envelope is what a project's own budget is. */
+export const BUDGET_SCOPES = ['node', 'item'] as const;
+
 /** One row of the drill-down table, flattened with its depth so the template does not recurse. */
 export interface ConsolidatedRow {
   readonly node: ConsolidatedNode;
@@ -160,6 +201,92 @@ export class ConsolidatedStore {
    * The server answers with a presigned link rather than bytes, so the download inherits an expiry — a URL
    * somebody forwards next month cannot outlive the entitlement that produced it.
    */
+  reload(): void {
+    this.viewResource.reload();
+    this.licensesResource.reload();
+    this.externalsResource.reload();
+  }
+
+  /** The cost lines behind one node's or one item's total. Asked for, not watched — it is a drawer's content. */
+  async components(scope: { nodeId?: string; itemId?: string }): Promise<readonly CostComponentView[]> {
+    const params = new URLSearchParams();
+
+    if (scope.nodeId) {
+      params.set('nodeId', scope.nodeId);
+    }
+
+    if (scope.itemId) {
+      params.set('itemId', scope.itemId);
+    }
+
+    return firstValueFrom(
+      this.http.get<readonly CostComponentView[]>(`/api/finance/components?${params.toString()}`),
+    );
+  }
+
+  async saveBudget(payload: {
+    scopeType: string;
+    scopeId: string;
+    fiscalYear: number;
+    plannedAmount: number;
+    currency: string | null;
+    notes: string | null;
+  }): Promise<void> {
+    await firstValueFrom(this.http.post('/api/finance/budgets', payload));
+
+    this.reload();
+  }
+
+  async addComponent(payload: {
+    nodeId: string | null;
+    itemId: string | null;
+    kind: CostKind;
+    label: string;
+    amount: number;
+    currency: string | null;
+    periodStart: string;
+    periodEnd: string;
+    notes: string | null;
+  }): Promise<void> {
+    await firstValueFrom(this.http.post('/api/finance/components', payload));
+
+    this.reload();
+  }
+
+  async addLicense(payload: {
+    nodeId: string;
+    itemId: string | null;
+    productName: string;
+    vendor: string | null;
+    seats: number;
+    unitCost: number;
+    currency: string | null;
+    billingCycle: string;
+    renewalDate: string | null;
+  }): Promise<void> {
+    // A licence lays down its own cost component server-side, so nothing here has to remember to do it twice.
+    await firstValueFrom(this.http.post('/api/finance/licenses', payload));
+
+    this.reload();
+  }
+
+  async addExternalWorker(payload: {
+    nodeId: string;
+    itemId: string | null;
+    displayName: string;
+    vendor: string | null;
+    role: string | null;
+    rate: number;
+    rateUnit: string;
+    currency: string | null;
+    contractStart: string;
+    contractEnd: string | null;
+  }): Promise<void> {
+    await firstValueFrom(this.http.post('/api/finance/external-workers', payload));
+
+    this.reload();
+  }
+
   async export(): Promise<string> {
     const params = new URLSearchParams();
     const nodeId = this.nodeId();

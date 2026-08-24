@@ -46,6 +46,7 @@
           <th scope="col" class="num">{{ t('finance.consolidated.opex') }}</th>
           <th scope="col" class="num">{{ t('finance.consolidated.planned') }}</th>
           <th scope="col" class="num">{{ t('finance.consolidated.variance') }}</th>
+          <th scope="col"><span class="visually-hidden">{{ t('finance.editor.manage') }}</span></th>
         </tr>
       </thead>
       <tbody>
@@ -83,6 +84,11 @@
               } @else {
                 <span class="muted">{{ t('finance.consolidated.noBudget') }}</span>
               }
+            </td>
+            <td>
+              <button type="button" class="link" (click)="manage(row.node)">
+                {{ t('finance.editor.manage') }}
+              </button>
             </td>
           </tr>
         }
@@ -138,5 +144,235 @@
     </section>
   } @else {
     <p class="muted">{{ t('finance.consolidated.empty') }}</p>
+  }
+
+  @if (managing(); as node) {
+    <div class="drawer" role="dialog" aria-modal="true">
+      <header class="drawer__head">
+        <h2 class="drawer__title">{{ node.name || node.code }}</h2>
+        <button type="button" class="button button--quiet" (click)="closeEditor()">
+          {{ t('common.close') }}
+        </button>
+      </header>
+
+      @if (failure()) {
+        <p class="alert" role="alert">{{ t('finance.editor.failed') }}</p>
+      }
+
+      <nav class="tabs">
+        <button type="button" class="tab" [class.tab--on]="tab() === 'envelope'" (click)="setTab('envelope')">
+          {{ t('finance.editor.envelope') }}
+        </button>
+        <button type="button" class="tab" [class.tab--on]="tab() === 'costs'" (click)="setTab('costs')">
+          {{ t('finance.editor.costs') }}
+        </button>
+        <button type="button" class="tab" [class.tab--on]="tab() === 'licenses'" (click)="setTab('licenses')">
+          {{ t('finance.editor.licenses') }}
+        </button>
+        <button type="button" class="tab" [class.tab--on]="tab() === 'externals'" (click)="setTab('externals')">
+          {{ t('finance.editor.externals') }}
+        </button>
+      </nav>
+
+      @switch (tab()) {
+        @case ('envelope') {
+          <section class="form">
+            <label class="field">
+              <span class="field__label">{{ t('finance.editor.scope') }}</span>
+              <select class="control" (change)="setBudgetScope($any($event.target).value)">
+                @for (scope of budgetScopes; track scope) {
+                  <option [value]="scope" [selected]="budgetScope() === scope">
+                    {{ t('finance.editor.scopeOption.' + scope) }}
+                  </option>
+                }
+              </select>
+            </label>
+
+            @if (budgetScope() === 'item') {
+              <label class="field">
+                <span class="field__label">{{ t('finance.editor.item') }}</span>
+                <select class="control" [ngModel]="budgetItemId()" (ngModelChange)="budgetItemId.set($event)">
+                  <option value="">{{ t('common.choose') }}</option>
+                  @for (card of catalog.cards(); track card.id) {
+                    <option [value]="card.id">{{ card.code }} · {{ card.name }}</option>
+                  }
+                </select>
+              </label>
+            }
+
+            <label class="field">
+              <span class="field__label">{{ t('finance.editor.planned') }}</span>
+              <input
+                class="control"
+                type="number"
+                [ngModel]="budgetAmount()"
+                (ngModelChange)="budgetAmount.set($event)"
+              />
+            </label>
+
+            <label class="field">
+              <span class="field__label">{{ t('finance.editor.notes') }}</span>
+              <input class="control" type="text" [ngModel]="budgetNotes()" (ngModelChange)="budgetNotes.set($event)" />
+            </label>
+
+            <button type="button" class="button button--primary" [disabled]="busy()" (click)="saveBudget()">
+              {{ t('common.save') }}
+            </button>
+          </section>
+        }
+
+        @case ('costs') {
+          <section class="form">
+            @if (lines().length === 0) {
+              <p class="muted">{{ t('finance.editor.noCosts') }}</p>
+            } @else {
+              <ul class="list">
+                @for (line of lines(); track line.id) {
+                  <li>
+                    <strong>{{ line.label }}</strong>
+                    <span class="muted">
+                      · {{ t('finance.editor.kindOption.' + line.kind) }}
+                      · {{ line.amount | number: '1.0-0' }} {{ line.currency }}
+                      · {{ t('finance.consolidated.' + line.treatment) }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            }
+
+            <div class="row">
+              <select class="control" (change)="setCostKind($any($event.target).value)">
+                @for (kind of kinds; track kind) {
+                  <option [value]="kind" [selected]="costKind() === kind">
+                    {{ t('finance.editor.kindOption.' + kind) }}
+                  </option>
+                }
+              </select>
+              <input
+                class="control"
+                type="text"
+                [placeholder]="t('finance.editor.label')"
+                [ngModel]="costLabel()"
+                (ngModelChange)="costLabel.set($event)"
+              />
+              <input
+                class="control"
+                type="number"
+                [placeholder]="t('finance.editor.amount')"
+                [ngModel]="costAmount()"
+                (ngModelChange)="costAmount.set($event)"
+              />
+              <select class="control" [ngModel]="costItemId()" (ngModelChange)="costItemId.set($event)">
+                <option value="">{{ t('finance.editor.onTheBranch') }}</option>
+                @for (card of catalog.cards(); track card.id) {
+                  <option [value]="card.id">{{ card.code }} · {{ card.name }}</option>
+                }
+              </select>
+              <input class="control" type="date" [ngModel]="costFrom()" (ngModelChange)="costFrom.set($event)" />
+              <input class="control" type="date" [ngModel]="costTo()" (ngModelChange)="costTo.set($event)" />
+              <button type="button" class="button" [disabled]="busy()" (click)="addCost()">
+                {{ t('finance.editor.add') }}
+              </button>
+            </div>
+          </section>
+        }
+
+        @case ('licenses') {
+          <section class="form">
+            <p class="muted">{{ t('finance.editor.licenceHint') }}</p>
+
+            <div class="row">
+              <input
+                class="control"
+                type="text"
+                [placeholder]="t('finance.editor.product')"
+                [ngModel]="licenseName()"
+                (ngModelChange)="licenseName.set($event)"
+              />
+              <input
+                class="control"
+                type="text"
+                [placeholder]="t('finance.editor.vendor')"
+                [ngModel]="licenseVendor()"
+                (ngModelChange)="licenseVendor.set($event)"
+              />
+              <input
+                class="control"
+                type="number"
+                [placeholder]="t('finance.editor.seats')"
+                [ngModel]="licenseSeats()"
+                (ngModelChange)="licenseSeats.set($event)"
+              />
+              <input
+                class="control"
+                type="number"
+                [placeholder]="t('finance.editor.unitCost')"
+                [ngModel]="licenseUnitCost()"
+                (ngModelChange)="licenseUnitCost.set($event)"
+              />
+              <select class="control" [ngModel]="licenseCycle()" (ngModelChange)="licenseCycle.set($event)">
+                @for (cycle of cycles; track cycle) {
+                  <option [value]="cycle">{{ t('finance.editor.cycleOption.' + cycle) }}</option>
+                }
+              </select>
+              <input
+                class="control"
+                type="date"
+                [ngModel]="licenseRenewal()"
+                (ngModelChange)="licenseRenewal.set($event)"
+              />
+              <button type="button" class="button" [disabled]="busy()" (click)="addLicense()">
+                {{ t('finance.editor.add') }}
+              </button>
+            </div>
+          </section>
+        }
+
+        @case ('externals') {
+          <section class="form">
+            <div class="row">
+              <input
+                class="control"
+                type="text"
+                [placeholder]="t('finance.editor.consultant')"
+                [ngModel]="externalName()"
+                (ngModelChange)="externalName.set($event)"
+              />
+              <input
+                class="control"
+                type="text"
+                [placeholder]="t('finance.editor.vendor')"
+                [ngModel]="externalVendor()"
+                (ngModelChange)="externalVendor.set($event)"
+              />
+              <input
+                class="control"
+                type="text"
+                [placeholder]="t('finance.editor.role')"
+                [ngModel]="externalRole()"
+                (ngModelChange)="externalRole.set($event)"
+              />
+              <input
+                class="control"
+                type="number"
+                [placeholder]="t('finance.editor.rate')"
+                [ngModel]="externalRate()"
+                (ngModelChange)="externalRate.set($event)"
+              />
+              <select class="control" [ngModel]="externalRateUnit()" (ngModelChange)="externalRateUnit.set($event)">
+                @for (unit of rateUnits; track unit) {
+                  <option [value]="unit">{{ t('finance.editor.rateUnitOption.' + unit) }}</option>
+                }
+              </select>
+              <input class="control" type="date" [ngModel]="externalStart()" (ngModelChange)="externalStart.set($event)" />
+              <input class="control" type="date" [ngModel]="externalEnd()" (ngModelChange)="externalEnd.set($event)" />
+              <button type="button" class="button" [disabled]="busy()" (click)="addExternal()">
+                {{ t('finance.editor.add') }}
+              </button>
+            </div>
+          </section>
+        }
+      }
+    </div>
   }
 </ng-container>

@@ -974,6 +974,54 @@
       "contractEnd": "Fin de contrato",
       "empty": "Nada que mostrar para este ejercicio.",
       "export": "Exportar"
+    },
+    "editor": {
+      "manage": "Gestionar",
+      "envelope": "Presupuesto",
+      "costs": "Costes",
+      "licenses": "Licencias",
+      "externals": "Consultores",
+      "scope": "Ámbito",
+      "scopeOption": {
+        "node": "La rama",
+        "item": "Un elemento"
+      },
+      "item": "Elemento",
+      "planned": "Importe previsto",
+      "notes": "Nota",
+      "noCosts": "Sin líneas de coste.",
+      "label": "Concepto",
+      "amount": "Importe",
+      "onTheBranch": "En la rama",
+      "add": "Añadir",
+      "product": "Producto",
+      "vendor": "Proveedor",
+      "seats": "Licencias",
+      "unitCost": "Coste unitario",
+      "consultant": "Nombre",
+      "role": "Rol",
+      "rate": "Tarifa",
+      "licenceHint": "Una licencia registra su propia línea de coste: nada que introducir dos veces.",
+      "failed": "No se pudo guardar.",
+      "kindOption": {
+        "internal-effort": "Esfuerzo interno",
+        "license": "Licencia",
+        "external-worker": "Consultor",
+        "cloud": "Nube",
+        "hardware": "Hardware",
+        "service-fee": "Servicio",
+        "other": "Otro"
+      },
+      "cycleOption": {
+        "monthly": "Mensual",
+        "quarterly": "Trimestral",
+        "yearly": "Anual",
+        "one-off": "Puntual"
+      },
+      "rateUnitOption": {
+        "day": "Por día",
+        "hour": "Por hora"
+      }
     }
   },
   "preferences": {

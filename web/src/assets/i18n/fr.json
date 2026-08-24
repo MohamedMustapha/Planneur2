@@ -974,6 +974,54 @@
       "contractEnd": "Fin de contrat",
       "empty": "Rien à afficher pour cet exercice.",
       "export": "Exporter"
+    },
+    "editor": {
+      "manage": "Gérer",
+      "envelope": "Enveloppe",
+      "costs": "Coûts",
+      "licenses": "Licences",
+      "externals": "Prestataires",
+      "scope": "Portée",
+      "scopeOption": {
+        "node": "La branche",
+        "item": "Un élément"
+      },
+      "item": "Élément",
+      "planned": "Montant prévu",
+      "notes": "Note",
+      "noCosts": "Aucune ligne de coût.",
+      "label": "Intitulé",
+      "amount": "Montant",
+      "onTheBranch": "Sur la branche",
+      "add": "Ajouter",
+      "product": "Produit",
+      "vendor": "Fournisseur",
+      "seats": "Postes",
+      "unitCost": "Coût unitaire",
+      "consultant": "Nom",
+      "role": "Rôle",
+      "rate": "Tarif",
+      "licenceHint": "Une licence enregistre sa propre ligne de coût : rien à saisir deux fois.",
+      "failed": "L'enregistrement a échoué.",
+      "kindOption": {
+        "internal-effort": "Effort interne",
+        "license": "Licence",
+        "external-worker": "Prestataire",
+        "cloud": "Cloud",
+        "hardware": "Matériel",
+        "service-fee": "Prestation",
+        "other": "Autre"
+      },
+      "cycleOption": {
+        "monthly": "Mensuel",
+        "quarterly": "Trimestriel",
+        "yearly": "Annuel",
+        "one-off": "Ponctuel"
+      },
+      "rateUnitOption": {
+        "day": "Par jour",
+        "hour": "Par heure"
+      }
     }
   },
   "preferences": {
