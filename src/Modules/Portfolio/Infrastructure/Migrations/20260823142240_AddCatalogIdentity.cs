@@ -123,22 +123,32 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
 
             // Existing rows predate the identity card. They were all bespoke build endeavours sponsored by a
             // department, which is exactly what project/build/owner-node says — so the backfill states what was
-            // already true rather than guessing. The code is derived from the name and made unique with a slice of
-            // the id, because the unique index below is created immediately after this runs.
+            // already true rather than guessing.
+            //
+            // The suffix is a counter rather than a slice of the id. Ids here are UUIDv7, whose leading bytes are
+            // a timestamp: a dozen items created in the same seeding run share their first six hex digits exactly,
+            // so a name-plus-id-prefix code collides on the unique index below — which is created immediately
+            // after this runs, and fails the whole deployment on data nobody could see was duplicated.
             migrationBuilder.Sql("""
                 set local app.roles = 'system';
 
-                update portfolio.portfolio_item
+                with numbered as (
+                    select id,
+                           upper(
+                               coalesce(
+                                   nullif(left(regexp_replace(name, '[^A-Za-z0-9]', '', 'g'), 8), ''),
+                                   'ITEM')) as stem,
+                           row_number() over (order by id) as ordinal
+                      from portfolio.portfolio_item
+                     where code = '' or code is null)
+                update portfolio.portfolio_item item
                    set type = 'Project',
                        classification = 'Build',
                        currency = 'EUR',
-                       owner_node_id = department_id,
-                       code = upper(
-                                  coalesce(
-                                      nullif(left(regexp_replace(name, '[^A-Za-z0-9]', '', 'g'), 8), ''),
-                                      'ITEM'))
-                              || '-' || substr(replace(id::text, '-', ''), 1, 6)
-                 where code = '' or code is null;
+                       owner_node_id = item.department_id,
+                       code = numbered.stem || '-' || lpad(numbered.ordinal::text, 4, '0')
+                  from numbered
+                 where numbered.id = item.id;
                 """);
 
             migrationBuilder.CreateTable(

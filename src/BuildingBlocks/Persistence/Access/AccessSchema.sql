@@ -265,7 +265,26 @@ create or replace function access.attach_to_node_tree(
 returns void language plpgsql as $fn$
 declare
     source text;
+    forced boolean;
 begin
+    -- The backfill below is an UPDATE, and several of the tables it runs against are append-only: they carry a
+    -- read policy and an insert policy and deliberately no update policy at all. Under FORCE ROW LEVEL SECURITY
+    -- that denies the backfill for every row — silently, because an UPDATE the policy refuses affects nothing and
+    -- raises nothing. The migration then fails a hundred lines later on a not-null constraint, which is exactly
+    -- how this surfaced: on a database with rows, never on the empty one the tests start from.
+    --
+    -- So force is lifted for the duration and restored to whatever it was. This is the owner backfilling its own
+    -- columns during a migration, not a request: nothing here reads the session's identity, and every row is
+    -- given the same treatment whoever is deploying.
+    select relforcerowsecurity into forced
+    from pg_class c
+    join pg_namespace n on n.oid = c.relnamespace
+    where n.nspname = p_schema and c.relname = p_table;
+
+    if coalesce(forced, false) then
+        execute format('alter table %I.%I no force row level security', p_schema, p_table);
+    end if;
+
     execute format('alter table %I.%I add column if not exists node_id uuid', p_schema, p_table);
     execute format(
         'alter table %I.%I add column if not exists node_ancestor_ids uuid[] default ''{}''::uuid[]',
@@ -297,6 +316,24 @@ begin
         p_schema, p_table);
 
     if p_required then
+        -- A row whose source column was never filled in has nowhere on the tree to hang, and the not-null below
+        -- would refuse the whole migration rather than the row. The runbook's answer (v2 §09) is the placeholder
+        -- branch: park it under A-RECLASSER, where it is visible and re-parentable, instead of blocking the
+        -- deployment on data somebody entered before the column existed.
+        --
+        -- Only reachable on a database that already had rows. A fresh one has nothing to park.
+        execute format(
+            'update %I.%I set node_id = (select id from directory.org_node where code = %L)
+              where node_id is null',
+            p_schema, p_table, 'A-RECLASSER');
+
+        execute format(
+            'update %I.%I s set node_ancestor_ids = coalesce(n.ancestor_ids, ''{}''::uuid[])
+               from directory.org_node n
+              where n.id = s.node_id
+                and s.node_ancestor_ids is distinct from n.ancestor_ids',
+            p_schema, p_table);
+
         execute format('alter table %I.%I alter column node_id set not null', p_schema, p_table);
     end if;
 
@@ -331,6 +368,10 @@ begin
     insert into access.node_scoped_table (schema_name, table_name)
     values (p_schema, p_table)
     on conflict do nothing;
+
+    if coalesce(forced, false) then
+        execute format('alter table %I.%I force row level security', p_schema, p_table);
+    end if;
 end
 $fn$;
 
