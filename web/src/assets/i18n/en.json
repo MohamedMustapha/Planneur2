@@ -33,7 +33,8 @@
     "finance": "Finance",
     "settings": "Settings",
     "problems": "Problems",
-    "strategy": "Strategy"
+    "strategy": "Strategy",
+    "meetings": "Meetings"
   },
   "scope": {
     "ariaLabel": "Viewing scope",
@@ -114,7 +115,9 @@
     "back": "Back",
     "hidden": "Hidden",
     "save": "Save",
-    "none": "None"
+    "none": "None",
+    "all": "All",
+    "unknown": "Unknown"
   },
   "org": {
     "title": "Organisation directory",
@@ -542,7 +545,65 @@
       "FR": "Fri",
       "SA": "Sat",
       "SU": "Sun"
-    }
+    },
+    "page": {
+      "purpose": "What is coming, what came out of it, and what you still owe."
+    },
+    "upcoming": "Coming up",
+    "level": "Level",
+    "levelOption": {
+      "unit": "Team",
+      "node": "Branch",
+      "cross-node": "Cross-branch",
+      "service": "Service",
+      "project": "Project"
+    },
+    "noOccurrences": "No meetings in the fortnight.",
+    "writeCr": "Write the minutes",
+    "openCr": "Open the minutes",
+    "crDraft": "Draft",
+    "crPublished": "Published",
+    "latestCrs": "Latest minutes",
+    "noCrs": "Nothing published to your scopes.",
+    "decisionCount": "{{count}} decision(s)",
+    "openActionCount": "{{count}} open action(s)",
+    "tracker": "Actions",
+    "trackerOwner": "Scope",
+    "ownerMe": "Me",
+    "ownerScope": "My scope",
+    "trackerStatus": "Status",
+    "statusOpen": "Open",
+    "statusOverdue": "Overdue",
+    "noActions": "Nothing outstanding.",
+    "noDue": "No date",
+    "markDone": "Done",
+    "actionStatus": {
+      "open": "Open",
+      "done": "Done",
+      "dropped": "Dropped"
+    },
+    "crTitle": "Minutes",
+    "agenda": "Agenda",
+    "attendance": "Present",
+    "decisions": "Decisions",
+    "noDecisions": "Nothing recorded yet.",
+    "decisionText": "What was decided",
+    "decidedBy": "Decided by",
+    "addDecision": "Add",
+    "actions": "Actions",
+    "actionTitle": "What is to be done",
+    "addAction": "Add",
+    "linkOption": {
+      "none": "No link",
+      "problem": "Problem",
+      "item": "Item",
+      "objective": "Objective"
+    },
+    "summary": "Summary",
+    "publish": "Publish",
+    "publishHint": "Publishing distributes the minutes to their scope. Decisions are fixed afterwards.",
+    "failed": "That did not work.",
+    "crossNodeTargets": "Branches involved"
   },
   "reports": {
     "title": "Status report",

@@ -105,6 +105,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/problems/problems').then((m) => m.Problems),
   },
   {
+    // No role either. A CR is read by everybody the meeting reached and written by whoever ran it, and that
+    // difference is a predicate rather than a route guard (v2 §07.6).
+    path: 'meetings',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/meetings/meetings').then((m) => m.Meetings),
+  },
+  {
     path: 'settings',
     canActivate: [authGuard],
     loadComponent: () =>

@@ -6,6 +6,8 @@ import { zonedDay } from '../../core/time/zoned';
 import {
   buildRecurrenceRule,
   MEETING_KINDS,
+  MEETING_LEVELS,
+  MeetingLevel,
   MeetingScopeType,
   MeetingSeriesView,
   MeetingsStore,
@@ -55,6 +57,8 @@ export class MeetingManager {
   protected readonly name = signal('');
   protected readonly scopeType = signal<MeetingScopeType>('unit');
   protected readonly scopeId = signal('');
+  protected readonly level = signal<MeetingLevel>('node');
+  protected readonly crossNodeIds = signal<readonly string[]>([]);
   protected readonly frequency = signal<Frequency>('WEEKLY');
   protected readonly interval = signal(1);
   protected readonly selectedDays = signal<readonly string[]>(['MO']);
@@ -95,6 +99,15 @@ export class MeetingManager {
 
   protected readonly needsScopeId = computed(() => this.scopeType() !== 'org');
 
+  protected readonly levels = MEETING_LEVELS;
+
+  /** Only a cross-node series names other nodes, and only then is the picker worth showing (v2 §07.1). */
+  protected readonly isCrossNode = computed(() => this.level() === 'cross-node');
+
+  protected readonly crossNodeOptions = computed(() =>
+    this.directory.visibleUnits().map((unit) => ({ id: unit.id, label: unit.name })),
+  );
+
   // --- The special-day form -------------------------------------------------------------------------------------
 
   protected readonly dayKind = signal<string>('patch-party');
@@ -124,6 +137,20 @@ export class MeetingManager {
 
   // --- Actions --------------------------------------------------------------------------------------------------
 
+  protected setLevel(value: string): void {
+    this.level.set(value as MeetingLevel);
+
+    if (!this.isCrossNode()) {
+      this.crossNodeIds.set([]);
+    }
+  }
+
+  protected toggleCrossNode(nodeId: string): void {
+    this.crossNodeIds.update((ids) =>
+      ids.includes(nodeId) ? ids.filter((id) => id !== nodeId) : [...ids, nodeId],
+    );
+  }
+
   protected toggleDay(code: string): void {
     this.selectedDays.update((days) =>
       days.includes(code) ? days.filter((day) => day !== code) : [...days, code],
@@ -132,6 +159,12 @@ export class MeetingManager {
 
   protected async createSeries(): Promise<void> {
     if (!this.name() || (this.needsScopeId() && !this.scopeId())) {
+      return;
+    }
+
+    // Refused here as well as by the server, because the server's refusal arrives as a banner and this one
+    // arrives as a disabled button beside the picker that is missing an answer.
+    if (this.isCrossNode() && this.crossNodeIds().length === 0) {
       return;
     }
 
@@ -149,6 +182,8 @@ export class MeetingManager {
         location: this.location() || null,
         videoLink: this.videoLink() || null,
         active: true,
+        level: this.level(),
+        scopeIds: this.isCrossNode() ? this.crossNodeIds() : [],
       });
 
       this.name.set('');
@@ -172,6 +207,8 @@ export class MeetingManager {
         location: series.location,
         videoLink: series.videoLink,
         active: !series.active,
+        level: series.level,
+        scopeIds: series.scopeIds,
       }),
     );
   }

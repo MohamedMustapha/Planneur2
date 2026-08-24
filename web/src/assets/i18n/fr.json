@@ -33,7 +33,8 @@
     "finance": "Finance",
     "settings": "Paramètres",
     "problems": "Problèmes",
-    "strategy": "Stratégie"
+    "strategy": "Stratégie",
+    "meetings": "Réunions"
   },
   "scope": {
     "ariaLabel": "Périmètre de consultation",
@@ -114,7 +115,9 @@
     "back": "Retour",
     "hidden": "Masqué",
     "save": "Enregistrer",
-    "none": "Aucun"
+    "none": "Aucun",
+    "all": "Tous",
+    "unknown": "Inconnu"
   },
   "org": {
     "title": "Annuaire de l'organisation",
@@ -542,7 +545,65 @@
       "FR": "Ven",
       "SA": "Sam",
       "SU": "Dim"
-    }
+    },
+    "page": {
+      "purpose": "Ce qui arrive, ce qui en est sorti, et ce que vous devez encore faire."
+    },
+    "upcoming": "À venir",
+    "level": "Niveau",
+    "levelOption": {
+      "unit": "Équipe",
+      "node": "Branche",
+      "cross-node": "Inter-branches",
+      "service": "Service",
+      "project": "Projet"
+    },
+    "noOccurrences": "Aucune réunion dans la quinzaine.",
+    "writeCr": "Écrire le CR",
+    "openCr": "Ouvrir le CR",
+    "crDraft": "Brouillon",
+    "crPublished": "Publié",
+    "latestCrs": "Derniers CR",
+    "noCrs": "Aucun CR publié pour vos périmètres.",
+    "decisionCount": "{{count}} décision(s)",
+    "openActionCount": "{{count}} action(s) ouverte(s)",
+    "tracker": "Actions",
+    "trackerOwner": "Portée",
+    "ownerMe": "Moi",
+    "ownerScope": "Mon périmètre",
+    "trackerStatus": "État",
+    "statusOpen": "Ouvertes",
+    "statusOverdue": "En retard",
+    "noActions": "Rien en attente.",
+    "noDue": "Sans échéance",
+    "markDone": "Fait",
+    "actionStatus": {
+      "open": "Ouverte",
+      "done": "Faite",
+      "dropped": "Abandonnée"
+    },
+    "crTitle": "Compte-rendu",
+    "agenda": "Ordre du jour",
+    "attendance": "Présents",
+    "decisions": "Décisions",
+    "noDecisions": "Aucune décision enregistrée.",
+    "decisionText": "Ce qui a été décidé",
+    "decidedBy": "Décidé par",
+    "addDecision": "Ajouter",
+    "actions": "Actions",
+    "actionTitle": "Ce qu'il faut faire",
+    "addAction": "Ajouter",
+    "linkOption": {
+      "none": "Sans lien",
+      "problem": "Irritant",
+      "item": "Élément",
+      "objective": "Objectif"
+    },
+    "summary": "Synthèse",
+    "publish": "Publier",
+    "publishHint": "La publication diffuse le CR à son périmètre. Après, les décisions ne changent plus.",
+    "failed": "L'opération a échoué.",
+    "crossNodeTargets": "Branches concernées"
   },
   "reports": {
     "title": "Rapport d’activité",

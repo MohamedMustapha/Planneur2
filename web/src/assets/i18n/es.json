@@ -33,7 +33,8 @@
     "finance": "Finanzas",
     "settings": "Ajustes",
     "problems": "Problemas",
-    "strategy": "Estrategia"
+    "strategy": "Estrategia",
+    "meetings": "Reuniones"
   },
   "scope": {
     "ariaLabel": "Ámbito de consulta",
@@ -114,7 +115,9 @@
     "back": "Atrás",
     "hidden": "Oculto",
     "save": "Guardar",
-    "none": "Ninguno"
+    "none": "Ninguno",
+    "all": "Todos",
+    "unknown": "Desconocido"
   },
   "org": {
     "title": "Directorio de la organización",
@@ -542,7 +545,65 @@
       "FR": "Vie",
       "SA": "Sáb",
       "SU": "Dom"
-    }
+    },
+    "page": {
+      "purpose": "Lo que viene, lo que salió de ello y lo que aún debe."
+    },
+    "upcoming": "Próximas",
+    "level": "Nivel",
+    "levelOption": {
+      "unit": "Equipo",
+      "node": "Rama",
+      "cross-node": "Entre ramas",
+      "service": "Servicio",
+      "project": "Proyecto"
+    },
+    "noOccurrences": "Ninguna reunión en la quincena.",
+    "writeCr": "Escribir el acta",
+    "openCr": "Abrir el acta",
+    "crDraft": "Borrador",
+    "crPublished": "Publicada",
+    "latestCrs": "Últimas actas",
+    "noCrs": "Nada publicado en sus ámbitos.",
+    "decisionCount": "{{count}} decisión(es)",
+    "openActionCount": "{{count}} acción(es) abierta(s)",
+    "tracker": "Acciones",
+    "trackerOwner": "Ámbito",
+    "ownerMe": "Yo",
+    "ownerScope": "Mi ámbito",
+    "trackerStatus": "Estado",
+    "statusOpen": "Abiertas",
+    "statusOverdue": "Atrasadas",
+    "noActions": "Nada pendiente.",
+    "noDue": "Sin fecha",
+    "markDone": "Hecho",
+    "actionStatus": {
+      "open": "Abierta",
+      "done": "Hecha",
+      "dropped": "Abandonada"
+    },
+    "crTitle": "Acta",
+    "agenda": "Orden del día",
+    "attendance": "Presentes",
+    "decisions": "Decisiones",
+    "noDecisions": "Ninguna decisión registrada.",
+    "decisionText": "Lo que se decidió",
+    "decidedBy": "Decidido por",
+    "addDecision": "Añadir",
+    "actions": "Acciones",
+    "actionTitle": "Lo que hay que hacer",
+    "addAction": "Añadir",
+    "linkOption": {
+      "none": "Sin vínculo",
+      "problem": "Problema",
+      "item": "Elemento",
+      "objective": "Objetivo"
+    },
+    "summary": "Resumen",
+    "publish": "Publicar",
+    "publishHint": "Publicar distribuye el acta a su ámbito. Después las decisiones quedan fijadas.",
+    "failed": "La operación falló.",
+    "crossNodeTargets": "Ramas implicadas"
   },
   "reports": {
     "title": "Informe de actividad",

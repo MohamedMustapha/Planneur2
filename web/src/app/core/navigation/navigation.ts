@@ -55,6 +55,9 @@ export const NAVIGATION: readonly NavigationItem[] = [
   // No role and no capability: anybody may report what wastes their week, and a branch that has configured
   // nothing still gets the intake (v2 §05).
   { id: 'problems', route: '/problems', labelKey: 'nav.problems', icon: '⚑' },
+  // Likewise no role. A CR is read by everybody the meeting reached and written by whoever ran it, and the
+  // difference is a predicate rather than a rail entry (v2 §07.6).
+  { id: 'meetings', route: '/meetings', labelKey: 'nav.meetings', icon: '◔' },
   {
     id: 'kudos',
     route: '/kudos',
