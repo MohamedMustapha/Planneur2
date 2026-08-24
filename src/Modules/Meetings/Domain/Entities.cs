@@ -39,6 +39,27 @@ public sealed class MeetingSeries
     /// <summary>unit / department / project / org — <see cref="MeetingScopeTypes"/>.</summary>
     public required string ScopeType { get; set; }
 
+    /// <summary>
+    /// How wide the meeting reaches: unit / node / cross-node / service / project (v2 §07.1).
+    /// </summary>
+    /// <remarks>
+    /// Not a duplicate of <see cref="ScopeType"/>, which answers a different question. The scope says <em>who</em>
+    /// the meeting targets and is what RLS reads; the level says <em>how wide</em> it is, and is what decides how
+    /// its CR is distributed, how a brief composes upward, and which cadence a report is describing. Before this
+    /// existed, a unit stand-up and a service COPIL were indistinguishable to everything downstream.
+    /// </remarks>
+    public string Level { get; set; } = MeetingLevels.Node;
+
+    /// <summary>
+    /// The child nodes a cross-node series targets, beyond its own scope. Empty at every other level.
+    /// </summary>
+    /// <remarks>
+    /// Three bureaux meeting about a shared platform is the one case where "who is this for" is genuinely a list.
+    /// Forcing it into a single scope id would either hide the CR from two of them or publish it to the whole
+    /// service, and both answers are wrong in a way somebody notices immediately.
+    /// </remarks>
+    public Guid[] ScopeIds { get; set; } = [];
+
     /// <summary>The targeted unit, department or project. Null, and only null, for an org-wide series.</summary>
     public Guid? ScopeId { get; set; }
 

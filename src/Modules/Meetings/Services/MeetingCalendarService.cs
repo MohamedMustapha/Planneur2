@@ -91,6 +91,13 @@ internal sealed class MeetingCalendarService(
             .Where(attendance => attendance.PersonId == user.UserId && ids.Contains(attendance.OccurrenceId))
             .ToDictionaryAsync(attendance => attendance.OccurrenceId, attendance => attendance.Response, ct);
 
+        // Same reason as the attendance pass above, and the answer the "Ecrire le CR" control needs: whether a
+        // meeting already has minutes, and whether they went out.
+        var minutes = await context.Minutes
+            .Where(row => ids.Contains(row.OccurrenceId))
+            .Select(row => new { row.OccurrenceId, row.Id, row.Published })
+            .ToDictionaryAsync(row => row.OccurrenceId, row => row, ct);
+
         return
         [
             .. rows.Select(row => new MeetingOccurrenceView(
@@ -106,7 +113,10 @@ internal sealed class MeetingCalendarService(
                 row.series.Location,
                 row.series.VideoLink,
                 row.occurrence.NotesRef,
-                mine.GetValueOrDefault(row.occurrence.Id))),
+                mine.GetValueOrDefault(row.occurrence.Id),
+                row.series.Level,
+                minutes.GetValueOrDefault(row.occurrence.Id)?.Id,
+                minutes.GetValueOrDefault(row.occurrence.Id)?.Published ?? false)),
         ];
     }
 
