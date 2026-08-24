@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
@@ -8,6 +9,7 @@ import {
   ReportSection,
   ReportingStore,
 } from '../../core/reporting/reporting.store';
+import { NodeBriefBlock } from '../../core/reporting/reporting.store';
 import { ProjectsStore } from '../../core/projects/projects.store';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 
@@ -22,7 +24,7 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
 @Component({
   selector: 'app-report-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, FormsModule, PageHeader],
+  imports: [TranslocoDirective, FormsModule, DatePipe, PageHeader],
   templateUrl: './report-view.html',
   styleUrl: './report-view.scss',
 })
@@ -34,6 +36,18 @@ export class ReportView {
 
   protected readonly periods: readonly ReportPeriodKind[] = ['week', 'month'];
 
+  /**
+   * The brief flattened for rendering.
+   *
+   * Flattened here rather than recursed in the template, for the same reason the consolidated finance rows are:
+   * a recursive template needs a second component to recurse into, and the depth is already carried on the row.
+   */
+  protected readonly briefRows = computed<readonly BriefRow[]>(() => {
+    const brief = this.reporting.brief();
+
+    return brief ? flatten(brief.node, 0) : [];
+  });
+
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -41,6 +55,19 @@ export class ReportView {
   protected readonly exportUrl = signal<string | null>(null);
 
   protected readonly needsProject = computed(() => this.reporting.scope() === 'project');
+
+  protected setRendering(value: 'brief' | 'details'): void {
+    this.reporting.rendering.set(value);
+  }
+
+  protected setBriefDepth(value: string): void {
+    this.reporting.briefDepth.set(value as '1' | 'all');
+  }
+
+  /** Whole hours, never decimals: §07.3's first rule, and the reason the old table read as a spreadsheet. */
+  protected whole(hours: number): number {
+    return Math.round(hours);
+  }
 
   protected readonly awaitingProject = computed(
     () => this.needsProject() && !this.reporting.scopeId(),
@@ -169,4 +196,17 @@ export class ReportView {
       this.busy.set(false);
     }
   }
+}
+
+/** One line of the brief: a branch, its rolled-up numbers, and how deep it sits under the one asked for. */
+export interface BriefRow {
+  readonly block: NodeBriefBlock;
+  readonly depth: number;
+}
+
+function flatten(block: NodeBriefBlock, depth: number): readonly BriefRow[] {
+  return [
+    { block, depth },
+    ...block.children.flatMap((child) => flatten(child, depth + 1)),
+  ];
 }

@@ -197,6 +197,12 @@ public sealed record BriefTotals(
 /// <paramref name="Own"/> plus every descendant's. The rollup invariant is that this equals Own plus the sum of
 /// the children's Subtree — which holds by construction because both are folded from the same per-node slices.
 /// </param>
+/// <summary>Where a node's hours went, biggest first. Three of these are what a headline sentence is made of.</summary>
+public sealed record BriefHighlight(string ActivityTypeCode, decimal ActualHours);
+
+/// <summary>Something dated the brief has to mention: the next COPIL, a freeze, a go-live (v2 §07.3).</summary>
+public sealed record BriefUpcoming(string Kind, string NameKey, DateTimeOffset At, string? Severity);
+
 public sealed record NodeBriefBlock(
     Guid NodeId,
     Guid? ParentId,
@@ -205,10 +211,12 @@ public sealed record NodeBriefBlock(
     string Name,
     BriefTotals Own,
     BriefTotals Subtree,
-    IReadOnlyList<NodeBriefBlock> Children);
+    IReadOnlyList<NodeBriefBlock> Children,
+    IReadOnlyList<BriefHighlight> Highlights);
 
 public sealed record NodeBriefView(
     Guid NodeId,
     ReportPeriodView Period,
     string Depth,
-    NodeBriefBlock Node);
+    NodeBriefBlock Node,
+    IReadOnlyList<BriefUpcoming> Upcoming);

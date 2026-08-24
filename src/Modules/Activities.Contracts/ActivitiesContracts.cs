@@ -183,7 +183,17 @@ public interface IActivityScheduler
         DateOnly from,
         DateOnly to,
         CancellationToken ct);
+
+    /// <summary>Where each node's hours actually went, one row per node and activity type (v2 §07.3).</summary>
+    Task<IReadOnlyList<NodeActivitySlice>> GetHoursByNodeAndTypeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct);
 }
+
+/// <summary>One node's hours against one activity type. The brief's "what did they actually do" line.</summary>
+public sealed record NodeActivitySlice(Guid NodeId, string ActivityTypeCode, decimal ActualHours);
 
 /// <summary>What one node's directly-attached people logged over a window.</summary>
 public sealed record NodeHoursSlice(

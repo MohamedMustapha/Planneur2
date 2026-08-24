@@ -730,6 +730,17 @@
         "dephase": "Archived"
       },
       "truncated": "List truncated: {{count}} more not shown."
+    },
+    "brief": {
+      "title": "Brief",
+      "depthDirect": "One line per branch",
+      "depthAll": "Expand everything",
+      "showDetails": "Details",
+      "showBrief": "Back to the brief",
+      "empty": "Nothing to report this period.",
+      "headline": "{{people}} people · ~{{hours}} h",
+      "nothingToReport": "Nothing to report",
+      "upcoming": "Coming up"
     }
   },
   "kudos": {

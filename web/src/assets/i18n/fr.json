@@ -730,6 +730,17 @@
         "dephase": "Déphasés"
       },
       "truncated": "Liste tronquée : {{count}} de plus non affichés."
+    },
+    "brief": {
+      "title": "Brief",
+      "depthDirect": "Une ligne par branche",
+      "depthAll": "Tout déplier",
+      "showDetails": "Détails",
+      "showBrief": "Revenir au brief",
+      "empty": "Rien à rapporter sur la période.",
+      "headline": "{{people}} pers · ~{{hours}} h",
+      "nothingToReport": "RAS",
+      "upcoming": "À venir"
     }
   },
   "kudos": {

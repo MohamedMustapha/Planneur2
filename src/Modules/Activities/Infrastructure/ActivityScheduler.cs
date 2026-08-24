@@ -194,6 +194,39 @@ internal sealed class ActivityScheduler(
         ];
     }
 
+    public async Task<IReadOnlyList<NodeActivitySlice>> GetHoursByNodeAndTypeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
+    {
+        var start = from.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var end = to.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        // Actual only. A brief that counted planned hours would announce work nobody has done yet, which is the
+        // one thing a rollup somebody presents upward must not do.
+        var slices = await context.Entries
+            .Where(entry => entry.NodeAncestorIds.Contains(rootNodeId))
+            .Where(entry => entry.SlotStart < end && entry.SlotEnd > start)
+            .Where(entry => entry.Kind == ActivityKind.Actual)
+            .GroupBy(entry => new { entry.NodeId, entry.ActivityTypeCode })
+            .Select(group => new
+            {
+                group.Key.NodeId,
+                group.Key.ActivityTypeCode,
+                ActualHours = group.Sum(entry => (decimal?)entry.Hours) ?? 0m,
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. slices.Select(slice => new NodeActivitySlice(
+                slice.NodeId,
+                slice.ActivityTypeCode,
+                slice.ActualHours)),
+        ];
+    }
+
     /// <summary>
     /// Shapes entries for a board.
     /// </summary>

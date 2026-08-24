@@ -43,6 +43,13 @@ internal sealed class ActivityAdapter(IActivityScheduler activities, IDepartment
         CancellationToken ct) =>
         await activities.GetHoursByNodeAsync(rootNodeId, from, to, ct);
 
+    public async Task<IReadOnlyList<NodeActivitySlice>> HighlightsByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct) =>
+        await activities.GetHoursByNodeAndTypeAsync(rootNodeId, from, to, ct);
+
     public async Task<IReadOnlyList<ActivityEntryView>> ForProjectAsync(
         Guid projectId,
         DateOnly from,
@@ -302,4 +309,7 @@ internal sealed class OrgNodeQueries(IOrgNodeReader nodes) : IOrgNodeQueries
 {
     public async Task<IReadOnlyList<OrgNodeSummary>> SubtreeAsync(Guid nodeId, CancellationToken ct) =>
         await nodes.GetSubtreeAsync(nodeId, ct);
+
+    public async Task<Guid?> HomeNodeAsync(Guid personId, CancellationToken ct) =>
+        (await nodes.GetHomeScopeAsync(personId, ct))?.NodeId;
 }

@@ -151,6 +151,42 @@ public sealed class NodeBriefTests(PostgresFixture postgres)
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task The_brief_names_where_the_hours_went()
+    {
+        await using var factory = await SeededAsync();
+
+        await LogAsync(factory, SeedOrganisation.Camille, 3m);
+        await LogAsync(factory, SeedOrganisation.Camille, 5m, type: "recruitment-admin", startHour: 13);
+
+        var brief = await BriefAsync(factory, SeedOrganisation.Nadia, OrgTreeSql.UnclassifiedRootId, depth: "all");
+
+        // Biggest first, and over the subtree rather than the root's own hours — which is what makes the same
+        // headline true whether it is read at the root or on the branch that logged them.
+        brief!.Node.Highlights[0].ActivityTypeCode.ShouldBe("recruitment-admin");
+        brief.Node.Highlights[0].ActualHours.ShouldBe(5m);
+        brief.Node.Highlights[1].ActivityTypeCode.ShouldBe("quality-of-life");
+    }
+
+    [Fact]
+    public async Task A_brief_nobody_scoped_is_the_callers_own_branch()
+    {
+        await using var factory = await SeededAsync();
+
+        await LogAsync(factory, SeedOrganisation.Camille, 3m);
+
+        factory.AsUser(SeedOrganisation.Camille);
+
+        var mine = await factory.CreateClient().GetFromJsonAsync<NodeBriefView>(
+            $"/api/reports/brief?from={From:yyyy-MM-dd}&to={To:yyyy-MM-dd}",
+            TestContext.Current.CancellationToken);
+
+        // No nodeId at all: the server resolves where the caller hangs off the tree, which is the only answer the
+        // client could have supplied and one it would have had to ask for first.
+        mine!.NodeId.ShouldBe(SeedOrganisation.Units.Infrastructure);
+        mine.Node.Subtree.ActualHours.ShouldBe(3m);
+    }
+
     private static void AssertRollup(NodeBriefBlock block)
     {
         var expected = block.Children.Aggregate(block.Own, (running, child) => running + child.Subtree);
@@ -178,17 +214,22 @@ public sealed class NodeBriefTests(PostgresFixture postgres)
             TestContext.Current.CancellationToken);
     }
 
-    private static async Task LogAsync(CracraApplicationFactory factory, UserContext person, decimal hours)
+    private static async Task LogAsync(
+        CracraApplicationFactory factory,
+        UserContext person,
+        decimal hours,
+        string type = "quality-of-life",
+        int startHour = 9)
     {
         factory.AsUser(person);
 
-        var day = new DateTimeOffset(2026, 8, 17, 9, 0, 0, TimeSpan.Zero);
+        var day = new DateTimeOffset(2026, 8, 17, startHour, 0, 0, TimeSpan.Zero);
 
         var response = await factory.CreateClient().PostAsJsonAsync(
             "/api/activities",
             new
             {
-                activityTypeCode = "quality-of-life",
+                activityTypeCode = type,
                 kind = "actual",
                 source = "manual",
                 slotStart = day,

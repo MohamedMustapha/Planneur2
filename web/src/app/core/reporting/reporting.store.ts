@@ -54,6 +54,52 @@ export interface ReportSection {
   readonly notes: readonly ReportNote[];
 }
 
+// --- The brief (v2 §07.3) ---------------------------------------------------------------------------------------
+//
+// A different rendering of the same period, not a different report. The table answers "give me every figure"; the
+// brief answers "what do I say about this at the COPIL", which is one sentence per branch and no decimals.
+
+export interface BriefTotals {
+  readonly actualHours: number;
+  readonly plannedHours: number;
+  readonly entryCount: number;
+  readonly peopleCount: number;
+}
+
+export interface BriefHighlight {
+  readonly activityTypeCode: string;
+  readonly actualHours: number;
+}
+
+export interface BriefUpcoming {
+  readonly kind: string;
+  readonly nameKey: string;
+  readonly at: string;
+  readonly severity: string | null;
+}
+
+export interface NodeBriefBlock {
+  readonly nodeId: string;
+  readonly parentId: string | null;
+  readonly levelNo: number;
+  readonly code: string;
+  readonly name: string;
+  /** What people attached directly to this node did. */
+  readonly own: BriefTotals;
+  /** `own` plus every descendant's — the number a head reads on one line per child. */
+  readonly subtree: BriefTotals;
+  readonly children: readonly NodeBriefBlock[];
+  readonly highlights: readonly BriefHighlight[];
+}
+
+export interface NodeBriefView {
+  readonly nodeId: string;
+  readonly period: ReportPeriodView;
+  readonly depth: string;
+  readonly node: NodeBriefBlock;
+  readonly upcoming: readonly BriefUpcoming[];
+}
+
 export interface ReportSummaryView {
   readonly id: string;
   readonly text: string;
@@ -140,6 +186,38 @@ export class ReportingStore {
 
     return `/api/reports?${params}`;
   });
+
+  /**
+   * Brief or details.
+   *
+   * The brief is the default, which is the whole point of §07.3: the raw per-unit table with its decimals is a
+   * consultation view, and handing somebody that when they asked "how did the week go" is why the synthèse was
+   * not being used. The table stays one click away rather than being removed.
+   */
+  readonly rendering = signal<'brief' | 'details'>('brief');
+
+  /** All expands the whole subtree; 1 is one line per child, which is what a COPIL reads. */
+  readonly briefDepth = signal<'1' | 'all'>('1');
+
+  private readonly briefResource = httpResource<NodeBriefView>(() => {
+    if (!this.session.isAuthenticated() || this.rendering() !== 'brief') {
+      return undefined;
+    }
+
+    const params = new URLSearchParams({
+      period: this.period(),
+      from: asDate(this.anchor()),
+      depth: this.briefDepth(),
+    });
+
+    // No nodeId: the server resolves the caller's own branch, which is the only answer the client could give
+    // anyway and one it would have to ask for first.
+    return `/api/reports/brief?${params}`;
+  });
+
+  readonly brief = computed<NodeBriefView | undefined>(() => this.briefResource.value());
+  readonly briefLoading = this.briefResource.isLoading;
+  readonly briefError = computed(() => this.briefResource.error());
 
   /** The anchor date the period is resolved around — a day inside the week or month being reported on. */
   readonly anchor = computed(() => {

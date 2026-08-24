@@ -90,9 +90,83 @@
 
     @if (awaitingProject()) {
       <p class="reports__empty card">{{ t('reports.pickProject') }}</p>
+    } @else if (reporting.rendering() === 'brief') {
+      <!-- ------------------------------------------------------------------ The brief (v2 §07.3) -->
+      <section class="card">
+        <header class="card__header">
+          <span>{{ t('reports.brief.title') }}</span>
+          <div class="summary__tools">
+            <select class="select" (change)="setBriefDepth($any($event.target).value)">
+              <option value="1" [selected]="reporting.briefDepth() === '1'">
+                {{ t('reports.brief.depthDirect') }}
+              </option>
+              <option value="all" [selected]="reporting.briefDepth() === 'all'">
+                {{ t('reports.brief.depthAll') }}
+              </option>
+            </select>
+            <button type="button" class="btn btn--ghost" (click)="setRendering('details')">
+              {{ t('reports.brief.showDetails') }}
+            </button>
+          </div>
+        </header>
+
+        <div class="card__body">
+          @if (reporting.briefLoading()) {
+            <p class="reports__status">{{ t('common.loading') }}</p>
+          } @else if (briefRows().length === 0) {
+            <p class="reports__empty">{{ t('reports.brief.empty') }}</p>
+          } @else {
+            <ul class="brief">
+              @for (row of briefRows(); track row.block.nodeId) {
+                <li class="brief__line" [style.padding-inline-start.rem]="row.depth * 1.5">
+                  <span class="brief__name">{{ row.block.name }}</span>
+                  <span class="brief__facts">
+                    {{
+                      t('reports.brief.headline', {
+                        people: row.block.subtree.peopleCount,
+                        hours: whole(row.block.subtree.actualHours)
+                      })
+                    }}
+                  </span>
+                  @if (row.block.highlights.length > 0) {
+                    <span class="brief__top">
+                      @for (highlight of row.block.highlights; track highlight.activityTypeCode) {
+                        <span class="chip">
+                          {{ t('activity.type.' + highlight.activityTypeCode) }}
+                          <span class="num">{{ whole(highlight.actualHours) }} h</span>
+                        </span>
+                      }
+                    </span>
+                  } @else {
+                    <span class="brief__ras">{{ t('reports.brief.nothingToReport') }}</span>
+                  }
+                </li>
+              }
+            </ul>
+
+            @if (reporting.brief()?.upcoming?.length) {
+              <h3 class="section-label">{{ t('reports.brief.upcoming') }}</h3>
+              <ul class="brief__upcoming">
+                @for (entry of reporting.brief()!.upcoming; track entry.nameKey + entry.at) {
+                  <li>
+                    <span class="num">{{ entry.at | date: 'd MMM' }}</span>
+                    <span>{{ t(entry.nameKey) }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </div>
+      </section>
     } @else if (reporting.isLoading()) {
       <p class="reports__status">{{ t('common.loading') }}</p>
     } @else {
+      <p class="reports__rendering">
+        <button type="button" class="btn btn--ghost" (click)="setRendering('brief')">
+          {{ t('reports.brief.showBrief') }}
+        </button>
+      </p>
+
       <!-- ------------------------------------------------------------------ The machine-written narrative -->
       <section class="card summary">
         <header class="card__header">

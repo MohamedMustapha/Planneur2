@@ -730,6 +730,17 @@
         "dephase": "Retirados"
       },
       "truncated": "Lista truncada: {{count}} más sin mostrar."
+    },
+    "brief": {
+      "title": "Resumen",
+      "depthDirect": "Una línea por rama",
+      "depthAll": "Desplegar todo",
+      "showDetails": "Detalles",
+      "showBrief": "Volver al resumen",
+      "empty": "Nada que informar en el periodo.",
+      "headline": "{{people}} pers · ~{{hours}} h",
+      "nothingToReport": "Sin novedades",
+      "upcoming": "Próximamente"
     }
   },
   "kudos": {

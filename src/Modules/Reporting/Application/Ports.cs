@@ -45,12 +45,22 @@ public interface IActivityQueries
         DateOnly from,
         DateOnly to,
         CancellationToken ct);
+
+    /// <summary>The same window split by activity type, which is what the brief's headline names.</summary>
+    Task<IReadOnlyList<NodeActivitySlice>> HighlightsByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct);
 }
 
 /// <summary>The org tree, for the one report whose shape is the tree itself.</summary>
 public interface IOrgNodeQueries
 {
     Task<IReadOnlyList<OrgNodeSummary>> SubtreeAsync(Guid nodeId, CancellationToken ct);
+
+    /// <summary>Where the caller hangs off the tree, so a brief nobody scoped is their own.</summary>
+    Task<Guid?> HomeNodeAsync(Guid personId, CancellationToken ct);
 }
 
 public interface IDirectoryQueries
