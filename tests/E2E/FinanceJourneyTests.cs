@@ -35,7 +35,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Capex", new() { Timeout = TimeoutMs });
@@ -62,7 +62,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
         // Cleared through the public API, so the arrangement obeys the policies a head would.
         await ClearRateCardsAsync(page);
 
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         // Before: hours and the entered cost, and the screen says so rather than showing a zero somebody would
         // read as "this was free".
@@ -91,7 +91,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Règles et taux" })
             .ClickAsync(new() { Timeout = TimeoutMs });
@@ -113,7 +113,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Exporter (Excel)" })
             .ClickAsync(new() { Timeout = TimeoutMs });
@@ -131,7 +131,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         // The rail does not offer it, so this is somebody typing the URL — which the client is deliberately not
         // the thing that stops.
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         await Expect(page.Locator(".finance__error"))
             .ToContainTextAsync("chefs de département", new() { Timeout = TimeoutMs });

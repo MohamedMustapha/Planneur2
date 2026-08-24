@@ -1,4 +1,5 @@
-﻿using Aspire.Hosting;
+﻿using System.Net.NetworkInformation;
+using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,8 @@ public sealed class AspireStackFixture : IAsyncLifetime
 
     public async ValueTask InitializeAsync()
     {
+        EnsureDevPortsAreFree();
+
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Cracra_AppHost>();
 
         builder.Services.AddLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
@@ -65,6 +68,44 @@ public sealed class AspireStackFixture : IAsyncLifetime
 
         _playwright = await Playwright.CreateAsync();
         Browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
+    }
+
+    /// <summary>
+    /// Refuses to start when a previous run left a process holding one of the pinned dev ports.
+    /// </summary>
+    /// <remarks>
+    /// The AppHost's stubs bind fixed ports from their launchSettings, so a killed run leaves zombies squatting
+    /// them. The next run's stubs then never bind, never go healthy, and every wait below blocks until its
+    /// timeout with nothing in the output naming the cause. Failing here costs a second and says what to kill.
+    /// </remarks>
+    private static void EnsureDevPortsAreFree()
+    {
+        var pinned = new Dictionary<int, string>
+        {
+            [5000] = "bff",
+            [5100] = "api",
+            [5200] = "llm",
+            [5300] = "providers",
+        };
+
+        var listeners = IPGlobalProperties.GetIPGlobalProperties()
+            .GetActiveTcpListeners()
+            .Select(endpoint => endpoint.Port)
+            .ToHashSet();
+
+        var taken = pinned.Where(entry => listeners.Contains(entry.Key)).ToList();
+
+        if (taken.Count == 0)
+        {
+            return;
+        }
+
+        var detail = string.Join(", ", taken.Select(entry => $"{entry.Key} ({entry.Value})"));
+
+        throw new InvalidOperationException(
+            $"Ports still bound from an earlier run: {detail}. Stop the stale processes — "
+            + "Get-Process Cracra.Tools.LlmStub, Cracra.Tools.ProviderStub, Cracra.Host, Cracra.Bff | "
+            + "Stop-Process -Force — and run again.");
     }
 
     private async Task WaitForWebServerAsync(CancellationToken ct)
