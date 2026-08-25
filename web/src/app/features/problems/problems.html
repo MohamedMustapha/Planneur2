@@ -1,6 +1,6 @@
 <ng-container *transloco="let t">
   <app-page-header [title]="t('problems.title')" [subtitle]="t('problems.subtitle')">
-    <button type="button" class="button button--primary" (click)="openForm()">
+    <button slot="actions" type="button" class="button button--primary" (click)="openForm()">
       {{ t('problems.report') }}
     </button>
   </app-page-header>
@@ -53,7 +53,7 @@
               <span class="chip">{{ t('problems.frequency.' + card.impactFrequency) }}</span>
               @if (card.annualHoursLost > 0) {
                 <span class="chip chip--impact">
-                  {{ t('problems.hoursLost', { hours: (card.annualHoursLost | number: '1.0-0') }) }}
+                  {{ t('problems.hoursLost', { hours: (card.annualHoursLost | localizedNumber: '1.0-0') }) }}
                 </span>
               }
               <span class="muted">{{ card.proposalCount }} {{ t('problems.proposals') }}</span>

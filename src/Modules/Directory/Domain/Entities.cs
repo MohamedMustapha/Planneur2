@@ -121,6 +121,16 @@ public sealed class Person
 
     public Guid HomeNodeId { get; set; }
 
+    /// <summary>
+    /// Where an administrator put this person, when the directory is wrong about them (v2 §08.1).
+    /// </summary>
+    /// <remarks>
+    /// Kept beside the derived node rather than instead of it, because the sync has to be able to tell "this is
+    /// where LDAP says they sit" from "this is where somebody decided they sit". Without the distinction every
+    /// sync would either undo the correction or lose the LDAP value it was correcting.
+    /// </remarks>
+    public Guid? HomeNodeOverrideId { get; set; }
+
     public Guid[] NodeAncestorIds { get; private set; } = [];
 
     public string TimeZone { get; set; } = "Europe/Paris";

@@ -306,6 +306,76 @@ public sealed class OrgAdminTests(PostgresFixture postgres)
         levels!.Select(level => level.Code).ShouldContain("cellule");
     }
 
+    [Fact]
+    public async Task A_head_moves_somebody_between_branches_they_run()
+    {
+        await using var factory = await SeededAsync();
+
+        (await MoveAsync(factory, SeedOrganisation.Olivier, SeedOrganisation.Camille.UserId,
+                SeedOrganisation.Units.Development))
+            .StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        (await MembersAsync(factory, SeedOrganisation.Olivier, SeedOrganisation.Units.Development))
+            .Select(member => member.PersonId)
+            .ShouldContain(SeedOrganisation.Camille.UserId);
+    }
+
+    [Fact]
+    public async Task A_head_moves_nobody_out_of_a_branch_they_do_not_run()
+    {
+        await using var factory = await SeededAsync();
+
+        // Not forbidden — not found. Laurent is Finance's, and a DSI head cannot read his row in the first place,
+        // so the move fails at the lookup. That is the right answer rather than a near miss: telling somebody
+        // "you may not move that person" confirms the person, and RLS is what decided they do not exist here.
+        (await MoveAsync(factory, SeedOrganisation.Olivier, SeedOrganisation.Laurent.UserId,
+                SeedOrganisation.Units.Development))
+            .StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task A_head_moves_nobody_into_a_branch_they_do_not_run()
+    {
+        await using var factory = await SeededAsync();
+
+        // Camille is his and Comptabilité is not. Both ends are checked, because moving one of your own people
+        // into somebody else's branch would be a way of reading that branch.
+        (await MoveAsync(factory, SeedOrganisation.Olivier, SeedOrganisation.Camille.UserId,
+                SeedOrganisation.Units.Accounting))
+            .StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task A_move_is_a_correction_the_next_sync_leaves_alone()
+    {
+        await using var factory = await SeededAsync();
+
+        await MoveAsync(factory, SeedOrganisation.Nadia, SeedOrganisation.Camille.UserId,
+            SeedOrganisation.Units.Development);
+
+        await factory.Services.GetRequiredService<IDirectorySynchronizer>()
+            .SynchronizeAsync(TestContext.Current.CancellationToken);
+
+        // §08.1's whole point: the directory still says Infrastructure, and the administrator still wins.
+        (await MembersAsync(factory, SeedOrganisation.Nadia, SeedOrganisation.Units.Development))
+            .Single(member => member.PersonId == SeedOrganisation.Camille.UserId)
+            .FromDirectory.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task A_move_lands_in_the_trail()
+    {
+        await using var factory = await SeededAsync();
+
+        await MoveAsync(factory, SeedOrganisation.Nadia, SeedOrganisation.Camille.UserId,
+            SeedOrganisation.Units.Development);
+
+        (await AuditAsync(factory, SeedOrganisation.Nadia))
+            .Where(entry => entry.Action == AuditActions.MemberMoved)
+            .Select(entry => entry.TargetId)
+            .ShouldContain(SeedOrganisation.Camille.UserId);
+    }
+
     // --- Fixture --------------------------------------------------------------------------------------------------
 
     /// <summary>A code no other test in this shared database has already taken.</summary>
@@ -323,6 +393,32 @@ public sealed class OrgAdminTests(PostgresFixture postgres)
         UserName = "admin",
         Roles = [ContextualRole.Member, ContextualRole.Admin],
     };
+
+    private static async Task<HttpResponseMessage> MoveAsync(
+        CracraApplicationFactory factory,
+        UserContext person,
+        Guid personId,
+        Guid nodeId)
+    {
+        factory.AsUser(person);
+
+        return await factory.CreateClient().PatchAsJsonAsync(
+            $"/api/admin/org/people/{personId}",
+            new { nodeId },
+            TestContext.Current.CancellationToken);
+    }
+
+    private static async Task<IReadOnlyList<OrgMemberView>> MembersAsync(
+        CracraApplicationFactory factory,
+        UserContext person,
+        Guid nodeId)
+    {
+        factory.AsUser(person);
+
+        return (await factory.CreateClient().GetFromJsonAsync<List<OrgMemberView>>(
+            $"/api/admin/org/nodes/{nodeId}/members",
+            TestContext.Current.CancellationToken))!;
+    }
 
     private static async Task<HttpResponseMessage> CreateAsync(
         CracraApplicationFactory factory,

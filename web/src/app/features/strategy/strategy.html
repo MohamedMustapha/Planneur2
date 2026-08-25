@@ -1,10 +1,14 @@
 <ng-container *transloco="let t">
   <app-page-header [title]="t('strategy.title')" [subtitle]="t('strategy.subtitle')">
-    @if (canEdit() && store.current()) {
-      <button type="button" class="button button--primary" (click)="openObjectiveForm()">
-        {{ t('strategy.addObjective') }}
-      </button>
-    }
+    <!-- The block is what is projected, not the button: a node inside @if is not a root node of the projected
+         content, so a slot attribute on the button alone would never match and the control would vanish. -->
+    <ng-container ngProjectAs="[slot=actions]">
+      @if (canEdit() && store.current()) {
+        <button type="button" class="button button--primary" (click)="openObjectiveForm()">
+          {{ t('strategy.addObjective') }}
+        </button>
+      }
+    </ng-container>
   </app-page-header>
 
   @if (store.isLoading()) {
@@ -40,7 +44,7 @@
           <p class="muted">
             {{ strategy.scopeName ?? t('common.hidden') }} ·
             {{ strategy.periodFrom }} → {{ strategy.periodTo }} ·
-            {{ t('strategy.progress', { percent: (strategy.progress * 100 | number: '1.0-0') }) }}
+            {{ t('strategy.progress', { percent: (strategy.progress * 100 | localizedNumber: '1.0-0') }) }}
           </p>
           @if (strategy.narrative) {
             <p>{{ strategy.narrative }}</p>
@@ -85,8 +89,8 @@
                     <span class="chip">{{ t('strategy.metric.' + objective.metricKind) }}</span>
                     @if (objective.target !== null) {
                       <span class="chip">
-                        {{ objective.current ?? 0 | number: '1.0-2' }} /
-                        {{ objective.target | number: '1.0-2' }}
+                        {{ objective.current ?? 0 | localizedNumber: '1.0-2' }} /
+                        {{ objective.target | localizedNumber: '1.0-2' }}
                         {{ objective.unit }}
                       </span>
                     }
@@ -174,8 +178,8 @@
       }
 
       <p class="muted">
-        {{ t('strategy.progress', { percent: (objective.progress * 100 | number: '1.0-0') }) }} ·
-        {{ t('strategy.expected', { percent: (objective.expectedProgress * 100 | number: '1.0-0') }) }}
+        {{ t('strategy.progress', { percent: (objective.progress * 100 | localizedNumber: '1.0-0') }) }} ·
+        {{ t('strategy.expected', { percent: (objective.expectedProgress * 100 | localizedNumber: '1.0-0') }) }}
       </p>
 
       @if (objective.keyResults.length > 0) {
@@ -185,7 +189,7 @@
             <li>
               {{ keyResult.title }}
               <span class="muted">
-                {{ keyResult.current | number: '1.0-2' }} / {{ keyResult.target | number: '1.0-2' }}
+                {{ keyResult.current | localizedNumber: '1.0-2' }} / {{ keyResult.target | localizedNumber: '1.0-2' }}
               </span>
             </li>
           }

@@ -604,7 +604,9 @@
     "publish": "Publish",
     "publishHint": "Publishing distributes the minutes to their scope. Decisions are fixed afterwards.",
     "failed": "That did not work.",
-    "crossNodeTargets": "Branches involved"
+    "crossNodeTargets": "Branches involved",
+    "proposeSummary": "Propose a summary",
+    "proposeHint": "A draft to review: the model uses only the decisions and actions already recorded."
   },
   "reports": {
     "title": "Status report",
@@ -1227,6 +1229,10 @@
       "role-granted": "Role granted",
       "role-revoked": "Role revoked",
       "member-moved": "Person moved"
-    }
+    },
+    "members": "Members",
+    "noMembers": "Nobody is attached to this branch.",
+    "moveTo": "Move to…",
+    "moved": "Moved"
   }
 }

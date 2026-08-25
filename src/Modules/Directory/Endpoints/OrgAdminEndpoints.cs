@@ -175,6 +175,63 @@ public sealed class AmendNodeEndpoint(IOrgAdminService org) : Endpoint<AmendNode
     }
 }
 
+public sealed class NodeMembersRequest
+{
+    public Guid Id { get; set; }
+}
+
+/// <summary>
+/// Who sits on a branch (v2 §08.1's node admin).
+/// </summary>
+/// <remarks>
+/// Authenticated, like the tree itself: what comes back is what this caller may already read about these people,
+/// and a list that refused everybody but a head would make the members screen unusable for the person the branch
+/// belongs to.
+/// </remarks>
+public sealed class NodeMembersEndpoint(IOrgAdminService org) : Endpoint<NodeMembersRequest, IReadOnlyList<OrgMemberView>>
+{
+    public override void Configure()
+    {
+        Get("/admin/org/nodes/{id}/members");
+        Policies(CracraPolicies.Authenticated);
+        Description(builder => builder.WithTags("Admin").WithSummary("The people whose home is this branch."));
+    }
+
+    public override async Task HandleAsync(NodeMembersRequest request, CancellationToken ct) =>
+        await Send.OkAsync(await org.MembersAsync(request.Id, ct), ct);
+}
+
+public sealed class MovePersonCommand
+{
+    public Guid PersonId { get; set; }
+
+    public Guid NodeId { get; set; }
+}
+
+/// <summary>
+/// Put somebody where they actually work (v2 §08.1).
+/// </summary>
+/// <remarks>
+/// This is the team-member management the boards used to own. It writes an override rather than the derived node,
+/// so the next directory sync leaves the correction alone instead of undoing it every night.
+/// </remarks>
+public sealed class MovePersonEndpoint(IOrgAdminService org) : Endpoint<MovePersonCommand>
+{
+    public override void Configure()
+    {
+        Patch("/admin/org/people/{personId}");
+        Policies(CracraPolicies.OrgAdministrator);
+        Description(builder => builder.WithTags("Admin").WithSummary("Move a person to another branch."));
+    }
+
+    public override async Task HandleAsync(MovePersonCommand request, CancellationToken ct)
+    {
+        await org.MovePersonAsync(request.PersonId, request.NodeId, ct);
+
+        await Send.NoContentAsync(ct);
+    }
+}
+
 public sealed class AuditRequest
 {
     [QueryParam]

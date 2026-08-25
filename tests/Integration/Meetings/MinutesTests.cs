@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Cracra.BuildingBlocks.Ai;
 using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Testing;
 using Cracra.BuildingBlocks.Web.Users;
@@ -7,6 +8,7 @@ using Cracra.Modules.Directory.Sync;
 using Cracra.Modules.Meetings.Contracts;
 using Cracra.Modules.Problems.Contracts;
 using Cracra.Tests.Integration.Directory;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -491,7 +493,45 @@ public sealed class MinutesTests(PostgresFixture postgres)
             .Publish(new ProblemResolved(problemId, null), TestContext.Current.CancellationToken);
     }
 
-    private async Task<CracraApplicationFactory> SeededAsync()
+    [Fact]
+    public async Task The_author_is_offered_a_draft_summary_and_nothing_is_saved_for_them()
+    {
+        await using var llm = new WebApplicationFactory<Cracra.Tools.LlmStub.LlmStubEntryPoint>();
+        await using var factory = await SeededAsync(llm.Server.CreateHandler());
+
+        var occurrence = await FirstOccurrenceAsync(factory, await NodeSeriesAsync(factory));
+        var minutes = await OpenAsync(factory, SeedOrganisation.Olivier, occurrence.Id);
+        var ct = TestContext.Current.CancellationToken;
+
+        factory.AsUser(SeedOrganisation.Olivier);
+
+        (await factory.CreateClient().PostAsJsonAsync(
+                $"/api/meetings/minutes/{minutes.Id}/decisions",
+                new { text = "Le portail RH passe en recette le 15." },
+                ct))
+            .StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var drafted = await factory.CreateClient().PostAsJsonAsync(
+            $"/api/meetings/minutes/{minutes.Id}/draft",
+            new { },
+            ct);
+
+        drafted.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        (await drafted.Content.ReadFromJsonAsync<MinutesDraft>(ct))!.Text.ShouldNotBeNullOrWhiteSpace();
+
+        // §07.2's whole caveat: the model proposes, the author disposes. A draft that saved itself would put a
+        // paragraph nobody read into a record other people act on.
+        var reread = await factory.CreateClient().GetFromJsonAsync<MinutesView>(
+            $"/api/meetings/occurrences/{occurrence.Id}/minutes",
+            ct);
+
+        reread!.Summary.ShouldBeNull();
+    }
+
+    private sealed record MinutesDraft(string Text);
+
+    private async Task<CracraApplicationFactory> SeededAsync(HttpMessageHandler? llm = null)
     {
         var keycloak = FakeKeycloakDirectory.SeededOrganisation();
 
@@ -501,6 +541,14 @@ public sealed class MinutesTests(PostgresFixture postgres)
             {
                 services.RemoveAll<IKeycloakDirectoryClient>();
                 services.AddSingleton<IKeycloakDirectoryClient>(keycloak);
+
+                if (llm is not null)
+                {
+                    // The real client, the real prompt, pointed at the stub the dev box runs. A fake here would
+                    // be a second thing to keep in step with the one thing that already answers like the model.
+                    services.AddHttpClient(AiExtensions.HttpClientName)
+                        .ConfigurePrimaryHttpMessageHandler(() => llm);
+                }
             },
         };
 

@@ -63,7 +63,7 @@ internal sealed class CreateItemHandler(
         var now = DateTimeOffset.UtcNow;
 
         var item = PortfolioItem.Create(
-            await CodeAsync(request, ct),
+            await ItemCodes.AllocateAsync(catalog, request.Code, request.Name, ct),
             request.Name,
             ItemTypes.Parse(request.Type),
             request.Category,
@@ -97,48 +97,6 @@ internal sealed class CreateItemHandler(
         ItemTypes.Platform => ItemClassifications.Mixed,
         _ => ItemClassifications.Run,
     };
-
-    /// <summary>
-    /// Uses the code the author gave, or derives one and makes it unique.
-    /// </summary>
-    /// <remarks>
-    /// Auto-generated because §03.3 asks the wizard for a name and not a code, and a required code is exactly the
-    /// field that makes somebody abandon a form. The suffix only appears on a collision, so the common case reads
-    /// as the word people already say.
-    /// </remarks>
-    private async Task<string> CodeAsync(CreateItemCommand request, CancellationToken ct)
-    {
-        if (request.Code is { Length: > 0 })
-        {
-            return request.Code;
-        }
-
-        var stem = new string([.. request.Name.ToUpperInvariant().Where(char.IsLetterOrDigit)]);
-
-        stem = stem.Length switch
-        {
-            0 => "ITEM",
-            > 12 => stem[..12],
-            _ => stem,
-        };
-
-        if (!await catalog.CodeExistsAsync(stem, ct))
-        {
-            return stem;
-        }
-
-        for (var suffix = 2; suffix < 100; suffix++)
-        {
-            var candidate = $"{stem}-{suffix}";
-
-            if (!await catalog.CodeExistsAsync(candidate, ct))
-            {
-                return candidate;
-            }
-        }
-
-        throw new DomainRuleViolationException($"Too many items already share the code {stem}. Give one yourself.");
-    }
 }
 
 public sealed record UpdateItemCommand(

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { LocalizedNumber } from '../../core/i18n/localized-number.pipe';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -37,7 +38,7 @@ const NEXT_ACTION: Record<PortfolioState, 'commit' | 'activate' | 'archive' | nu
 @Component({
   selector: 'app-portfolio-board',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, FormsModule, DecimalPipe, RouterLink, PageHeader],
+  imports: [LocalizedNumber, TranslocoDirective, FormsModule, DecimalPipe, RouterLink, PageHeader],
   templateUrl: './portfolio-board.html',
   styleUrl: './portfolio-board.scss',
 })

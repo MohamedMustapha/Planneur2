@@ -27,6 +27,7 @@ public static class MeetingsModule
         services.AddScoped<IMeetingSeriesService, MeetingSeriesService>();
         services.AddScoped<ISpecialDayService, SpecialDayService>();
         services.AddScoped<IMinutesService, MinutesService>();
+        services.AddScoped<IMinutesDrafter, MinutesDrafter>();
         services.AddScoped<MeetingCalendarService>();
 
         // One implementation behind two interfaces: the endpoints' service and the contract other modules consume.

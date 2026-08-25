@@ -14,6 +14,8 @@
     <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
+    <!-- v2 §07.2: the optional AI draft of the CR summary. -->
+    <ProjectReference Include="../../BuildingBlocks/Ai/Cracra.BuildingBlocks.Ai.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />

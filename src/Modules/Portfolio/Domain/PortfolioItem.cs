@@ -155,6 +155,7 @@ public sealed class PortfolioItem
     public bool IsArchived => State is PortfolioState.Dephase;
 
     public static PortfolioItem Consider(
+        string code,
         string name,
         int priority,
         Guid departmentId,
@@ -167,6 +168,14 @@ public sealed class PortfolioItem
             throw new DomainRuleViolationException("A candidate needs a name.");
         }
 
+        // A candidate is an item from its first minute, and §03.1's code is unique across all of them. This
+        // demanded nothing while candidates predated the catalog; once they shared the table it made every
+        // proposal after the first collide on an empty string.
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            throw new DomainRuleViolationException("A candidate needs a code.");
+        }
+
         if (departmentId == Guid.Empty)
         {
             throw new DomainRuleViolationException("A candidate needs a sponsoring department.");
@@ -175,6 +184,7 @@ public sealed class PortfolioItem
         var item = new PortfolioItem
         {
             Id = Guid.CreateVersion7(),
+            Code = code.Trim().ToUpperInvariant(),
             Name = name.Trim(),
             State = PortfolioState.Considered,
             Priority = priority,

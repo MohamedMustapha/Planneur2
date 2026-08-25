@@ -24,7 +24,7 @@
       <section class="card">
         <header class="card__header">
           <span>{{ t('projects.count', { count: visible().length }) }}</span>
-          <span class="num project-list__total">{{ totalCost() | number: '1.0-0' }} €</span>
+          <span class="num project-list__total">{{ totalCost() | localizedNumber: '1.0-0' }} €</span>
         </header>
 
         <table class="data-table">
@@ -54,7 +54,7 @@
                 </td>
                 <td class="is-numeric">{{ project.activeMemberCount }}</td>
                 <td class="is-numeric">
-                  {{ project.costAmount | number: '1.0-0' }} {{ project.costCurrency }}
+                  {{ project.costAmount | localizedNumber: '1.0-0' }} {{ project.costCurrency }}
                 </td>
               </tr>
             }

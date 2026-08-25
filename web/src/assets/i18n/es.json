@@ -604,7 +604,9 @@
     "publish": "Publicar",
     "publishHint": "Publicar distribuye el acta a su ámbito. Después las decisiones quedan fijadas.",
     "failed": "La operación falló.",
-    "crossNodeTargets": "Ramas implicadas"
+    "crossNodeTargets": "Ramas implicadas",
+    "proposeSummary": "Proponer una síntesis",
+    "proposeHint": "Un borrador para revisar: el modelo solo usa las decisiones y acciones ya registradas."
   },
   "reports": {
     "title": "Informe de actividad",
@@ -1227,6 +1229,10 @@
       "role-granted": "Rol concedido",
       "role-revoked": "Rol retirado",
       "member-moved": "Persona movida"
-    }
+    },
+    "members": "Miembros",
+    "noMembers": "Nadie está asignado a esta rama.",
+    "moveTo": "Mover a…",
+    "moved": "Movido"
   }
 }

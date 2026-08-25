@@ -30,6 +30,15 @@ export interface OrgNodeAdminView {
   readonly depth: number;
 }
 
+export interface OrgMemberView {
+  readonly personId: string;
+  readonly displayName: string;
+  readonly homeNodeId: string;
+  /** False once an administrator has corrected where the directory put them. */
+  readonly fromDirectory: boolean;
+  readonly active: boolean;
+}
+
 export interface AdminAuditDto {
   readonly id: string;
   readonly actorPersonId: string;
@@ -52,7 +61,8 @@ export class OrgAdminStore {
   private readonly http = inject(HttpClient);
   private readonly session = inject(SessionStore);
 
-  readonly auditNodeId = signal<string | null>(null);
+  /** The branch whose members are on screen. Null while nothing is selected, which loads nobody. */
+  readonly membersNodeId = signal<string | null>(null);
 
   private readonly levelsResource = httpResource<readonly OrgLevelView[]>(() =>
     this.session.isAuthenticated() ? '/api/admin/org/levels' : undefined,
@@ -62,19 +72,25 @@ export class OrgAdminStore {
     this.session.isAuthenticated() ? '/api/admin/org/nodes' : undefined,
   );
 
-  private readonly auditResource = httpResource<readonly AdminAuditDto[]>(() => {
-    if (!this.session.isAuthenticated()) {
-      return undefined;
-    }
+  // Unfiltered: RLS has already decided which acts this caller may read at all, and the screen narrows what it
+  // shows to the branch that is open. Asking the server for one node's acts would hide the entry for a branch
+  // that was just created, which is recorded against the new branch rather than its parent.
+  private readonly auditResource = httpResource<readonly AdminAuditDto[]>(() =>
+    this.session.isAuthenticated() ? '/api/admin/audit' : undefined,
+  );
 
-    const node = this.auditNodeId();
+  private readonly membersResource = httpResource<readonly OrgMemberView[]>(() => {
+    const node = this.membersNodeId();
 
-    return node ? `/api/admin/audit?nodeId=${node}` : '/api/admin/audit';
+    return this.session.isAuthenticated() && node
+      ? `/api/admin/org/nodes/${node}/members`
+      : undefined;
   });
 
   readonly levels = computed<readonly OrgLevelView[]>(() => this.levelsResource.value() ?? []);
   readonly nodes = computed<readonly OrgNodeAdminView[]>(() => this.nodesResource.value() ?? []);
   readonly audit = computed<readonly AdminAuditDto[]>(() => this.auditResource.value() ?? []);
+  readonly members = computed<readonly OrgMemberView[]>(() => this.membersResource.value() ?? []);
 
   readonly isLoading = computed(
     () => this.levelsResource.isLoading() || this.nodesResource.isLoading(),
@@ -84,6 +100,7 @@ export class OrgAdminStore {
     this.levelsResource.reload();
     this.nodesResource.reload();
     this.auditResource.reload();
+    this.membersResource.reload();
   }
 
   async saveLevel(level: OrgLevelView): Promise<void> {
@@ -99,6 +116,18 @@ export class OrgAdminStore {
     name: string;
   }): Promise<void> {
     await firstValueFrom(this.http.post('/api/admin/org/nodes', payload));
+
+    this.reload();
+  }
+
+  /**
+   * Moves somebody to another branch.
+   *
+   * The server writes an override rather than the derived node, so this survives the next directory sync — which
+   * is the whole reason the control exists rather than a ticket to whoever runs LDAP.
+   */
+  async movePerson(personId: string, nodeId: string): Promise<void> {
+    await firstValueFrom(this.http.patch(`/api/admin/org/people/${personId}`, { nodeId }));
 
     this.reload();
   }

@@ -1,3 +1,4 @@
+using System.Data.Common;
 using Cracra.BuildingBlocks.Abstractions;
 using Cracra.Modules.Access.Contracts;
 using Cracra.Modules.Directory.Contracts;
@@ -39,6 +40,13 @@ public sealed record SaveLevelRequest(
 
 public sealed record CreateNodeRequest(Guid? ParentId, int LevelNo, string Code, string Name);
 
+public sealed record OrgMemberView(
+    Guid PersonId,
+    string DisplayName,
+    Guid HomeNodeId,
+    bool FromDirectory,
+    bool Active);
+
 /// <summary>
 /// The org structure, as an administrator reshapes it (v2 §08.1).
 /// </summary>
@@ -74,6 +82,10 @@ public interface IOrgAdminService
     Task SetHeadAsync(Guid nodeId, Guid? personId, CancellationToken ct);
 
     Task SetActiveAsync(Guid nodeId, bool active, CancellationToken ct);
+
+    Task<IReadOnlyList<OrgMemberView>> MembersAsync(Guid nodeId, CancellationToken ct);
+
+    Task MovePersonAsync(Guid personId, Guid nodeId, CancellationToken ct);
 }
 
 internal sealed class OrgAdminService(
@@ -355,6 +367,53 @@ internal sealed class OrgAdminService(
             ct);
     }
 
+    public async Task<IReadOnlyList<OrgMemberView>> MembersAsync(Guid nodeId, CancellationToken ct)
+    {
+        var people = await context.People
+            .Where(person => person.HomeNodeId == nodeId)
+            .OrderBy(person => person.DisplayName)
+            .ToListAsync(ct);
+
+        return
+        [
+            .. people.Select(person => new OrgMemberView(
+                person.Id,
+                person.DisplayName,
+                person.HomeNodeId,
+                person.HomeNodeOverrideId is null,
+                person.Active)),
+        ];
+    }
+
+    public async Task MovePersonAsync(Guid personId, Guid nodeId, CancellationToken ct)
+    {
+        var destination = await FindAsync(nodeId, ct);
+
+        var person = await context.People
+            .AsTracking()
+            .SingleOrDefaultAsync(candidate => candidate.Id == personId, ct)
+            ?? throw new ResourceNotFoundException("That person is not in the directory.");
+
+        var was = person.HomeNodeId;
+
+        person.HomeNodeOverrideId = nodeId;
+        person.HomeNodeId = nodeId;
+        person.ModifiedAt = DateTimeOffset.UtcNow;
+
+        // The refusal has to be readable in both directions, because the policy checks both: the branch they are
+        // leaving and the branch they are arriving in. Moving somebody into a branch you do not run would be a way
+        // to put a person where you can see them, which is the same thing as reading a branch you may not read.
+        await SaveAsync(ct, "You can move somebody between branches you run, and only between those.");
+
+        await audit.RecordAsync(
+            AuditActions.MemberMoved,
+            AuditTargets.Person,
+            person.Id,
+            nodeId,
+            $"'{person.DisplayName}' moved from {was} to '{destination.Name}'.",
+            ct);
+    }
+
     private async Task<OrgNode> FindAsync(Guid nodeId, CancellationToken ct, bool tracked = false)
     {
         var query = tracked ? context.OrgNodes.AsTracking() : context.OrgNodes;
@@ -369,7 +428,8 @@ internal sealed class OrgAdminService(
     /// <remarks>
     /// An UPDATE the policy refuses affects no rows and raises nothing, so without this a head who moved a branch
     /// they do not run would be told it worked. An INSERT it refuses does raise, and arrives here as the same
-    /// sentence, which is the answer either way: you may look, you may not change.
+    /// sentence, which is the answer either way: you may look, you may not change. Only the refusal is translated:
+    /// a duplicate code is a different problem, and answering it with "you may not" is a lie that costs an hour.
     /// </remarks>
     private async Task SaveAsync(CancellationToken ct, string refusal)
     {
@@ -380,9 +440,20 @@ internal sealed class OrgAdminService(
                 throw new UnauthorizedAccessException(refusal);
             }
         }
-        catch (DbUpdateException)
+        catch (DbUpdateConcurrencyException)
+        {
+            // The row is there and the update touched none of it, which under FORCE RLS means the policy did not
+            // match it. EF calls that a concurrency failure because from where it stands the two are the same.
+            throw new UnauthorizedAccessException(refusal);
+        }
+        catch (DbUpdateException failure) when (failure.InnerException is DbException { SqlState: "42501" })
         {
             throw new UnauthorizedAccessException(refusal);
+        }
+        catch (DbUpdateException failure) when (failure.InnerException is DbException { SqlState: "23505" })
+        {
+            // Not a permission problem, and saying it was would send somebody looking at roles for an hour.
+            throw new DomainRuleViolationException("A branch with that code already sits under that parent.");
         }
     }
 

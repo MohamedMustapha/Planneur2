@@ -125,6 +125,7 @@ public sealed record CancelIterationCommand(Guid ItemId, Guid IterationId) : IRe
 internal sealed class ConsiderItemHandler(
     IPortfolioRepository repository,
     IDirectoryPort directory,
+    ICatalogReader catalog,
     IUserContext user) : IRequestHandler<ConsiderItemCommand, Guid>
 {
     public async Task<Guid> Handle(ConsiderItemCommand request, CancellationToken ct)
@@ -137,6 +138,7 @@ internal sealed class ConsiderItemHandler(
         var now = DateTimeOffset.UtcNow;
 
         var item = PortfolioItem.Consider(
+            await ItemCodes.AllocateAsync(catalog, requested: null, request.Name, ct),
             request.Name,
             request.Priority,
             request.DepartmentId,

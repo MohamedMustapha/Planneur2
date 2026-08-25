@@ -1,4 +1,4 @@
-﻿using Microsoft.Playwright;
+using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -130,7 +130,10 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
         // as true of the list as of the bubble, and the list is where a person would actually go to check.
         await AspireStackFixture.LeaveFocusModeAsync(agent);
 
-        await Expect(agent.GetByText(reference, new() { Exact = false }).First)
+        // Scoped to the list rather than taking the first match on the page: the canvas bubble carries the same
+        // reference and comes first in the DOM, so `.First` reads the very element the comment above explains is
+        // deliberately unreadable.
+        await Expect(agent.Locator(".board__entries").GetByText(reference, new() { Exact = false }).First)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 

@@ -63,7 +63,7 @@
                 <p class="item-card__meta">
                   {{ t(item.departmentNameKey) }}
                   @if (item.costAmount !== null) {
-                    <span class="num">· {{ item.costAmount | number: '1.0-0' }} {{ item.costCurrency }}</span>
+                    <span class="num">· {{ item.costAmount | localizedNumber: '1.0-0' }} {{ item.costCurrency }}</span>
                   }
                 </p>
 

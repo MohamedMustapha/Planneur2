@@ -50,6 +50,29 @@ export class OrgAdmin {
 
   protected readonly editingLevel = signal<OrgLevelView | null>(null);
 
+  /** Where each member on screen would go, keyed by person, until somebody presses the button. */
+  protected readonly moveTo = signal<Readonly<Record<string, string>>>({});
+
+  /**
+   * The trail, narrowed to the branch on screen and everything beneath it.
+   *
+   * Client-side, from the tree it already holds, rather than as a server filter on the node id. An act lands on
+   * the node it changed — creating a branch is recorded against the new branch, not its parent — so filtering the
+   * request to the selected node would hide the very entry somebody just made. What the server may show at all is
+   * still RLS's answer; this only decides which of those lines are about what is open.
+   */
+  protected readonly trail = computed(() => {
+    const node = this.selected();
+
+    if (!node) {
+      return this.org.audit();
+    }
+
+    const beneath = this.descendantsOf(node.id);
+
+    return this.org.audit().filter((entry) => entry.nodeId === node.id || beneath.has(entry.nodeId ?? ''));
+  });
+
   /** A branch can move under anything that is not itself and not one of its own descendants. */
   protected readonly parentOptions = computed<readonly OrgNodeAdminView[]>(() => {
     const node = this.selected();
@@ -72,7 +95,8 @@ export class OrgAdmin {
     this.childCode.set('');
     this.childName.set('');
     this.childLevel.set(this.nextLevelBelow(node.levelNo));
-    this.org.auditNodeId.set(node.id);
+    this.org.membersNodeId.set(node.id);
+    this.moveTo.set({});
 
     if (this.people().length === 0) {
       this.people.set(await this.directory.people());
@@ -81,7 +105,7 @@ export class OrgAdmin {
 
   protected close(): void {
     this.selected.set(null);
-    this.org.auditNodeId.set(null);
+    this.org.membersNodeId.set(null);
   }
 
   protected async rename(): Promise<void> {
@@ -149,6 +173,20 @@ export class OrgAdmin {
       this.childCode.set('');
       this.childName.set('');
     });
+  }
+
+  protected chooseDestination(personId: string, nodeId: string): void {
+    this.moveTo.set({ ...this.moveTo(), [personId]: nodeId });
+  }
+
+  protected async movePerson(personId: string): Promise<void> {
+    const destination = this.moveTo()[personId];
+
+    if (!destination) {
+      return;
+    }
+
+    await this.run(() => this.org.movePerson(personId, destination));
   }
 
   protected editLevel(level: OrgLevelView): void {

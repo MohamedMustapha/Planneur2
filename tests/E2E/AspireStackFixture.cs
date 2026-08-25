@@ -46,6 +46,8 @@ public sealed class AspireStackFixture : IAsyncLifetime
 
         builder.Services.AddLogging(logging => logging.SetMinimumLevel(LogLevel.Warning));
 
+        DetachDataVolumes(builder);
+
         _app = await builder.BuildAsync();
 
         await _app.StartAsync();
@@ -68,6 +70,34 @@ public sealed class AspireStackFixture : IAsyncLifetime
 
         _playwright = await Playwright.CreateAsync();
         Browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = true });
+    }
+
+    /// <summary>
+    /// Takes the named data volumes off the containers, so the suite starts on an empty database every time.
+    /// </summary>
+    /// <remarks>
+    /// The AppHost is the dev box, and a dev box keeps its data — that is the point of the volume. A test suite
+    /// wants the opposite, and sharing one was quietly poisonous: the stack came up on whatever every previous run
+    /// left behind, so a journey passed or failed according to the order somebody had happened to run things in,
+    /// and a half-applied migration from a killed run stayed in the volume until somebody deleted it by hand. The
+    /// symptom was a suite where most head-gated writes answered 403 while the same rules passed against real rows
+    /// in the integration suite. Detaching here rather than changing the AppHost keeps <c>aspire run</c> exactly as
+    /// it was: the developer's data survives, and the tests stop depending on it.
+    /// </remarks>
+    private static void DetachDataVolumes(IDistributedApplicationTestingBuilder builder)
+    {
+        foreach (var resource in builder.Resources.OfType<ContainerResource>())
+        {
+            var volumes = resource.Annotations
+                .OfType<ContainerMountAnnotation>()
+                .Where(mount => mount.Type == ContainerMountType.Volume)
+                .ToList();
+
+            foreach (var volume in volumes)
+            {
+                resource.Annotations.Remove(volume);
+            }
+        }
     }
 
     /// <summary>
@@ -236,7 +266,11 @@ public sealed class AspireStackFixture : IAsyncLifetime
                 $"Could not reset preferences before the journey started: {response.Status} {response.StatusText}.");
         }
 
-        await page.ReloadAsync();
+        // A plain reload here raced whatever the shell had already started fetching, and Playwright reported the
+        // loser as "net::ERR_ABORTED; maybe frame was detached" — a failure in the fixture that read like a broken
+        // page. Navigating explicitly, and waiting only for the document, asks for the one thing this needs: the
+        // application restarted with the preferences it just reset.
+        await page.GotoAsync("/board", new PageGotoOptions { WaitUntil = WaitUntilState.DOMContentLoaded });
     }
 
     /// <summary>

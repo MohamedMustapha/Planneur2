@@ -85,11 +85,9 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-app.UseCracraWeb();
-
-// After authentication, before anything opens a connection: this replaces the token's roles with the effective
-// ones, and the RLS interceptor stamps whatever the context holds when the connection opens.
-app.UseAccessModule();
+// The access module goes inside the seam, not after it: it replaces the token's roles with the effective ones,
+// and both the authorization gate and the RLS interceptor must see that answer rather than the raw token.
+app.UseCracraWeb(access => access.UseAccessModule());
 
 app.UseFastEndpoints(config =>
 {

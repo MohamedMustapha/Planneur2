@@ -106,7 +106,9 @@ public static class DirectoryMapping
         person.Email = mapped.Email;
         person.PrimaryUnitId = mapped.UnitId;
         person.PrimaryDepartmentId = mapped.DepartmentId;
-        person.HomeNodeId = mapped.UnitId;
+        // §08.1: an administrator's correction outranks the directory, and keeps outranking it. A sync that
+        // reset this would undo the fix every night and leave nobody able to say why.
+        person.HomeNodeId = person.HomeNodeOverrideId ?? mapped.UnitId;
         person.UiLanguage = mapped.UiLanguage;
         person.Active = mapped.Active;
         person.LastSyncedAt = now;

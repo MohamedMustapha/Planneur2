@@ -94,6 +94,29 @@ public sealed class PublishMinutesEndpoint(IMinutesService minutes) : Endpoint<M
         await Send.OkAsync(await minutes.PublishAsync(request.Id, ct), ct);
 }
 
+public sealed record MinutesDraft(string Text);
+
+/// <summary>
+/// A first draft of the summary, offered rather than saved (v2 §07.2).
+/// </summary>
+/// <remarks>
+/// A POST because it costs a model call, and it returns the text instead of writing it. The author is the one who
+/// signs a CR — a route that saved the draft would put a generated paragraph into a record other people act on
+/// with nobody having read it.
+/// </remarks>
+public sealed class DraftMinutesSummaryEndpoint(IMinutesDrafter drafter) : Endpoint<MinutesByIdRequest, MinutesDraft>
+{
+    public override void Configure()
+    {
+        Post("/meetings/minutes/{id}/draft");
+        Policies(CracraPolicies.Authenticated);
+        Description(builder => builder.WithTags("Meetings").WithSummary("Propose a summary from what is already recorded."));
+    }
+
+    public override async Task HandleAsync(MinutesByIdRequest request, CancellationToken ct) =>
+        await Send.OkAsync(new MinutesDraft(await drafter.DraftAsync(request.Id, ct)), ct);
+}
+
 public sealed class RecordDecisionCommand
 {
     public Guid Id { get; set; }

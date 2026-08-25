@@ -137,6 +137,20 @@ export class MinutesStore {
     return firstValueFrom(this.http.patch<MinutesView>(`/api/meetings/minutes/${minutesId}`, patch));
   }
 
+  /**
+   * Asks the on-prem model for a first draft of the summary.
+   *
+   * Returns the text and saves nothing — the author edits it and presses save, exactly as they would with their
+   * own words. A CR nobody read before it was published is worse than a CR nobody wrote.
+   */
+  async draft(minutesId: string): Promise<string> {
+    const drafted = await firstValueFrom(
+      this.http.post<{ text: string }>(`/api/meetings/minutes/${minutesId}/draft`, {}),
+    );
+
+    return drafted.text;
+  }
+
   async publish(minutesId: string): Promise<MinutesView> {
     const published = await firstValueFrom(
       this.http.post<MinutesView>(`/api/meetings/minutes/${minutesId}/publish`, {}),

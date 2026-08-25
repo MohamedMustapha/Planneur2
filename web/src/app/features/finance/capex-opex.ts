@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { LocalizedNumber } from '../../core/i18n/localized-number.pipe';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -36,7 +37,7 @@ type Bucket = (typeof BUCKETS)[number];
 @Component({
   selector: 'app-capex-opex',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, FormsModule, DecimalPipe, PageHeader],
+  imports: [LocalizedNumber, TranslocoDirective, FormsModule, DecimalPipe, PageHeader],
   templateUrl: './capex-opex.html',
   styleUrl: './capex-opex.scss',
 })

@@ -129,11 +129,11 @@
       <h2 class="panel__title">{{ t('admin.audit') }}</h2>
     </header>
 
-    @if (org.audit().length === 0) {
+    @if (trail().length === 0) {
       <p class="muted">{{ t('admin.noAudit') }}</p>
     } @else {
       <ul class="trail">
-        @for (entry of org.audit(); track entry.id) {
+        @for (entry of trail(); track entry.id) {
           <li class="trail__line">
             <span class="num">{{ entry.occurredAt | date: 'd MMM HH:mm' }}</span>
             <span class="chip">{{ t('admin.action.' + entry.action) }}</span>
@@ -192,6 +192,45 @@
         <button type="button" class="button" [disabled]="busy()" (click)="setHead()">
           {{ t('common.save') }}
         </button>
+      </section>
+
+      <section class="form">
+        <span class="field__label">{{ t('admin.members') }}</span>
+        @if (org.members().length === 0) {
+          <p class="muted">{{ t('admin.noMembers') }}</p>
+        } @else {
+          <ul class="members">
+            @for (member of org.members(); track member.personId) {
+              <li class="member">
+                <span class="member__name">{{ member.displayName }}</span>
+                @if (!member.fromDirectory) {
+                  <span class="chip">{{ t('admin.moved') }}</span>
+                }
+                <select
+                  class="control"
+                  [attr.aria-label]="t('admin.moveTo')"
+                  [ngModel]="moveTo()[member.personId] ?? ''"
+                  (ngModelChange)="chooseDestination(member.personId, $event)"
+                >
+                  <option value="">{{ t('admin.moveTo') }}</option>
+                  @for (candidate of org.nodes(); track candidate.id) {
+                    @if (candidate.id !== node.id) {
+                      <option [value]="candidate.id">{{ candidate.name || candidate.code }}</option>
+                    }
+                  }
+                </select>
+                <button
+                  type="button"
+                  class="button"
+                  [disabled]="busy() || !moveTo()[member.personId]"
+                  (click)="movePerson(member.personId)"
+                >
+                  {{ t('admin.move') }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
       </section>
 
       <section class="form">

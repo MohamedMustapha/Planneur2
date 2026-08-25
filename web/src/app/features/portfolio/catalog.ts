@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { LocalizedNumber } from '../../core/i18n/localized-number.pipe';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -26,7 +27,7 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
 @Component({
   selector: 'app-catalog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, FormsModule, DecimalPipe, PageHeader],
+  imports: [LocalizedNumber, TranslocoDirective, FormsModule, DecimalPipe, PageHeader],
   templateUrl: './catalog.html',
   styleUrl: './catalog.scss',
 })

@@ -203,6 +203,24 @@ export class Meetings {
     await this.save({ agenda: this.draftAgenda(), summary: this.draftSummary() });
   }
 
+  /**
+   * Fills the summary box with the model's draft, and leaves it there.
+   *
+   * Deliberately not saved: the draft lands in the same input the author types in, so publishing it is the same
+   * act as publishing their own sentence — they have read it, and they can rewrite any of it first.
+   */
+  protected async proposeSummary(): Promise<void> {
+    const minutes = this.editing();
+
+    if (!minutes) {
+      return;
+    }
+
+    await this.run(async () => {
+      this.draftSummary.set(await this.minutes.draft(minutes.id));
+    });
+  }
+
   protected async decide(): Promise<void> {
     const minutes = this.editing();
 

@@ -32,10 +32,10 @@ public sealed class PortfolioItemTests
     public void A_candidate_needs_a_name_and_a_sponsoring_department()
     {
         Should.Throw<DomainRuleViolationException>(
-            () => PortfolioItem.Consider("  ", 1, Dept, null, Head, Now));
+            () => PortfolioItem.Consider("CODE", "  ", 1, Dept, null, Head, Now));
 
         Should.Throw<DomainRuleViolationException>(
-            () => PortfolioItem.Consider("Refonte", 1, Guid.Empty, null, Head, Now));
+            () => PortfolioItem.Consider("CODE", "Refonte", 1, Guid.Empty, null, Head, Now));
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public sealed class PortfolioItemTests
     }
 
     private static PortfolioItem Considered() =>
-        PortfolioItem.Consider("Refonte du portail", 10, Dept, "Raised at the steering committee.", Head, Now);
+        PortfolioItem.Consider("REFONTEPORTA", "Refonte du portail", 10, Dept, "Raised at the steering committee.", Head, Now);
 
     private static PortfolioItem Committed()
     {

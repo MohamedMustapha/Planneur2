@@ -33,6 +33,32 @@ public sealed class PortfolioLifecycleTests(PostgresFixture postgres)
         Lane(board, "considered").Items.Select(item => item.Id).ShouldContain(itemId);
     }
 
+    /// <summary>
+    /// Two candidates, one name (v2 §03.1's unique code).
+    /// </summary>
+    /// <remarks>
+    /// The candidate path predates items having codes and went on inserting an empty one, so the unique index
+    /// refused the second candidate anybody proposed — with a 500, because a duplicate key is not a rule the
+    /// domain states. Every other test here proposes exactly one candidate against a fresh database, which is
+    /// precisely why nothing caught it until a browser did.
+    /// </remarks>
+    [Fact]
+    public async Task A_second_candidate_with_the_same_name_gets_its_own_code()
+    {
+        await using var factory = await SeededAsync();
+
+        var first = await ConsiderAsync(factory);
+        var second = await ConsiderAsync(factory);
+
+        second.ShouldNotBe(first);
+
+        var board = await BoardAsync(factory, SeedOrganisation.Olivier);
+        var considered = Lane(board, "considered").Items.Select(item => item.Id).ToList();
+
+        considered.ShouldContain(first);
+        considered.ShouldContain(second);
+    }
+
     [Fact]
     public async Task Committing_provisions_a_project_and_moves_the_item()
     {

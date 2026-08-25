@@ -604,7 +604,9 @@
     "publish": "Publier",
     "publishHint": "La publication diffuse le CR à son périmètre. Après, les décisions ne changent plus.",
     "failed": "L'opération a échoué.",
-    "crossNodeTargets": "Branches concernées"
+    "crossNodeTargets": "Branches concernées",
+    "proposeSummary": "Proposer une synthèse",
+    "proposeHint": "Brouillon à relire : le modèle n’utilise que les décisions et actions déjà saisies."
   },
   "reports": {
     "title": "Rapport d’activité",
@@ -1227,6 +1229,10 @@
       "role-granted": "Rôle accordé",
       "role-revoked": "Rôle retiré",
       "member-moved": "Personne déplacée"
-    }
+    },
+    "members": "Membres",
+    "noMembers": "Personne n’est rattaché à cette branche.",
+    "moveTo": "Déplacer vers…",
+    "moved": "Déplacé"
   }
 }

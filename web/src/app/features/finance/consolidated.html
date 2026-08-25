@@ -3,7 +3,7 @@
     [title]="t('finance.consolidated.title')"
     [subtitle]="t('finance.consolidated.subtitle', { year: finance.fiscalYear() })"
   >
-    <label class="inline-field">
+    <label slot="actions" class="inline-field">
       <span class="visually-hidden">{{ t('finance.consolidated.mode') }}</span>
       <select class="control" (change)="setMode($any($event.target).value)">
         @for (mode of modes; track mode) {
@@ -14,7 +14,7 @@
       </select>
     </label>
 
-    <label class="inline-field">
+    <label slot="actions" class="inline-field">
       <span class="visually-hidden">{{ t('finance.consolidated.subtitle', { year: '' }) }}</span>
       <select class="control" (change)="setYear($any($event.target).value)">
         @for (year of years(); track year) {
@@ -22,7 +22,7 @@
         }
       </select>
     </label>
-    <button type="button" class="button" [disabled]="exporting()" (click)="export()">
+    <button slot="actions" type="button" class="button" [disabled]="exporting()" (click)="export()">
       {{ t('finance.consolidated.export') }}
     </button>
   </app-page-header>
@@ -69,18 +69,18 @@
                 </button>
               </span>
             </th>
-            <td class="num">{{ row.node.subtree.capex | number: '1.0-0' }}</td>
-            <td class="num">{{ row.node.subtree.opex | number: '1.0-0' }}</td>
+            <td class="num">{{ row.node.subtree.capex | localizedNumber: '1.0-0' }}</td>
+            <td class="num">{{ row.node.subtree.opex | localizedNumber: '1.0-0' }}</td>
             <td class="num">
               @if (row.node.plannedAmount !== null) {
-                {{ row.node.plannedAmount | number: '1.0-0' }}
+                {{ row.node.plannedAmount | localizedNumber: '1.0-0' }}
               } @else {
                 <span class="muted">{{ t('finance.consolidated.noBudget') }}</span>
               }
             </td>
             <td class="num" [class.over]="(row.node.variance ?? 0) < 0">
               @if (row.node.variance !== null) {
-                {{ row.node.variance | number: '1.0-0' }}
+                {{ row.node.variance | localizedNumber: '1.0-0' }}
               } @else {
                 <span class="muted">{{ t('finance.consolidated.noBudget') }}</span>
               }
@@ -107,7 +107,7 @@
                 <strong>{{ license.productName }}</strong>
                 <span class="muted">
                   · {{ license.seats }} {{ t('finance.consolidated.seats') }}
-                  · {{ license.annualCost | number: '1.0-0' }} {{ license.currency }}
+                  · {{ license.annualCost | localizedNumber: '1.0-0' }} {{ license.currency }}
                   @if (license.renewalDate) {
                     · {{ license.renewalDate }}
                   }
@@ -131,7 +131,7 @@
                   @if (worker.role) {
                     · {{ worker.role }}
                   }
-                  · {{ worker.rate | number: '1.0-0' }} {{ worker.currency }}/{{ worker.rateUnit }}
+                  · {{ worker.rate | localizedNumber: '1.0-0' }} {{ worker.currency }}/{{ worker.rateUnit }}
                   @if (worker.contractEnd) {
                     · {{ worker.contractEnd }}
                   }
@@ -232,7 +232,7 @@
                     <strong>{{ line.label }}</strong>
                     <span class="muted">
                       · {{ t('finance.editor.kindOption.' + line.kind) }}
-                      · {{ line.amount | number: '1.0-0' }} {{ line.currency }}
+                      · {{ line.amount | localizedNumber: '1.0-0' }} {{ line.currency }}
                       · {{ t('finance.consolidated.' + line.treatment) }}
                     </span>
                   </li>
