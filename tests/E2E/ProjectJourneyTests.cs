@@ -1,4 +1,4 @@
-﻿using Microsoft.Playwright;
+using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -55,16 +55,21 @@ public sealed class ProjectJourneyTests(AspireStackFixture stack)
     }
 
     [Fact]
-    public async Task A_member_is_still_offered_the_projects_nav_entry()
+    public async Task A_member_reaches_a_project_by_link_rather_than_by_rail()
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
         var rail = page.GetByRole(AriaRole.Navigation);
 
-        // Unlike Finance or Département, Projets is offered to everyone: a member may well be on a project, and
-        // the rail cannot know whether they are without asking. What they see inside is RLS's business.
-        await Expect(rail.GetByRole(AriaRole.Link, new() { Name = "Projets" }))
-            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+        // The rail entry is gone with v2 §02.1: portfolio governance is not a member's day, and the catalog is
+        // the v2 surface for "does this already exist". The route still resolves, because the portfolio board
+        // links into a project's detail and a deep link that 404s is worse than a list nobody navigates to.
+        await Expect(rail.GetByRole(AriaRole.Link, new() { Name = "Projets" })).ToHaveCountAsync(0);
+
+        await page.GotoAsync("/projects");
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
+            .ToContainTextAsync("Projets", new() { Timeout = TimeoutMs });
     }
 
     private static IPageAssertions Expect(IPage page) => Assertions.Expect(page);

@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Mediator;
+using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Activities.Domain;
@@ -112,7 +112,8 @@ internal sealed class ListActivitiesHandler(
                 row.SupersedesEntryId,
                 row.Reconciled,
                 row.Note,
-                row.PercentComplete)),
+                row.PercentComplete,
+                row.NodeId)),
         ];
     }
 

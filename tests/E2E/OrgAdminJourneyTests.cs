@@ -56,6 +56,15 @@ public sealed class OrgAdminJourneyTests(AspireStackFixture stack)
         // §08.2: the trail is the point. An admin surface whose acts leave no record is a surface nobody can
         // answer questions about six months later.
         await Expect(page.GetByText("Branche créée").First).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+
+        // Deactivated again before leaving. The stack is shared and a branch is durable, so a leftover child
+        // turns Exploitation & Production's head into a head over branches for every journey that runs after
+        // this one — which is a true statement about the tree and a false premise for their tests.
+        await page.GetByRole(AriaRole.Button, new() { Name = code }).First
+            .ClickAsync(new() { Timeout = TimeoutMs });
+
+        await page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = "Désactiver" })
+            .ClickAsync(new() { Timeout = TimeoutMs });
     }
 
     [Fact]

@@ -17,6 +17,7 @@
     <ProjectReference Include="../../src/Modules/Finance/Cracra.Modules.Finance.csproj" />
     <ProjectReference Include="../../src/Modules/Problems/Cracra.Modules.Problems.csproj" />
     <ProjectReference Include="../../src/Modules/Strategy/Cracra.Modules.Strategy.csproj" />
+    <ProjectReference Include="../../src/Modules/Guidance/Cracra.Modules.Guidance.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="NetArchTest.Rules" />

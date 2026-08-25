@@ -1,5 +1,6 @@
 using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
+using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Integrations.Contracts;
 using Cracra.Modules.Integrations.Data;
 using Cracra.Modules.Integrations.Domain;
@@ -11,7 +12,7 @@ namespace Cracra.Modules.Integrations.Services;
 
 /// <summary>What an administrator supplies to create or update a connection.</summary>
 public sealed record ConnectionRequest(
-    Guid DepartmentId,
+    Guid NodeId,
     string Provider,
     string Name,
     string BaseUrl,
@@ -33,7 +34,7 @@ public sealed record MappingRequest(string Kind, string ExternalValue, Guid? Pro
 /// </remarks>
 public sealed record ConnectionView(
     Guid Id,
-    Guid DepartmentId,
+    Guid NodeId,
     string Provider,
     string Name,
     string BaseUrl,
@@ -55,7 +56,11 @@ public sealed record MappingView(Guid Id, string Kind, string ExternalValue, Gui
 
 public interface IConnectionService
 {
-    Task<IReadOnlyList<ConnectionView>> ListAsync(Guid? departmentId, CancellationToken ct);
+    /// <param name="nodeId">
+    /// A branch, whose <em>effective</em> connections come back: the ones wired at it and the ones it inherits
+    /// from above. Null lists everything the caller may read, which is the administrator's own view.
+    /// </param>
+    Task<IReadOnlyList<ConnectionView>> ListAsync(Guid? nodeId, CancellationToken ct);
 
     Task<ConnectionView> GetAsync(Guid id, CancellationToken ct);
 
@@ -89,6 +94,8 @@ public interface IConnectionService
 internal sealed class ConnectionService(
     IntegrationsDbContext context,
     IOptions<IntegrationsOptions> options,
+    IOrgNodeReader nodes,
+    IIntegrationCapability capability,
     IUserContext user) : IConnectionService
 {
     /// <summary>Below this a poll is a denial of service against somebody else's ticketing system.</summary>
@@ -96,10 +103,17 @@ internal sealed class ConnectionService(
 
     private static readonly TimeSpan MaximumPollInterval = TimeSpan.FromDays(1);
 
-    public async Task<IReadOnlyList<ConnectionView>> ListAsync(Guid? departmentId, CancellationToken ct)
+    public async Task<IReadOnlyList<ConnectionView>> ListAsync(Guid? nodeId, CancellationToken ct)
     {
+        await capability.EnsureAvailableAsync(ct);
+
+        // Inherited down, like a profile: a branch's effective connections are the ones wired at it plus the ones
+        // wired anywhere above it. Asking for exact matches instead would make a service wired at the top
+        // invisible to every branch that actually uses it.
+        var path = nodeId is { } node ? await nodes.GetPathAsync(node, ct) : [];
+
         var connections = await context.Connections
-            .Where(connection => departmentId == null || connection.DepartmentId == departmentId)
+            .Where(connection => nodeId == null || path.Contains(connection.NodeId))
             .Include(connection => connection.Mappings)
             .OrderBy(connection => connection.Provider)
             .ThenBy(connection => connection.Name)
@@ -110,6 +124,8 @@ internal sealed class ConnectionService(
 
     public async Task<ConnectionView> GetAsync(Guid id, CancellationToken ct)
     {
+        await capability.EnsureAvailableAsync(ct);
+
         var connection = await FindAsync(id, ct);
 
         return (await ProjectAsync([connection], ct))[0];
@@ -119,12 +135,14 @@ internal sealed class ConnectionService(
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        await capability.EnsureAvailableAsync(ct);
+
         var now = DateTimeOffset.UtcNow;
 
         var connection = new ExternalConnection
         {
             Id = Guid.CreateVersion7(),
-            DepartmentId = request.DepartmentId,
+            NodeId = request.NodeId,
             Provider = Provider(request.Provider),
             Name = Required(request.Name, nameof(request.Name), 256),
             BaseUrl = BaseUrl(request.BaseUrl),
@@ -149,15 +167,17 @@ internal sealed class ConnectionService(
     {
         ArgumentNullException.ThrowIfNull(request);
 
+        await capability.EnsureAvailableAsync(ct);
+
         var connection = await FindAsync(id, tracking: true, ct);
 
-        // The department is not editable. Moving a connection would move every mirror row it owns into another
-        // department's scope — silently, and for rows an activity somewhere already references. Deleting it and
+        // The branch is not editable. Moving a connection would move every mirror row it owns into another
+        // branch's scope — silently, and for rows an activity somewhere already references. Deleting it and
         // configuring a new one makes that consequence visible, which is the point.
-        if (request.DepartmentId != connection.DepartmentId)
+        if (request.NodeId != connection.NodeId)
         {
             throw new DomainRuleViolationException(
-                "A connection cannot change department. Delete it and configure one in the other department.");
+                "A connection cannot change branch. Delete it and configure one in the other branch.");
         }
 
         connection.Provider = Provider(request.Provider);
@@ -215,7 +235,7 @@ internal sealed class ConnectionService(
         {
             Id = Guid.CreateVersion7(),
             ConnectionId = connection.Id,
-            DepartmentId = connection.DepartmentId,
+            NodeId = connection.NodeId,
             Kind = kind,
             ExternalValue = Required(request.ExternalValue, nameof(request.ExternalValue), 512),
             ProjectId = request.ProjectId,
@@ -271,7 +291,7 @@ internal sealed class ConnectionService(
         [
             .. connections.Select(connection => new ConnectionView(
                 connection.Id,
-                connection.DepartmentId,
+                connection.NodeId,
                 connection.Provider,
                 connection.Name,
                 connection.BaseUrl,

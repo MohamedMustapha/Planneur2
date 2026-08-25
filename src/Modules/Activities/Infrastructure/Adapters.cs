@@ -1,4 +1,5 @@
-﻿using Cracra.BuildingBlocks.Web.Users;
+using Cracra.BuildingBlocks.Mediator;
+using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Application;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Activities.Domain;
@@ -145,6 +146,12 @@ internal sealed class ActivityTaxonomyReader(IDirectoryPort directory, IUserCont
 }
 
 /// <summary>Design-time only. Scaffolding needs a provider, not a server.</summary>
+internal sealed class WeeklySummaryReader(ISender sender) : IWeeklySummaryReader
+{
+    public async Task<WeeklySummary> GetCurrentAsync(CancellationToken ct) =>
+        await sender.Send(new GetWeeklySummaryQuery(null, null, null), ct);
+}
+
 public sealed class ActivitiesDbContextFactory : IDesignTimeDbContextFactory<ActivitiesDbContext>
 {
     public ActivitiesDbContext CreateDbContext(string[] args)

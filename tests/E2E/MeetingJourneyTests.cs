@@ -1,4 +1,4 @@
-﻿using Microsoft.Playwright;
+using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -34,7 +34,9 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
 
         await page.GetByLabel("Type").First.SelectOptionAsync("copil");
         await page.GetByPlaceholder("Point hebdomadaire Infrastructure").FillAsync(copil);
-        await page.GetByLabel("Périmètre").First.SelectOptionAsync("department");
+        // Scoped to the form: the rail's "Mon périmètre" entry carries the same word in its accessible name, and
+        // an unscoped label match resolves to the link rather than to the select.
+        await page.Locator("main").GetByLabel("Périmètre").First.SelectOptionAsync("department");
         await page.GetByLabel("Cible").First.SelectOptionAsync(new SelectOptionValue { Value = InformationSystems });
 
         // The composed rule is shown as the picker builds it, so somebody who reads RRULE can check the form
@@ -55,7 +57,7 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/department");
+        await page.GotoAsync("/node");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Plannings", new() { Timeout = TimeoutMs });

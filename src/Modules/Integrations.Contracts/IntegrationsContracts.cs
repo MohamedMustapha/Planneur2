@@ -159,7 +159,7 @@ public interface IExternalWorkItemReader
 public sealed record ExternalWorkItemsSynced(
     Guid ConnectionId,
     string Provider,
-    Guid DepartmentId,
+    Guid NodeId,
     int Created,
     int Updated,
     int Closed) : IntegrationEvent;

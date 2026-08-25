@@ -2,6 +2,7 @@
   <app-page-header
     [title]="t('finance.consolidated.title')"
     [subtitle]="t('finance.consolidated.subtitle', { year: finance.fiscalYear() })"
+    [guidance]="true"
   >
     <label slot="actions" class="inline-field">
       <span class="visually-hidden">{{ t('finance.consolidated.mode') }}</span>

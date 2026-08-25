@@ -92,7 +92,9 @@ public sealed class MirrorMapperTests
         // somebody had not finished the mapping table — and the failure would look like a broken integration.
         item.ProjectId.ShouldBeNull();
         item.UnitId.ShouldBeNull();
-        item.DepartmentId.ShouldBe(Department);
+
+        // The branch is the backstop scope: an item nothing maps is still somebody's to look at.
+        item.NodeId.ShouldBe(Department);
         item.MirrorState.ShouldBe(MirrorStates.Open);
     }
 
@@ -191,7 +193,7 @@ public sealed class MirrorMapperTests
     private static ExternalConnection Connection() => new()
     {
         Id = Guid.Parse("e0000000-0000-0000-0000-000000000001"),
-        DepartmentId = Department,
+        NodeId = Department,
         Provider = ExternalProviders.AzureDevOps,
         Name = "IS — DevOps",
         BaseUrl = "https://devops.intranet",
@@ -204,7 +206,7 @@ public sealed class MirrorMapperTests
     {
         Id = Guid.CreateVersion7(),
         ConnectionId = Guid.Parse("e0000000-0000-0000-0000-000000000001"),
-        DepartmentId = Department,
+        NodeId = Department,
         Kind = kind,
         ExternalValue = value,
         ProjectId = project,

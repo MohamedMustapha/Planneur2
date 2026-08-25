@@ -234,30 +234,6 @@ export class Board {
   /** The tiles Focus mode keeps: none. Kept as a computed so the template asks one question rather than four. */
   protected readonly showSecondaryPanels = computed(() => !this.focus.active());
 
-  /**
-   * The page's single next-best action — §02.5, item 2.
-   *
-   * Computed from real state rather than templated: an unfinished week says how many hours are left, a complete
-   * one says so and stops asking, and an overrun says a justification is needed. Three sentences, one of which is
-   * true; a generic "log your activity" would be true always and useful never.
-   *
-   * Returns a key and its parameters rather than a rendered string, because the sentence has to survive a language
-   * switch — and because that is the shape `GET /api/guidance/next-action` will return when it lands.
-   */
-  protected readonly guidance = computed<{ key: string; params: Record<string, number> }>(() => {
-    if (this.activities.isOverTarget()) {
-      return { key: 'board.guidance.overtime', params: { hours: this.activities.overtime() } };
-    }
-
-    const remaining = this.remainingHours();
-
-    const none: Record<string, number> = {};
-
-    return remaining > 0
-      ? { key: 'board.guidance.remaining', params: { hours: remaining } }
-      : { key: 'board.guidance.complete', params: none };
-  });
-
   constructor() {
     // The personal board, and this screen's own pager drives it. The shell's week offset is documented as shared
     // state for exactly this reason — two pagers on one screen disagreeing about which week it is would be worse

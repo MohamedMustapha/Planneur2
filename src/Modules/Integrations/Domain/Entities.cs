@@ -29,7 +29,14 @@ public sealed class ExternalConnection
 {
     public required Guid Id { get; init; }
 
-    public required Guid DepartmentId { get; set; }
+    /// <summary>
+    /// The branch this connection is wired at. Inherited downward, so a branch can bring its own source without
+    /// touching a sibling's (v2 00 3).
+    /// </summary>
+    public required Guid NodeId { get; set; }
+
+    /// <summary>Kept for the shim's sake and written by nobody. Falls away with the legacy tables.</summary>
+    public Guid? DepartmentId { get; set; }
 
     /// <summary>azure-devops | servicenow. See <see cref="ExternalProviders"/>.</summary>
     public required string Provider { get; set; }
@@ -121,7 +128,10 @@ public sealed class ExternalMapping
     public required Guid ConnectionId { get; init; }
 
     /// <summary>Copied from the connection: RLS reads it, and a predicate should not need a join to answer.</summary>
-    public required Guid DepartmentId { get; set; }
+    public required Guid NodeId { get; set; }
+
+    /// <summary>Kept for the shim's sake and written by nobody. Falls away with the legacy tables.</summary>
+    public Guid? DepartmentId { get; set; }
 
     /// <summary>area-path | iteration | assignment-group. See <see cref="MappingKinds"/>.</summary>
     public required string Kind { get; set; }
@@ -226,8 +236,11 @@ public sealed class ExternalWorkItem
 
     public Guid? UnitId { get; set; }
 
-    /// <summary>The connection's department. The backstop scope: a head sees their department's items.</summary>
-    public required Guid DepartmentId { get; set; }
+    /// <summary>The connection's branch. The backstop scope: a head sees their branch's items.</summary>
+    public required Guid NodeId { get; set; }
+
+    /// <summary>Kept for the shim's sake and written by nobody. Falls away with the legacy tables.</summary>
+    public Guid? DepartmentId { get; set; }
 
     public string? Url { get; set; }
 

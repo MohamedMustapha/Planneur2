@@ -104,7 +104,7 @@ namespace Cracra.Modules.Integrations.Data.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("current_sprint");
 
-                    b.Property<Guid>("DepartmentId")
+                    b.Property<Guid?>("DepartmentId")
                         .HasColumnType("uuid")
                         .HasColumnName("department_id");
 
@@ -137,6 +137,10 @@ namespace Cracra.Modules.Integrations.Data.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("name");
 
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
+
                     b.Property<TimeSpan>("PollInterval")
                         .HasColumnType("interval")
                         .HasColumnName("poll_interval");
@@ -159,8 +163,8 @@ namespace Cracra.Modules.Integrations.Data.Migrations
                     b.HasIndex("Active")
                         .HasDatabaseName("ix_external_connection_active");
 
-                    b.HasIndex("DepartmentId", "Provider")
-                        .HasDatabaseName("ix_external_connection_department_id_provider");
+                    b.HasIndex("NodeId", "Provider")
+                        .HasDatabaseName("ix_external_connection_node_id_provider");
 
                     b.ToTable("external_connection", "integrations");
                 });
@@ -180,7 +184,7 @@ namespace Cracra.Modules.Integrations.Data.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
-                    b.Property<Guid>("DepartmentId")
+                    b.Property<Guid?>("DepartmentId")
                         .HasColumnType("uuid")
                         .HasColumnName("department_id");
 
@@ -196,6 +200,10 @@ namespace Cracra.Modules.Integrations.Data.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("kind");
 
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
+
                     b.Property<Guid?>("ProjectId")
                         .HasColumnType("uuid")
                         .HasColumnName("project_id");
@@ -207,8 +215,8 @@ namespace Cracra.Modules.Integrations.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_external_mapping");
 
-                    b.HasIndex("DepartmentId")
-                        .HasDatabaseName("ix_external_mapping_department_id");
+                    b.HasIndex("NodeId")
+                        .HasDatabaseName("ix_external_mapping_node_id");
 
                     b.HasIndex("ConnectionId", "Kind", "ExternalValue")
                         .IsUnique()
@@ -244,7 +252,7 @@ namespace Cracra.Modules.Integrations.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("connection_id");
 
-                    b.Property<Guid>("DepartmentId")
+                    b.Property<Guid?>("DepartmentId")
                         .HasColumnType("uuid")
                         .HasColumnName("department_id");
 
@@ -268,6 +276,10 @@ namespace Cracra.Modules.Integrations.Data.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("mirror_state");
+
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
 
                     b.Property<Guid?>("ProjectId")
                         .HasColumnType("uuid")

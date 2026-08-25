@@ -3,6 +3,7 @@ import { UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { DepartmentScope, DepartmentScopeStore } from '../../core/scope/department-scope.store';
+import { CoachStore } from '../../core/coach/coach.store';
 import { FocusStore } from '../../core/focus/focus.store';
 import { ObligationsStore } from '../../core/obligations/obligations.store';
 import { Language, LanguageStore } from '../../core/i18n/language.store';
@@ -22,6 +23,7 @@ import { formatDayMonth, workWeek } from '../../core/time/week';
 export class TopBar {
   protected readonly layout = inject(LayoutStore);
   protected readonly focus = inject(FocusStore);
+  private readonly coach = inject(CoachStore);
   protected readonly obligations = inject(ObligationsStore);
   protected readonly session = inject(SessionStore);
   protected readonly theme = inject(ThemeStore);
@@ -42,6 +44,11 @@ export class TopBar {
 
   protected toggleDepartmentMenu(): void {
     this.departmentMenuOpen.update((open) => !open);
+    this.userMenuOpen.set(false);
+  }
+
+  protected replayCoach(): void {
+    this.coach.replay();
     this.userMenuOpen.set(false);
   }
 

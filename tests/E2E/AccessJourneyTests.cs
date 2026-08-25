@@ -1,4 +1,4 @@
-﻿using Microsoft.Playwright;
+using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -20,7 +20,7 @@ public sealed class AccessJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/unit");
+        await page.GotoAsync("/directory");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Annuaire", new() { Timeout = DirectoryTimeoutMs });

@@ -21,6 +21,11 @@ public sealed class MinutesJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
+        // Under "Plus": a member reads it but does not work in it, so it is one click away rather than in
+        // their face (02.1).
+        await page.GetByRole(AriaRole.Button, new() { Name = "Plus" })
+            .ClickAsync(new() { Timeout = TimeoutMs });
+
         await page.GetByRole(AriaRole.Navigation)
             .GetByRole(AriaRole.Link, new() { Name = "Réunions" })
             .ClickAsync(new() { Timeout = TimeoutMs });
@@ -79,7 +84,12 @@ public sealed class MinutesJourneyTests(AspireStackFixture stack)
         await page.GetByLabel("Intitulé").First
             .FillAsync($"Hebdo DSI {Guid.CreateVersion7().ToString("N")[^8..]}");
 
-        await page.GetByLabel("Périmètre").First.SelectOptionAsync("department", new() { Timeout = TimeoutMs });
+        // Scoped to the form: the rail's "Mon périmètre" entry carries the same word in its accessible name, and
+        // an unscoped label match resolves to the link rather than to the select.
+        await page.Locator("main")
+            .GetByLabel("Périmètre")
+            .First
+            .SelectOptionAsync("department", new() { Timeout = TimeoutMs });
         await page.GetByLabel("Niveau").First.SelectOptionAsync("node", new() { Timeout = TimeoutMs });
 
         // The target list is the departments this person may schedule into, which for a head is their own.

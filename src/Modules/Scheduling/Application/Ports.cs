@@ -1,4 +1,4 @@
-﻿using Cracra.Modules.Activities.Contracts;
+using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Scheduling.Contracts;
 using Cracra.Modules.Scheduling.Domain;
@@ -57,6 +57,14 @@ public interface IDirectoryPort
 
     /// <summary>The profile in force at a node, resolved through inheritance. Null where none is attached.</summary>
     Task<NodeProfileSnapshot?> GetNodeProfileAsync(Guid? unitId, Guid departmentId, CancellationToken ct);
+
+    Task<NodeProfileSnapshot?> GetProfileForNodeAsync(Guid nodeId, CancellationToken ct);
+
+    Task<IReadOnlyList<OrgNodeSummary>> GetSubtreeAsync(Guid nodeId, CancellationToken ct);
+
+    Task<IReadOnlyList<NodeMember>> GetPeopleInSubtreeAsync(Guid nodeId, CancellationToken ct);
+
+    Task<HomeNodeScope?> GetHomeScopeAsync(Guid personId, CancellationToken ct);
 }
 
 public interface IProjectsPort

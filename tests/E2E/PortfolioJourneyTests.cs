@@ -82,6 +82,10 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
 
         var rail = page.GetByRole(AriaRole.Navigation);
 
+        // Under "Plus" for a member, and reachable — see CatalogJourneyTests for why it is there rather than
+        // hidden outright.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Plus" }).ClickAsync(new() { Timeout = TimeoutMs });
+
         await rail.GetByRole(AriaRole.Link, new() { Name = "Portefeuille" })
             .ClickAsync(new() { Timeout = TimeoutMs });
 

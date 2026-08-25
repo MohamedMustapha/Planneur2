@@ -260,7 +260,7 @@ internal sealed class ExternalWorkItemSynchronizer(
             context.Enqueue(new ExternalWorkItemsSynced(
                 connection.Id,
                 connection.Provider,
-                connection.DepartmentId,
+                connection.NodeId,
                 created,
                 updated,
                 closed));

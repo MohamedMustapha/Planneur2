@@ -10,7 +10,8 @@ import {
   ReportingStore,
 } from '../../core/reporting/reporting.store';
 import { NodeBriefBlock } from '../../core/reporting/reporting.store';
-import { ProjectsStore } from '../../core/projects/projects.store';
+import { CatalogStore } from '../../core/portfolio/catalog.store';
+import { OrgAdminStore } from '../../core/admin/org-admin.store';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 
 /**
@@ -32,7 +33,8 @@ export class ReportView {
   private readonly transloco = inject(TranslocoService);
 
   protected readonly reporting = inject(ReportingStore);
-  protected readonly projects = inject(ProjectsStore);
+  protected readonly catalog = inject(CatalogStore);
+  protected readonly org = inject(OrgAdminStore);
 
   protected readonly periods: readonly ReportPeriodKind[] = ['week', 'month'];
 
@@ -54,7 +56,19 @@ export class ReportView {
   /** The link the last export produced. Short-lived, which is why it is shown rather than followed silently. */
   protected readonly exportUrl = signal<string | null>(null);
 
-  protected readonly needsProject = computed(() => this.reporting.scope() === 'project');
+  /**
+   * The scope actually in force: the server's resolved answer, or the pick that has not landed yet.
+   *
+   * The requested scope is null until somebody chooses one — the page opens on whatever the server says is
+   * widest — so keying the pickers off it alone would leave a head with no branch selector on the screen they
+   * land on.
+   */
+  protected readonly activeScope = computed(() => this.reporting.report()?.scope ?? this.reporting.scope());
+
+  protected readonly needsItem = computed(() => this.activeScope() === 'item');
+
+  /** The branch scope takes an optional target: no pick means wherever the caller hangs off the tree. */
+  protected readonly onNodeScope = computed(() => this.activeScope() === 'node');
 
   protected setRendering(value: 'brief' | 'details'): void {
     this.reporting.rendering.set(value);
@@ -69,9 +83,7 @@ export class ReportView {
     return Math.round(hours);
   }
 
-  protected readonly awaitingProject = computed(
-    () => this.needsProject() && !this.reporting.scopeId(),
-  );
+  protected readonly awaitingItem = computed(() => this.needsItem() && !this.reporting.scopeId());
 
   /** Whatever went wrong: an action's refusal, or the report itself failing to load. */
   protected readonly message = computed(() => {
@@ -107,8 +119,12 @@ export class ReportView {
     this.reporting.show(scope);
   }
 
-  protected selectProject(projectId: string): void {
-    this.reporting.show('project', projectId || null);
+  protected selectItem(itemId: string): void {
+    this.reporting.show('item', itemId || null);
+  }
+
+  protected selectNode(nodeId: string): void {
+    this.reporting.show('node', nodeId || null);
   }
 
   protected setPeriod(period: ReportPeriodKind): void {

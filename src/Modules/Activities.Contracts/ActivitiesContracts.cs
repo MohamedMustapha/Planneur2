@@ -34,7 +34,9 @@ public sealed record ActivityEntryView(
     bool Reconciled,
     string? Note,
     /// <summary>0-100 where somebody set one, null where the board should fall back to plan-versus-actual.</summary>
-    int? PercentComplete = null);
+    int? PercentComplete = null,
+    /// <summary>The branch this hour hangs off. What a cross-branch item's contribution table groups by.</summary>
+    Guid NodeId = default);
 
 /// <summary>
 /// The shape of a working day, as the department defines it.
@@ -234,4 +236,10 @@ public interface IActivityTaxonomyReader
     /// because a map would bake in the assumption that the hierarchy is only ever one level deep.
     /// </remarks>
     Task<IReadOnlyList<ActivityTypeOption>> GetTypesAsync(Guid? departmentId, CancellationToken ct);
+}
+
+/// <summary>The caller's own week, for modules that advise rather than draw it (v2 02.5).</summary>
+public interface IWeeklySummaryReader
+{
+    Task<WeeklySummary> GetCurrentAsync(CancellationToken ct);
 }

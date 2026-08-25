@@ -34,6 +34,7 @@ public static class PortfolioModule
 
         // Item references, read by Strategy when it draws an objective's contributions (v2 §06).
         services.AddScoped<Contracts.ICatalogLookupReader, CatalogLookupReader>();
+        services.AddScoped<Contracts.IIterationDeadlineReader, IterationDeadlineReader>();
 
         services.AddMediatorHandlersFrom(typeof(PortfolioModule).Assembly);
 

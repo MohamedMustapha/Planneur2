@@ -1,0 +1,18 @@
+@if (coach.showing()) {
+  <aside class="coach" role="note" *transloco="let t">
+    <span class="coach__step num">{{ coach.index() + 1 }}/{{ coach.steps().length }}</span>
+
+    <div class="coach__text">
+      <strong class="coach__title">{{ t(coach.current()!.titleKey) }}</strong>
+      <span class="coach__body">{{ t(coach.current()!.bodyKey) }}</span>
+    </div>
+
+    <button type="button" class="btn btn--ghost" (click)="coach.dismiss()">
+      {{ t('coach.skip') }}
+    </button>
+
+    <button type="button" class="btn btn--primary" (click)="coach.next()">
+      {{ coach.isLast() ? t('coach.done') : t('coach.next') }}
+    </button>
+  </aside>
+}

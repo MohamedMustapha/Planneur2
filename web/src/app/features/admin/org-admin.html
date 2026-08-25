@@ -1,5 +1,9 @@
 <ng-container *transloco="let t">
-  <app-page-header [title]="t('admin.title')" [purpose]="t('admin.page.purpose')" />
+  <app-page-header
+    [title]="t('admin.title')"
+    [purpose]="t('admin.page.purpose')"
+    [guidance]="true"
+  />
   <app-settings-tabs />
 
   @if (failure(); as reason) {

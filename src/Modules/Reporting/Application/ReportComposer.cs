@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Abstractions;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Meetings.Contracts;
@@ -29,6 +29,7 @@ namespace Cracra.Modules.Reporting.Application;
 internal sealed class ReportComposer(
     IActivityQueries activities,
     IDirectoryQueries directory,
+    IOrgNodeQueries nodes,
     IProjectQueries projects,
     IPortfolioQueries portfolio,
     IMeetingQueries meetings,
@@ -60,12 +61,10 @@ internal sealed class ReportComposer(
 
         var (sections, label) = descriptor.Scope switch
         {
-            ReportScopes.Team => await TeamAsync(period, ct),
-            ReportScopes.Unit => await UnitAsync(period, ct),
-            ReportScopes.Department => await DepartmentAsync(period, ct),
-            ReportScopes.Project => await ProjectAsync(descriptor.ScopeId, period, ct),
+            ReportScopes.Node => await NodeAsync(descriptor.ScopeId, period, ct),
+            ReportScopes.Item => await ItemAsync(descriptor.ScopeId, period, ct),
             ReportScopes.Portfolio => await PortfolioAsync(period, ct),
-            _ => await MyAsync(period, ct),
+            _ => await MeAsync(period, ct),
         };
 
         return new ReportView(
@@ -94,9 +93,9 @@ internal sealed class ReportComposer(
     /// mismatch unlikely rather than unreachable.
     /// </para>
     /// <para>
-    /// Only for node-scoped reports. A project or a portfolio spans branches by construction, so there is no one
-    /// profile in force over it — rendering some contributor's sentence across a cross-department project would
-    /// be picking a branch's vocabulary arbitrarily and presenting it as the report's own.
+    /// Only for node-scoped reports. An item or a portfolio spans branches by construction, so there is no one
+    /// profile in force over it — rendering some contributor's sentence across a cross-branch item would be
+    /// picking a branch's vocabulary arbitrarily and presenting it as the report's own.
     /// </para>
     /// </remarks>
     private async Task<string?> HeadlineAsync(
@@ -104,12 +103,14 @@ internal sealed class ReportComposer(
         IReadOnlyList<ReportSection> sections,
         CancellationToken ct)
     {
-        if (scope is ReportScopes.Project or ReportScopes.Portfolio)
+        if (scope is ReportScopes.Item or ReportScopes.Portfolio)
         {
             return null;
         }
 
-        var profile = await directory.NodeProfileAsync(user.UnitId, user.DepartmentIds.FirstOrDefault(), ct);
+        var profile = await nodes.HomeNodeAsync(user.UserId, ct) is { } home
+            ? await directory.NodeProfileAsync(home, ct)
+            : null;
 
         if (profile?.HeadlinePattern is null)
         {
@@ -162,7 +163,7 @@ internal sealed class ReportComposer(
     // --- My work ---------------------------------------------------------------------------------------------
 
     /// <summary>Hours by bucket, where that leaves me against the target, where the work came from, what is next.</summary>
-    private async Task<(IReadOnlyList<ReportSection> Sections, string Label)> MyAsync(
+    private async Task<(IReadOnlyList<ReportSection> Sections, string Label)> MeAsync(
         ReportPeriod period,
         CancellationToken ct)
     {
@@ -180,143 +181,102 @@ internal sealed class ReportComposer(
             me?.DisplayName ?? user.UserName);
     }
 
-    // --- My project team -------------------------------------------------------------------------------------
+    // --- A branch of the tree -------------------------------------------------------------------------------
 
     /// <summary>
-    /// The teams of the projects the viewer is on.
+    /// The node report: child branches where the node has any, the people attached there where it has none.
     /// </summary>
     /// <remarks>
-    /// "Every project I can read" is exactly "every project I am on" for a member, because that is what
-    /// <c>access.can_read_project</c> says — so this needs no membership filter of its own. For a head it widens
-    /// to their department's, which is the right answer to the same question asked by a different person.
+    /// <para>
+    /// One method where there were three. A unit report and a department report asked the same question of two
+    /// rungs and differed only in what their rows were — people or units — which is a fact about the node, not
+    /// about the level it sits at. Asking the tree makes the fourth level free.
+    /// </para>
+    /// <para>
+    /// Read-only in both shapes and identical in section keys, so a head can hand this upward and their parent's
+    /// report accepts it as one block — which is the composability v2 01.4 is after.
+    /// </para>
     /// </remarks>
-    private async Task<(IReadOnlyList<ReportSection> Sections, string Label)> TeamAsync(
+    private async Task<(IReadOnlyList<ReportSection> Sections, string Label)> NodeAsync(
+        Guid? scopeId,
         ReportPeriod period,
         CancellationToken ct)
     {
-        var visible = await projects.VisibleAsync(ct);
-        var rows = new List<ReportRow>();
-        var iterationRows = new List<ReportRow>();
+        var nodeId = scopeId
+            ?? await nodes.HomeNodeAsync(user.UserId, ct)
+            ?? throw new DomainRuleViolationException(
+                "You are not attached to a branch, so there is no branch report.");
 
-        foreach (var project in visible.Take(MaximumProjects))
-        {
-            var entries = await activities.ForProjectAsync(project.Id, period.From, period.To, ct);
+        var subtree = await nodes.SubtreeAsync(nodeId, ct);
+        var self = subtree.FirstOrDefault(node => node.Id == nodeId)
+            // RLS hid it or it does not exist, and the report cannot tell the two apart — which is the point.
+            ?? throw new ResourceNotFoundException("That branch does not exist.");
 
-            rows.Add(new ReportRow(
-                project.Id.ToString(),
-                $"{project.Code} — {project.Name}",
-                [Actual(entries), Planned(entries), project.ActiveMemberCount]));
+        var children = subtree.Where(node => node.ParentId == nodeId && node.Active).ToList();
+        var people = await nodes.PeopleInSubtreeAsync(nodeId, ct);
+        var entries = await activities.ForPeopleAsync(
+            [.. people.Select(person => person.PersonId)],
+            period.From,
+            period.To,
+            ct);
 
-            foreach (var iteration in await portfolio.IterationsAsync(project.Id, ct))
-            {
-                // Only the ones that touch the window. A project's whole history would bury the sprint the report
-                // is actually about.
-                if (iteration.EndsOn < period.From || iteration.StartsOn > period.To)
-                {
-                    continue;
-                }
+        var rows = children.Count > 0
+            ? ChildRows(nodeId, children, people, entries)
+            : PersonRows(people, entries);
 
-                iterationRows.Add(new ReportRow(
-                    iteration.Id.ToString(),
-                    $"{project.Code} · {iteration.Name}",
-                    [iteration.Sequence, DaysElapsed(iteration.StartsOn, iteration.EndsOn, period.To)]));
-            }
-        }
+        var unitId = people.Select(person => person.UnitId).FirstOrDefault(id => id is not null);
+        var load = unitId is { } unit
+            ? await schedule.LoadAsync(unit, period.From, period.To, ct)
+            : null;
 
-        return (
-            [
-                new ReportSection(
-                    "teamActivity",
-                    "reports.section.teamActivity",
-                    [new ReportMetric("projects", rows.Count, "count")],
-                    [new ReportTable(
-                        "reports.table.projectActivity",
-                        ["reports.column.actualHours", "reports.column.plannedHours", "reports.column.members"],
-                        rows)],
-                    // Said out loud rather than truncated in silence. A capped list presented as a complete one
-                    // is the kind of wrong that gets quoted in a meeting.
-                    visible.Count > MaximumProjects
-                        ? [new ReportNote(
-                            "reports.note.truncated",
-                            (visible.Count - MaximumProjects).ToString(System.Globalization.CultureInfo.InvariantCulture),
-                            "info")]
-                        : []),
-                new ReportSection(
-                    "iterations",
-                    "reports.section.iterations",
-                    [],
-                    [new ReportTable(
-                        "reports.table.iterations",
-                        ["reports.column.sequence", "reports.column.daysElapsed"],
-                        iterationRows)],
-                    []),
-                await AgendaSectionAsync(period, ct),
-            ],
-            "reports.scope.team");
-    }
-
-    // --- My unit ---------------------------------------------------------------------------------------------
-
-    private async Task<(IReadOnlyList<ReportSection> Sections, string Label)> UnitAsync(
-        ReportPeriod period,
-        CancellationToken ct)
-    {
-        var unitId = user.UnitId;
-
-        if (unitId is not { } unit)
-        {
-            throw new DomainRuleViolationException("You are not attached to a unit, so there is no unit report.");
-        }
-
-        var people = await directory.PeopleAsync(unit, null, ct);
-        var entries = await activities.ForPeopleAsync([.. people.Select(person => person.Id)], period.From, period.To, ct);
-
-        var byPerson = entries.GroupBy(entry => entry.PersonId).ToDictionary(group => group.Key, group => group.ToList());
-
-        var rows = people
-            .Take(MaximumRows)
-            .Select(person =>
-            {
-                var theirs = byPerson.GetValueOrDefault(person.Id, []);
-
-                return new ReportRow(
-                    person.Id.ToString(),
-                    person.DisplayName,
-                    [Actual(theirs), Planned(theirs), HoursOf(theirs, QualityOfLifeCode)]);
-            })
-            .ToList();
-
-        var load = await schedule.LoadAsync(unit, period.From, period.To, ct);
-        var kudoCount = await kudos.CountAsync(unit, null, period.From, period.To, ct);
-
-        var units = await directory.UnitsAsync(null, ct);
+        var kudoCount = unitId is { } kudoUnit
+            ? await kudos.CountAsync(kudoUnit, null, period.From, period.To, ct)
+            : 0;
 
         return (
             [
                 new ReportSection(
                     "members",
                     "reports.section.members",
-                    [new ReportMetric("headcount", people.Count, "count")],
+                    [
+                        new ReportMetric("headcount", people.Count, "count"),
+                        new ReportMetric("branches", children.Count, "count"),
+                    ],
                     [new ReportTable(
-                        "reports.table.memberActivity",
-                        ["reports.column.actualHours", "reports.column.plannedHours", "reports.column.qolHours"],
+                        children.Count > 0 ? "reports.table.branchRollup" : "reports.table.memberActivity",
+                        children.Count > 0
+                            ?
+                            [
+                                "reports.column.headcount",
+                                "reports.column.actualHours",
+                                "reports.column.qolHours",
+                            ]
+                            :
+                            [
+                                "reports.column.actualHours",
+                                "reports.column.plannedHours",
+                                "reports.column.qolHours",
+                            ],
                         rows,
-                        // The one table in the whole report whose labels are people. Everything downstream — the
-                        // prompt's pseudonymizer above all — keys off this flag rather than guessing.
-                        IdentifiesPeople: true)],
+                        // Only the people shape names people. Everything downstream — the prompt's pseudonymizer
+                        // above all — keys off this flag rather than guessing from the table's title.
+                        IdentifiesPeople: children.Count == 0)],
                     []),
                 new ReportSection(
                     "runLoad",
                     "reports.section.runLoad",
-                    [
-                        new ReportMetric("openWorkOrders", load.OpenWorkOrders, "count"),
-                        new ReportMetric("assignedWorkOrders", load.AssignedWorkOrders, "count"),
-                        new ReportMetric("workOrderHours", load.EstimatedHours, "hours"),
-                        new ReportMetric("shiftHours", load.ShiftHours, "hours"),
-                        new ReportMetric("coverageGaps", load.CoverageGaps, "count"),
-                    ],
+                    load is null
+                        ? []
+                        :
+                        [
+                            new ReportMetric("openWorkOrders", load.OpenWorkOrders, "count"),
+                            new ReportMetric("assignedWorkOrders", load.AssignedWorkOrders, "count"),
+                            new ReportMetric("workOrderHours", load.EstimatedHours, "hours"),
+                            new ReportMetric("shiftHours", load.ShiftHours, "hours"),
+                            new ReportMetric("coverageGaps", load.CoverageGaps, "count"),
+                        ],
                     [],
-                    load.CoverageGaps > 0
+                    load is { CoverageGaps: > 0 }
                         ? [new ReportNote("reports.note.coverageGaps", null, "warning")]
                         : []),
                 new ReportSection(
@@ -324,153 +284,147 @@ internal sealed class ReportComposer(
                     "reports.section.qol",
                     [
                         new ReportMetric("qolHours", HoursOf(entries, QualityOfLifeCode), "hours"),
-                        // Rendered from S8 onward, zero until S9 gave it something to count — because a section
-                        // that appeared the week kudos shipped would have looked like a new feature rather than a
-                        // blank being filled in.
                         new ReportMetric("kudos", kudoCount, "count"),
                     ],
                     [],
                     []),
                 await AgendaSectionAsync(period, ct),
             ],
-            units.FirstOrDefault(candidate => candidate.Id == unit)?.Name ?? "reports.scope.unit");
+            self.Name);
     }
 
-    // --- My department ---------------------------------------------------------------------------------------
-
-    private async Task<(IReadOnlyList<ReportSection> Sections, string Label)> DepartmentAsync(
-        ReportPeriod period,
-        CancellationToken ct)
+    /// <summary>One row per direct child, each aggregated over its whole subtree.</summary>
+    private static List<ReportRow> ChildRows(
+        Guid nodeId,
+        IReadOnlyList<Directory.Contracts.OrgNodeSummary> children,
+        IReadOnlyList<Directory.Contracts.NodeMember> people,
+        IReadOnlyList<ActivityEntryView> entries)
     {
-        var departmentId = user.DepartmentIds.FirstOrDefault();
+        var branchOf = people.ToDictionary(
+            person => person.PersonId,
+            person => BranchUnder(nodeId, person.NodeAncestorIds));
 
-        if (departmentId == Guid.Empty)
-        {
-            throw new DomainRuleViolationException("You belong to no department, so there is no department report.");
-        }
+        return
+        [
+            .. children
+                .OrderBy(child => child.Name, StringComparer.Ordinal)
+                .Take(MaximumRows)
+                .Select(child =>
+                {
+                    var theirs = entries
+                        .Where(entry => branchOf.GetValueOrDefault(entry.PersonId) == child.Id)
+                        .ToList();
 
-        var units = await directory.UnitsAsync(departmentId, ct);
-        var unitRows = new List<ReportRow>();
-
-        foreach (var unit in units.Take(MaximumRows))
-        {
-            var people = await directory.PeopleAsync(unit.Id, null, ct);
-            var entries = await activities.ForPeopleAsync(
-                [.. people.Select(person => person.Id)],
-                period.From,
-                period.To,
-                ct);
-
-            unitRows.Add(new ReportRow(
-                unit.Id.ToString(),
-                unit.Name,
-                [people.Count, Actual(entries), HoursOf(entries, QualityOfLifeCode)]));
-        }
-
-        var visible = await projects.VisibleAsync(ct);
-        var board = await portfolio.BoardAsync(ct);
-
-        var stateByProject = board.Lanes
-            .SelectMany(lane => lane.Items.Where(item => item.ProjectId is not null)
-                .Select(item => (item.ProjectId!.Value, lane.State)))
-            .GroupBy(pair => pair.Item1)
-            .ToDictionary(group => group.Key, group => group.First().State);
-
-        var projectRows = visible
-            .Take(MaximumRows)
-            .Select(project => new ReportRow(
-                project.Id.ToString(),
-                $"{project.Code} — {project.Name}",
-                [project.CostAmount, project.ActiveMemberCount]))
-            .ToList();
-
-        var names = await directory.DepartmentNameKeysAsync([departmentId], ct);
-
-        return (
-            [
-                new ReportSection(
-                    "units",
-                    "reports.section.units",
-                    [new ReportMetric("units", unitRows.Count, "count")],
-                    [new ReportTable(
-                        "reports.table.unitRollup",
-                        ["reports.column.headcount", "reports.column.actualHours", "reports.column.qolHours"],
-                        unitRows)],
-                    []),
-                new ReportSection(
-                    "projects",
-                    "reports.section.projects",
-                    [
-                        new ReportMetric("projects", visible.Count, "count"),
-                        new ReportMetric("cost", visible.Sum(project => project.CostAmount), "currency"),
-                    ],
-                    [new ReportTable(
-                        "reports.table.projects",
-                        ["reports.column.cost", "reports.column.members"],
-                        projectRows)],
-                    // The lifecycle states, plus a truncation note where the list was capped.
-                    // The lifecycle states are notes rather than a column, because a project without a portfolio
-                    // item has no state at all and an empty cell reads as a missing value rather than as "not
-                    // tracked in the portfolio".
-                    [
-                        .. stateByProject
-                            .Where(pair => visible.Any(project => project.Id == pair.Key))
-                            .GroupBy(pair => pair.Value)
-                            .Select(group => new ReportNote(
-                                $"reports.note.state.{group.Key}",
-                                group.Count().ToString(System.Globalization.CultureInfo.InvariantCulture),
-                                null)),
-                        .. visible.Count > MaximumRows
-                            ? new[]
-                            {
-                                new ReportNote(
-                                    "reports.note.truncated",
-                                    (visible.Count - MaximumRows).ToString(System.Globalization.CultureInfo.InvariantCulture),
-                                    "info"),
-                            }
-                            : [],
-                    ]),
-                await AgendaSectionAsync(period, ct),
-            ],
-            names.GetValueOrDefault(departmentId, "reports.scope.department"));
+                    return new ReportRow(
+                        child.Id.ToString(),
+                        child.Name,
+                        [
+                            people.Count(person => branchOf[person.PersonId] == child.Id),
+                            Actual(theirs),
+                            HoursOf(theirs, QualityOfLifeCode),
+                        ]);
+                }),
+        ];
     }
 
-    // --- My project ------------------------------------------------------------------------------------------
+    private static List<ReportRow> PersonRows(
+        IReadOnlyList<Directory.Contracts.NodeMember> people,
+        IReadOnlyList<ActivityEntryView> entries)
+    {
+        var byPerson = entries
+            .GroupBy(entry => entry.PersonId)
+            .ToDictionary(group => group.Key, group => group.ToList());
 
-    private async Task<(IReadOnlyList<ReportSection> Sections, string Label)> ProjectAsync(
+        return
+        [
+            .. people
+                .Take(MaximumRows)
+                .Select(person =>
+                {
+                    var theirs = byPerson.GetValueOrDefault(person.PersonId, []);
+
+                    return new ReportRow(
+                        person.PersonId.ToString(),
+                        person.DisplayName,
+                        [Actual(theirs), Planned(theirs), HoursOf(theirs, QualityOfLifeCode)]);
+                }),
+        ];
+    }
+
+    /// <summary>The child of the scope this path passes through, or the scope itself.</summary>
+    private static Guid BranchUnder(Guid scope, IReadOnlyList<Guid> path)
+    {
+        var index = path.ToList().IndexOf(scope);
+
+        return index >= 0 && index + 1 < path.Count ? path[index + 1] : scope;
+    }
+
+    // --- One portfolio item ----------------------------------------------------------------------------------
+
+    /// <summary>
+    /// The item report: what one thing in the catalog cost and who is carrying it.
+    /// </summary>
+    /// <remarks>
+    /// Scoped by item id rather than by project id (v2 00 3). An item without a delivery row behind it is a real
+    /// state — something the catalog knows about that nobody has started running — and it reports its identity
+    /// and says so, rather than 404ing on a thing the caller can plainly see in the catalog.
+    /// </remarks>
+    private async Task<(IReadOnlyList<ReportSection> Sections, string Label)> ItemAsync(
         Guid? scopeId,
         ReportPeriod period,
         CancellationToken ct)
     {
-        if (scopeId is not { } projectId)
+        if (scopeId is not { } id)
         {
-            throw new DomainRuleViolationException("A project report needs a project.");
+            throw new DomainRuleViolationException("An item report needs an item.");
+        }
+
+        var item = await portfolio.ItemAsync(id, ct)
+            // RLS hid it or it does not exist, and the report cannot tell the two apart — which is the point.
+            ?? throw new ResourceNotFoundException("That item does not exist.");
+
+        var label = $"{item.Code} — {item.Name}";
+
+        if (item.ProjectId is not { } projectId)
+        {
+            return (
+                [
+                    new ReportSection(
+                        "identity",
+                        "reports.section.identity",
+                        [],
+                        [],
+                        [new ReportNote($"reports.note.state.{item.State}", null, null),
+                         new ReportNote("reports.note.notRunning", null, "info")]),
+                ],
+                label);
         }
 
         var project = await projects.ProjectAsync(projectId, ct)
-            // RLS hid it or it does not exist, and the report cannot tell the two apart — which is the point.
-            ?? throw new ResourceNotFoundException("That project does not exist.");
+            ?? throw new ResourceNotFoundException("That item does not exist.");
 
         var entries = await activities.ForProjectAsync(projectId, period.From, period.To, ct);
         var team = await projects.TeamAsync(projectId, ct);
         var iterations = await portfolio.IterationsAsync(projectId, ct);
 
-        var byDepartment = entries
-            .GroupBy(entry => entry.DepartmentId)
+        // Grouped by the branch each hour hangs off, not by the department its owner is filed under (v2 00 3).
+        // An item is cross-branch by construction, and the branch is the thing a head recognises as theirs.
+        var byNode = entries
+            .GroupBy(entry => entry.NodeId)
             .ToDictionary(group => group.Key, group => group.ToList());
 
-        var departmentNames = await directory.DepartmentNameKeysAsync([.. byDepartment.Keys], ct);
+        var nodeNames = await NodeNamesAsync([.. byNode.Keys], ct);
 
-        var contribution = byDepartment
+        var contribution = byNode
             .Select(pair => new ReportRow(
                 pair.Key.ToString(),
-                departmentNames.GetValueOrDefault(pair.Key, pair.Key.ToString()),
+                nodeNames.GetValueOrDefault(pair.Key, pair.Key.ToString()),
                 [
                     Actual(pair.Value),
                     // The split as a percentage, computed here rather than left to the reader. A report that
                     // makes you divide two of its own numbers has not finished its job.
                     Percent(Actual(pair.Value), Actual(entries)),
-                    team.Count(member => member.DepartmentId == pair.Key),
+                    pair.Value.Select(entry => entry.PersonId).Distinct().Count(),
                 ]))
             .OrderByDescending(row => row.Values[0])
             .ToList();
@@ -520,7 +474,37 @@ internal sealed class ReportComposer(
                     [],
                     []),
             ],
-            $"{project.Code} — {project.Name}");
+            label);
+    }
+
+    /// <summary>Branch names for a scattered set of node ids, resolved through one subtree read per root.</summary>
+    private async Task<IReadOnlyDictionary<Guid, string>> NodeNamesAsync(
+        IReadOnlyList<Guid> nodeIds,
+        CancellationToken ct)
+    {
+        var names = new Dictionary<Guid, string>();
+
+        if (await nodes.HomeNodeAsync(user.UserId, ct) is { } home)
+        {
+            foreach (var node in await nodes.SubtreeAsync(home, ct))
+            {
+                names[node.Id] = node.Name;
+            }
+        }
+
+        // Anything the caller's own subtree does not cover is asked for directly. A cross-branch item is the
+        // normal case here, and a row labelled with a raw id is a row nobody can act on.
+        foreach (var nodeId in nodeIds.Where(nodeId => !names.ContainsKey(nodeId)))
+        {
+            var found = (await nodes.SubtreeAsync(nodeId, ct)).FirstOrDefault(node => node.Id == nodeId);
+
+            if (found is not null)
+            {
+                names[nodeId] = found.Name;
+            }
+        }
+
+        return names;
     }
 
     // --- Portfolio -------------------------------------------------------------------------------------------

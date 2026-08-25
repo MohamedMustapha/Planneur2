@@ -16,6 +16,10 @@
     <ng-content select="[slot=actions]" />
   </div>
 
+  @if (guidance()) {
+    <app-guidance-banner />
+  }
+
   <ng-content select="[slot=guidance]" />
 
   <div class="page-header__scope">

@@ -402,3 +402,9 @@ public sealed record MinutesPublished(
 
 public sealed record ActionItemClosed(Guid ActionId, Guid MinutesId, Guid OwnerPersonId, string LinkType)
     : IntegrationEvent;
+
+/// <summary>The caller's own open actions, for the shell's obligation chip (v2 02.2).</summary>
+public interface IActionItemReader
+{
+    Task<IReadOnlyList<ActionItemView>> GetOpenForCallerAsync(CancellationToken ct);
+}

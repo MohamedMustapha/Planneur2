@@ -1,5 +1,9 @@
 <ng-container *transloco="let t">
-  <app-page-header [title]="t('meetings.title')" [purpose]="t('meetings.page.purpose')" />
+  <app-page-header
+    [title]="t('meetings.title')"
+    [purpose]="t('meetings.page.purpose')"
+    [guidance]="true"
+  />
 
   @if (failure()) {
     <p class="alert" role="alert">{{ t('meetings.failed') }}</p>

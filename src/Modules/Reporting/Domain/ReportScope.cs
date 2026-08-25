@@ -9,15 +9,15 @@ namespace Cracra.Modules.Reporting.Domain;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This is <c>visibility-matrix.md §6</c> as code, and it is the one place in S8 that reasons about roles. That
-/// looks like a violation of "never filter by role in application code" and is not: the rule there is about
-/// <em>rows</em>, and rows are still RLS's alone. This decides something different — which <em>question</em> a
-/// viewer may pose. A member asking for the department report must get a 403, not a silently empty department.
+/// This is the visibility matrix as code, and it is the one place in S8 that reasons about roles. That looks like
+/// a violation of "never filter by role in application code" and is not: the rule there is about <em>rows</em>,
+/// and rows are still RLS's alone. This decides something different — which <em>question</em> a viewer may pose.
+/// A member asking for the portfolio report must get a 403, not a silently empty portfolio.
 /// </para>
 /// <para>
-/// The distinction matters both ways round. An empty report would tell a member their department did nothing,
+/// The distinction matters both ways round. An empty report would tell a member the portfolio held nothing,
 /// which is a lie; and letting them ask would be harmless to the data but useless to them, because RLS would
-/// return their own unit's rows under a title that says "department".
+/// return their own rows under a title that says otherwise.
 /// </para>
 /// <para>
 /// Pure and static, so the whole matrix row is unit-testable without a database, a request or a container.
@@ -48,23 +48,19 @@ public static class ReportScope
             scopes.Add(ReportScopes.Portfolio);
         }
 
-        if (user.Has(ContextualRole.NodeHead) || user.Has(ContextualRole.Pmo))
-        {
-            scopes.Add(ReportScopes.Department);
-            scopes.Add(ReportScopes.Unit);
-        }
+        // The node scope is everybody's, and it is not a widening: which branch comes back is the node id, and
+        // which node ids resolve is RLS. A member asking for their own node gets their own node; a head asking
+        // for one above them gets a 404 from the same predicate that hides the rows.
+        scopes.Add(ReportScopes.Node);
 
         if (user.HasAnyRole(ContextualRole.ProjectLead, ContextualRole.ProductOwner)
             || user.Has(ContextualRole.NodeHead)
             || user.Has(ContextualRole.Pmo))
         {
-            scopes.Add(ReportScopes.Project);
+            scopes.Add(ReportScopes.Item);
         }
 
-        // Everyone gets these two. "My project team" is not the same as "my project": a member sees the teams of
-        // the projects they are on, which is exactly what the matrix grants them and no more.
-        scopes.Add(ReportScopes.Team);
-        scopes.Add(ReportScopes.My);
+        scopes.Add(ReportScopes.Me);
 
         return scopes;
     }
@@ -72,7 +68,7 @@ public static class ReportScope
     /// <summary>The scope a viewer lands on when they ask for none. Always the widest they hold.</summary>
     public static string Default(IUserContext user) => Available(user) is [var widest, ..]
         ? widest
-        : ReportScopes.My;
+        : ReportScopes.Me;
 
     /// <summary>
     /// Normalizes a requested scope, or refuses it.
@@ -115,9 +111,20 @@ public static class ReportScope
 
     /// <summary>True where the scope names a specific thing the caller must identify.</summary>
     /// <remarks>
-    /// Only the project scope. The rest are derived from who the caller is — your unit, your department — and
-    /// asking for somebody else's would be a question RLS answers with silence rather than with a refusal.
+    /// Only the item scope. The node scope <em>accepts</em> an id and falls back to wherever the caller hangs off
+    /// the tree, which is the answer they would have had to look up to ask the question.
     /// </remarks>
     public static bool RequiresScopeId(string scope) =>
-        string.Equals(scope, ReportScopes.Project, StringComparison.Ordinal);
+        string.Equals(scope, ReportScopes.Item, StringComparison.Ordinal);
+
+    /// <summary>
+    /// True where the scope has a target at all, required or not.
+    /// </summary>
+    /// <remarks>
+    /// Distinct from <see cref="RequiresScopeId"/> because the node scope has both shapes: a head naming a branch
+    /// beneath them, and anybody naming none and meaning their own. Collapsing the two would either drop the id a
+    /// head just picked or refuse the request everybody else makes.
+    /// </remarks>
+    public static bool AcceptsScopeId(string scope) =>
+        RequiresScopeId(scope) || string.Equals(scope, ReportScopes.Node, StringComparison.Ordinal);
 }

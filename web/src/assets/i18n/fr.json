@@ -23,10 +23,6 @@
   "nav": {
     "ariaLabel": "Navigation principale",
     "myBoard": "Mon tableau",
-    "myTeam": "Mon équipe",
-    "myUnit": "Mon unité",
-    "department": "Département",
-    "projects": "Projets",
     "portfolio": "Portefeuille",
     "reports": "Rapports",
     "kudos": "Kudos",
@@ -34,7 +30,11 @@
     "settings": "Paramètres",
     "problems": "Problèmes",
     "strategy": "Stratégie",
-    "meetings": "Réunions"
+    "meetings": "Réunions",
+    "myWeek": "Ma semaine",
+    "myNode": "Mon périmètre",
+    "directory": "Organigramme",
+    "more": "Plus"
   },
   "scope": {
     "ariaLabel": "Périmètre de consultation",
@@ -95,11 +95,6 @@
     "noProject": "Sans projet",
     "page": {
       "purpose": "Renseignez vos créneaux de la semaine — objectif 35 h."
-    },
-    "guidance": {
-      "remaining": "Il vous reste {{hours}} h à saisir cette semaine.",
-      "complete": "Votre semaine est complète — rien à faire.",
-      "overtime": "Semaine au-delà de l’objectif de {{hours}} h — une justification est requise."
     },
     "hoursShort": "{{hours}} h",
     "noEntriesHelp": "Glissez dans une journée de la grille, ou utilisez Ajout rapide."
@@ -425,12 +420,9 @@
   },
   "boards": {
     "title": "Plannings",
-    "subtitle": "Les tableaux d'équipe, d'unité, de projet et de département",
+    "subtitle": "Le plan de votre périmètre et de vos projets",
     "my": "Mon tableau",
-    "team": "Mon équipe",
-    "unit": "Mon unité",
     "project": "Projet",
-    "department": "Département",
     "weekNav": "Navigation par semaine",
     "pool": "File d'attente",
     "poolEmpty": "Aucune demande en attente.",
@@ -452,7 +444,14 @@
     "description": "Description",
     "descriptionHint": "En une ligne, de quoi il s'agit",
     "percentComplete": "Avancement",
-    "addTask": "Ajouter la tâche"
+    "addTask": "Ajouter la tâche",
+    "node": "Mon périmètre",
+    "myNode": "Mon périmètre",
+    "showPeople": "Voir les personnes",
+    "showBranches": "Voir les branches",
+    "page": {
+      "purpose": "Comparer la charge de votre périmètre, semaine par semaine."
+    }
   },
   "shift": {
     "morning": "Matin",
@@ -615,9 +614,6 @@
     "exportReady": "Télécharger le PDF",
     "exportExpires": "Lien valable quelques minutes.",
     "periodNav": "Période précédente ou suivante",
-    "project": "Projet",
-    "chooseProject": "Choisir un projet…",
-    "pickProject": "Choisissez un projet pour afficher son rapport.",
     "sectionEmpty": "Rien sur cette période.",
     "genericError": "Le rapport n’a pas pu être produit.",
     "period": {
@@ -638,11 +634,9 @@
       "none": "Aucune synthèse pour cette période."
     },
     "scope": {
-      "my": "Mon travail",
-      "team": "Mes équipes projet",
-      "unit": "Mon unité",
-      "department": "Mon département",
-      "project": "Projet",
+      "me": "Mon travail",
+      "node": "Mon périmètre",
+      "item": "Projet",
       "portfolio": "Portefeuille"
     },
     "section": {
@@ -661,7 +655,8 @@
       "cost": "Coût",
       "states": "États du portefeuille",
       "archived": "Déphasés",
-      "priority": "Priorités"
+      "priority": "Priorités",
+      "identity": "Fiche"
     },
     "metric": {
       "targetHours": "Objectif",
@@ -714,7 +709,8 @@
       "projects": "Projets",
       "contribution": "Par département",
       "states": "Par état",
-      "priority": "Les plus prioritaires"
+      "priority": "Les plus prioritaires",
+      "branchRollup": "Par branche"
     },
     "note": {
       "overTarget": "Semaine au-dessus de l’objectif.",
@@ -732,7 +728,8 @@
         "active": "Actifs",
         "dephase": "Déphasés"
       },
-      "truncated": "Liste tronquée : {{count}} de plus non affichés."
+      "truncated": "Liste tronquée : {{count}} de plus non affichés.",
+      "notRunning": "Rien n’est encore lancé sur ce projet."
     },
     "brief": {
       "title": "Brief",
@@ -744,7 +741,12 @@
       "headline": "{{people}} pers · ~{{hours}} h",
       "nothingToReport": "RAS",
       "upcoming": "À venir"
-    }
+    },
+    "node": "Périmètre",
+    "myNode": "Mon périmètre",
+    "item": "Projet",
+    "chooseItem": "Choisir un projet…",
+    "pickItem": "Choisissez un projet pour afficher son rapport."
   },
   "kudos": {
     "title": "Kudos",
@@ -1042,7 +1044,10 @@
   },
   "obligations": {
     "weekOverTarget": "{{hours}} h au-delà de l’objectif",
-    "dismiss": "Masquer jusqu’au prochain chargement"
+    "dismiss": "Masquer jusqu’au prochain chargement",
+    "overdueActions": "{{count}} action(s) en retard",
+    "awaitingTriage": "{{count}} problème(s) à trier",
+    "overTarget": "Semaine au-delà de l’objectif de {{hours}} h"
   },
   "profiles": {
     "title": "Profils de nœud",
@@ -1234,5 +1239,103 @@
     "noMembers": "Personne n’est rattaché à cette branche.",
     "moveTo": "Déplacer vers…",
     "moved": "Déplacé"
+  },
+  "guidance": {
+    "action": {
+      "closeIteration": "L’itération {{iteration}} de {{item}} se termine le {{date}}.",
+      "closeIteration.cta": "Ouvrir la fiche",
+      "fillWeek": "Il vous reste {{hours}} h à saisir cette semaine.",
+      "fillWeek.cta": "Saisir",
+      "overdueActions": "{{count}} action(s) de CR sont en retard.",
+      "overdueActions.cta": "Ouvrir les CR",
+      "reviewItems": "Rien ne vous attend : passez en revue vos projets.",
+      "reviewItems.cta": "Ouvrir le catalogue",
+      "reviewNode": "Rien ne vous attend : passez en revue votre périmètre.",
+      "reviewNode.cta": "Ouvrir le plan",
+      "reviewObjectives": "Rien ne vous attend : passez en revue les objectifs.",
+      "reviewObjectives.cta": "Ouvrir la stratégie",
+      "reviewOrg": "Rien ne vous attend : vérifiez l’organisation.",
+      "reviewOrg.cta": "Ouvrir l’administration",
+      "triageProblems": "{{count}} problème(s) attendent votre tri.",
+      "triageProblems.cta": "Trier",
+      "weekComplete": "Votre semaine est complète — rien à faire.",
+      "weekComplete.cta": "Voir ma semaine"
+    }
+  },
+  "coach": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "done": "Terminé",
+    "replay": "Revoir la visite",
+    "member": {
+      "week": {
+        "title": "Votre semaine",
+        "body": "Saisissez vos heures ici ; le compteur suit votre objectif."
+      },
+      "problems": {
+        "title": "Ce qui vous fait perdre du temps",
+        "body": "Signalez un irritant : aucun rôle n’est requis."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que la tâche du moment. Toujours réversible, en haut à droite."
+      }
+    },
+    "head": {
+      "node": {
+        "title": "Votre périmètre",
+        "body": "Les branches sous vous, ou les personnes s’il n’y en a pas."
+      },
+      "brief": {
+        "title": "La synthèse",
+        "body": "Un bloc par branche, prêt pour un COPIL."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que la comparaison et l’action du jour."
+      }
+    },
+    "po": {
+      "items": {
+        "title": "Vos projets",
+        "body": "Le catalogue montre ce qui existe déjà avant d’en créer un."
+      },
+      "progress": {
+        "title": "L’avancement",
+        "body": "Les itérations et les épopées de votre projet."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que l’avancement et le COPIL."
+      }
+    },
+    "pmo": {
+      "catalog": {
+        "title": "Le portefeuille",
+        "body": "Tout ce que l’organisation porte, en fiches d’identité."
+      },
+      "objectives": {
+        "title": "Les objectifs",
+        "body": "Ce que les projets servent, et l’écart qui reste."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que le portefeuille et la revue."
+      }
+    },
+    "admin": {
+      "org": {
+        "title": "L’organisation",
+        "body": "Niveaux, branches et rattachements se modifient ici, sans déploiement."
+      },
+      "access": {
+        "title": "Les droits",
+        "body": "Rôles et dérogations, avec leur trace."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que l’écran d’administration."
+      }
+    }
   }
 }

@@ -20,6 +20,11 @@ public sealed class StrategyJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
+        // Under "Plus": a member reads it but does not work in it, so it is one click away rather than in
+        // their face (02.1).
+        await page.GetByRole(AriaRole.Button, new() { Name = "Plus" })
+            .ClickAsync(new() { Timeout = TimeoutMs });
+
         await page.GetByRole(AriaRole.Navigation)
             .GetByRole(AriaRole.Link, new() { Name = "Stratégie" })
             .ClickAsync(new() { Timeout = TimeoutMs });

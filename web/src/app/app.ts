@@ -6,6 +6,7 @@ import { LanguageStore } from './core/i18n/language.store';
 import { SessionStore } from './core/session/session.store';
 import { MobiscrollOptions } from './core/theme/mobiscroll-options';
 import { ThemeStore } from './core/theme/theme.store';
+import { CoachMarks } from './shared/ui/coach-marks/coach-marks';
 import { NavRail } from './shell/nav-rail/nav-rail';
 import { TopBar } from './shell/top-bar/top-bar';
 
@@ -18,7 +19,7 @@ import { TopBar } from './shell/top-bar/top-bar';
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, NavRail, TopBar, TranslocoDirective],
+  imports: [RouterOutlet, NavRail, TopBar, CoachMarks, TranslocoDirective],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

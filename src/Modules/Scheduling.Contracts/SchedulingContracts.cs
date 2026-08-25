@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Messaging;
+using Cracra.BuildingBlocks.Messaging;
 
 namespace Cracra.Modules.Scheduling.Contracts;
 
@@ -15,12 +15,13 @@ namespace Cracra.Modules.Scheduling.Contracts;
 public static class BoardTypes
 {
     public const string My = "my";
-    public const string Team = "team";
-    public const string Unit = "unit";
-    public const string Project = "project";
-    public const string Department = "department";
 
-    public static readonly IReadOnlyList<string> All = [My, Team, Unit, Project, Department];
+    /// <summary>One board at any depth: child nodes where there are any, people where there are not.</summary>
+    public const string Node = "node";
+
+    public const string Project = "project";
+
+    public static readonly IReadOnlyList<string> All = [My, Node, Project];
 }
 
 /// <summary>Which of the three Mobiscroll archetypes the client should render with.</summary>

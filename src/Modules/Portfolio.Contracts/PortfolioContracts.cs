@@ -217,7 +217,9 @@ public sealed record CatalogCardRef(
     string Name,
     string Type,
     string State,
-    Guid OwnerNodeId);
+    Guid OwnerNodeId,
+    /// <summary>The delivery row behind it, where one exists. Null for an item nobody has started running.</summary>
+    Guid? ProjectId = null);
 
 /// <summary>
 /// Resolves items by id, and lists them under a node.
@@ -232,4 +234,19 @@ public interface ICatalogLookupReader
 
     /// <summary>Every item the caller may see owned inside a node's subtree.</summary>
     Task<IReadOnlyList<CatalogCardRef>> GetInScopeAsync(Guid nodeId, CancellationToken ct);
+}
+
+/// <summary>An open iteration and the item it belongs to, closing soon.</summary>
+public sealed record IterationDeadline(
+    Guid ItemId,
+    string ItemCode,
+    string ItemName,
+    Guid IterationId,
+    string IterationName,
+    DateOnly EndsOn);
+
+/// <summary>Iterations about to close, for the shell's guidance (v2 02.5).</summary>
+public interface IIterationDeadlineReader
+{
+    Task<IReadOnlyList<IterationDeadline>> GetClosingAsync(DateOnly by, CancellationToken ct);
 }

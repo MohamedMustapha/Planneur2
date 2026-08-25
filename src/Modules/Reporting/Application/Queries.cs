@@ -86,7 +86,7 @@ internal sealed class ReportRequestService(ReportComposer composer, ISummaryStor
 
         return new ReportDescriptor(
             resolved,
-            ReportScope.RequiresScopeId(resolved) ? scopeId : null,
+            ReportScope.AcceptsScopeId(resolved) ? scopeId : null,
             ReportPeriod.Resolve(period, from, to, DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime)),
             // The viewer's own language, not a query parameter's, unless one was given. A report that silently
             // switched language would read as a bug to the person holding it.

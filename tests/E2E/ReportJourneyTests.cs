@@ -36,11 +36,12 @@ public sealed class ReportJourneyTests(AspireStackFixture stack)
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Rapport", new() { Timeout = TimeoutMs });
 
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Mon département", Exact = true }))
+        // One scope where there were three: the branch. Which branch is the picker's answer, not the tab's.
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Mon périmètre", Exact = true }))
             .ToHaveAttributeAsync("aria-pressed", "true", new() { Timeout = TimeoutMs });
 
-        // The narrower scope stays one click away rather than being taken off the screen.
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Mon unité", Exact = true }))
+        // And a viewer's own week stays one click away rather than being taken off the screen.
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Mon travail", Exact = true }))
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
         // Deterministic figures, rendered before any model is involved.
@@ -48,22 +49,35 @@ public sealed class ReportJourneyTests(AspireStackFixture stack)
 
         await Expect(page.Locator(".metric__value").First).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
-        // A department report stacks its units; it does not carry the RUN load, which is a question about one
-        // team's tickets and shifts. This asserted "Charge RUN" here while the page still opened on the unit --
-        // §07.3 moved the landing to the widest scope and the section stayed behind, so the assertion was reading
-        // the old default rather than the new one.
-        // The section header, not just the text: "Par unité" is also the caption of the table inside that section,
-        // and an unqualified match is a strict-mode violation rather than an assertion.
-        await Expect(page.Locator(".card__header").Filter(new() { HasText = "Par unité" }))
-            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
-
-        // And the narrower scope, which is where the RUN figures live, is genuinely one click away.
-        await page.GetByRole(AriaRole.Button, new() { Name = "Mon unité", Exact = true })
-            .ClickAsync(new() { Timeout = TimeoutMs });
-
-        // No second "Détails": the rendering is a preference that survives the scope change, and the button that
-        // sets it only exists while the brief is showing.
+        // Thomas heads a branch with people rather than sub-branches, so his report names them — and carries the
+        // RUN load, which is a question about one team's tickets and shifts.
         await Expect(page.GetByText("Charge RUN")).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+    }
+
+    [Fact]
+    public async Task A_head_reads_one_block_per_branch_rather_than_four_hundred_people()
+    {
+        var page = await stack.SignInAsync("olivier.marchand");
+
+        await page.GotoAsync("/reports");
+
+        await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
+            .ToContainTextAsync("Rapport", new() { Timeout = TimeoutMs });
+
+        // The branch picker is the scope now. Choosing one above the caller's own is what a head does to compose
+        // a COPIL, and the same screen answers at either depth (v2 §01.4).
+        // Scoped to the scope card: the page carries several selects, and the period one is first in the DOM.
+        // The label is the node's name as the tree holds it, which for a projected department is its name key.
+        await page.Locator(".scope select").SelectOptionAsync(
+            new SelectOptionValue { Label = "directory.department.dsi" },
+            new() { Timeout = TimeoutMs });
+
+        await ShowDetailsAsync(page);
+
+        // Scoped to the table: the branch picker lists the same names in a select, and its options are in the
+        // DOM but hidden — so an unscoped match waits its full minute on an element nobody can read.
+        await Expect(page.Locator("table").GetByText("Études & Développement").First)
+            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 
     [Fact]
@@ -77,23 +91,23 @@ public sealed class ReportJourneyTests(AspireStackFixture stack)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
         // The tabs are drawn from what the server says this viewer may ask for. What actually protects the
-        // department report is the 403 below; this is the half that stops somebody trying.
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Mon département", Exact = true }))
+        // portfolio report is the 403 below; this is the half that stops somebody trying.
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Portefeuille", Exact = true }))
             .ToHaveCountAsync(0, new() { Timeout = TimeoutMs });
     }
 
     [Fact]
-    public async Task A_member_asking_the_API_for_a_department_report_is_denied()
+    public async Task A_member_asking_the_API_for_the_portfolio_report_is_denied()
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
         // With the anti-forgery header, so the 403 below is the API's refusal and not the BFF's. Without it every
         // proxied request is refused before the API is asked, and this test would pass whatever the report did.
         var response = await page.APIRequest.GetAsync(
-            "/api/reports?scope=department",
+            "/api/reports?scope=portfolio",
             new APIRequestContextOptions { Headers = new Dictionary<string, string> { ["X-Cracra-Csrf"] = "1" } });
 
-        // 403 rather than an empty department: an empty one would tell Camille her department did nothing.
+        // 403 rather than an empty portfolio: an empty one would tell Camille the organisation runs nothing.
         response.Status.ShouldBe(403);
     }
 

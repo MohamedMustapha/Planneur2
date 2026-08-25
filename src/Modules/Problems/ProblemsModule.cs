@@ -18,6 +18,7 @@ public static class ProblemsModule
 
         // Problem references, read by Strategy when a pain is linked to an objective (v2 §06.1).
         services.AddScoped<Contracts.IProblemLookupReader, ProblemLookupReader>();
+        services.AddScoped<Contracts.IProblemTriageReader, ProblemTriageReader>();
 
         return services;
     }

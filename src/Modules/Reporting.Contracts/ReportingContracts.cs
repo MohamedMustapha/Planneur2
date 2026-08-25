@@ -20,21 +20,25 @@ namespace Cracra.Modules.Reporting.Contracts;
 public static class ReportScopes
 {
     /// <summary>The viewer's own week. The one scope everybody has.</summary>
-    public const string My = "my";
+    public const string Me = "me";
 
-    /// <summary>The teams of the projects the viewer is on.</summary>
-    public const string Team = "team";
+    /// <summary>
+    /// A branch of the tree, at whatever depth (v2 00 3).
+    /// </summary>
+    /// <remarks>
+    /// One scope where there were three. A unit report and a department report were the same question asked of
+    /// two rungs, and naming the rungs meant a fourth level needed a fourth scope, a fourth translation key and a
+    /// fourth branch in the composer. The node id carries the depth instead.
+    /// </remarks>
+    public const string Node = "node";
 
-    public const string Unit = "unit";
-    public const string Department = "department";
-
-    /// <summary>One project, for whoever leads it.</summary>
-    public const string Project = "project";
+    /// <summary>One portfolio item, for whoever leads it.</summary>
+    public const string Item = "item";
 
     /// <summary>Everything, for the PMO.</summary>
     public const string Portfolio = "portfolio";
 
-    public static readonly IReadOnlyList<string> All = [My, Team, Unit, Department, Project, Portfolio];
+    public static readonly IReadOnlyList<string> All = [Me, Node, Item, Portfolio];
 }
 
 public static class ReportPeriods

@@ -1,5 +1,9 @@
 <ng-container *transloco="let t">
-  <app-page-header [title]="t('problems.title')" [subtitle]="t('problems.subtitle')">
+  <app-page-header
+    [title]="t('problems.title')"
+    [subtitle]="t('problems.subtitle')"
+    [guidance]="true"
+  >
     <button slot="actions" type="button" class="button button--primary" (click)="openForm()">
       {{ t('problems.report') }}
     </button>

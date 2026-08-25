@@ -1,5 +1,10 @@
 <ng-container *transloco="let t">
-  <app-page-header [title]="t('boards.title')" [subtitle]="t('boards.subtitle')">
+  <app-page-header
+    [title]="t('boards.title')"
+    [purpose]="t('boards.page.purpose')"
+    [subtitle]="t('boards.subtitle')"
+    [guidance]="true"
+  >
     <div slot="tabs" class="tabs">
       @for (board of boards; track board.id) {
         <button
@@ -42,6 +47,33 @@
       <!-- Both kinds of failure land here: an action the server refused, and the board itself failing to load. A
            board that could not load rendering as an empty canvas is indistinguishable from a quiet week. -->
       <p class="boards__error card" role="alert">{{ failure }}</p>
+    }
+
+    @if (onNodeBoard()) {
+      <section class="card scope">
+        <label class="field">
+          <span>{{ t('boards.node') }}</span>
+          <select
+            class="select"
+            [ngModel]="scheduling.scopeId() ?? ''"
+            (ngModelChange)="selectNode($event)"
+          >
+            <option value="">{{ t('boards.myNode') }}</option>
+            @for (node of nodes(); track node.id) {
+              <option [value]="node.id">{{ node.name }}</option>
+            }
+          </select>
+        </label>
+
+        <button
+          type="button"
+          class="btn btn--secondary"
+          [attr.aria-pressed]="scheduling.expandPeople()"
+          (click)="toggleExpandPeople()"
+        >
+          {{ scheduling.expandPeople() ? t('boards.showBranches') : t('boards.showPeople') }}
+        </button>
+      </section>
     }
 
     @if (needsProjectScope()) {

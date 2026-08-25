@@ -1,37 +1,16 @@
 import { NODE_CAPABILITIES, NodeCapability } from '../directory/directory.models';
 
-/**
- * The left rail, in the order the design lays it out.
- *
- * `requiresAnyRole` hides an entry the viewer could not use. It is a tidiness measure, not a security boundary —
- * a determined user can type the URL, and what protects the data is the API policy plus RLS. Keeping that
- * distinction explicit is why the property is named for what it does to the *nav*, not for permission.
- */
-export interface NavigationItem {
+/** A section the shell can draw. Which ones, and where, is `/api/guidance/navigation`'s answer (v2 §02.1). */
+export interface NavigationSection {
   readonly id: string;
   readonly route: string;
-  /** Transloco key, resolved at render time so the rail re-labels on a language switch. */
   readonly labelKey: string;
   readonly icon: string;
-  readonly requiresAnyRole?: readonly string[];
-  /**
-   * The capability whose absence removes this entry entirely (v2 §10.3).
-   *
-   * Different in kind from `requiresAnyRole` above, and worth not conflating. A role hides an entry the viewer
-   * personally cannot use — tidiness, backed by a policy. A capability hides one their whole branch does not do,
-   * which is a statement about the work rather than about them: nobody in an advisory branch gets the integration
-   * import, head or not.
-   */
   readonly requiresCapability?: NodeCapability;
 }
 
 export const CONTEXTUAL_ROLES = {
   member: 'member',
-  /**
-   * One role at every depth (v2 §01.2). A pôle head, a bureau head and a service head all arrive as this; what
-   * separates them is where their node sits, which the server has already applied by the time anything here reads
-   * a role. The client must not try to tell them apart.
-   */
   nodeHead: 'node-head',
   admin: 'admin',
   projectLead: 'project-lead',
@@ -39,44 +18,51 @@ export const CONTEXTUAL_ROLES = {
   pmo: 'pmo',
 } as const;
 
-const HEADS = [CONTEXTUAL_ROLES.nodeHead, CONTEXTUAL_ROLES.pmo] as const;
-
-export const NAVIGATION: readonly NavigationItem[] = [
-  { id: 'board', route: '/board', labelKey: 'nav.myBoard', icon: '◧' },
-  { id: 'team', route: '/team', labelKey: 'nav.myTeam', icon: '◫' },
-  { id: 'unit', route: '/unit', labelKey: 'nav.myUnit', icon: '◨' },
-  { id: 'department', route: '/department', labelKey: 'nav.department', icon: '▤', requiresAnyRole: HEADS },
-  { id: 'projects', route: '/projects', labelKey: 'nav.projects', icon: '◈' },
-  { id: 'portfolio', route: '/portfolio', labelKey: 'nav.portfolio', icon: '▦' },
-  { id: 'reports', route: '/reports', labelKey: 'nav.reports', icon: '▥' },
-  // No role: a member reads the objectives their work serves, which is the point of having a spine at all.
-  // Writing one is a head's act and the screen hides its own controls accordingly (v2 §06.4).
-  { id: 'strategy', route: '/strategy', labelKey: 'nav.strategy', icon: '◎' },
-  // No role and no capability: anybody may report what wastes their week, and a branch that has configured
-  // nothing still gets the intake (v2 §05).
-  { id: 'problems', route: '/problems', labelKey: 'nav.problems', icon: '⚑' },
-  // Likewise no role. A CR is read by everybody the meeting reached and written by whoever ran it, and the
-  // difference is a predicate rather than a rail entry (v2 §07.6).
-  { id: 'meetings', route: '/meetings', labelKey: 'nav.meetings', icon: '◔' },
-  {
+export const SECTIONS: Readonly<Record<string, NavigationSection>> = {
+  board: { id: 'board', route: '/board', labelKey: 'nav.myWeek', icon: '◧' },
+  node: { id: 'node', route: '/node', labelKey: 'nav.myNode', icon: '◫' },
+  portfolio: { id: 'portfolio', route: '/portfolio', labelKey: 'nav.portfolio', icon: '▦' },
+  reports: { id: 'reports', route: '/reports', labelKey: 'nav.reports', icon: '▥' },
+  strategy: {
+    id: 'strategy',
+    route: '/strategy',
+    labelKey: 'nav.strategy',
+    icon: '◎',
+    requiresCapability: NODE_CAPABILITIES.strategy,
+  },
+  problems: { id: 'problems', route: '/problems', labelKey: 'nav.problems', icon: '⚑' },
+  meetings: { id: 'meetings', route: '/meetings', labelKey: 'nav.meetings', icon: '◔' },
+  kudos: {
     id: 'kudos',
     route: '/kudos',
     labelKey: 'nav.kudos',
     icon: '★',
     requiresCapability: NODE_CAPABILITIES.kudos,
   },
-  {
+  finance: {
     id: 'finance',
     route: '/finance',
     labelKey: 'nav.finance',
     icon: '€',
-    // visibility-matrix.md §4: capex/opex is a head's and the PMO's. Nobody else. Which head, and therefore
-    // whose budget, is the server's answer — RLS returns the nodes they run and nothing beside them.
-    requiresAnyRole: [CONTEXTUAL_ROLES.nodeHead, CONTEXTUAL_ROLES.pmo],
-    // And v2 §10.3 on top of that: a branch whose profile carries no budget never shows the entry, even to the
-    // head who would otherwise be entitled to it. Role and capability are ANDed because they are both true
-    // reasons to hide — being allowed to see budgets does not conjure one for a branch that has none.
     requiresCapability: NODE_CAPABILITIES.budget,
   },
-  { id: 'settings', route: '/settings', labelKey: 'nav.settings', icon: '⚙', requiresAnyRole: HEADS },
-];
+  directory: { id: 'directory', route: '/directory', labelKey: 'nav.directory', icon: '◨' },
+  admin: { id: 'admin', route: '/settings/org', labelKey: 'nav.settings', icon: '⚙' },
+};
+
+/** The shell before the server answers. A member's, because it is the narrowest thing to be wrong about. */
+export const FALLBACK_NAVIGATION = {
+  position: 'member',
+  landingId: 'board',
+  focusId: 'board',
+  primary: ['board', 'problems', 'kudos'],
+  secondary: ['node', 'portfolio', 'meetings', 'strategy', 'directory'],
+} as const;
+
+export function sectionsFor(ids: readonly string[]): readonly NavigationSection[] {
+  return ids.map((id) => SECTIONS[id]).filter((section): section is NavigationSection => !!section);
+}
+
+export function routeFor(id: string): string {
+  return SECTIONS[id]?.route ?? '/board';
+}

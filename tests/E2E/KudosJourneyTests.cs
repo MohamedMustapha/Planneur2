@@ -1,4 +1,4 @@
-﻿using Microsoft.Playwright;
+using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -74,7 +74,7 @@ public sealed class KudosJourneyTests(AspireStackFixture stack)
 
         await GiveAsync(page, "initiative", "A repris l'astreinte au pied levé.");
 
-        await page.GotoAsync("/team");
+        await page.GotoAsync("/node");
 
         // The widget the spec asks for: recognition lands where the team already is, rather than only on a screen
         // somebody has to remember to open.

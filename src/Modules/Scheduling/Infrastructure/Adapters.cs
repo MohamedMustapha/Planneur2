@@ -1,4 +1,4 @@
-﻿using Cracra.Modules.Activities.Contracts;
+using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Integrations.Contracts;
 using Cracra.Modules.Meetings.Contracts;
@@ -23,9 +23,22 @@ namespace Cracra.Modules.Scheduling.Infrastructure;
 internal sealed class DirectoryAdapter(
     IDirectoryReader directory,
     IDepartmentConfigReader configs,
-    INodeProfileReader profiles)
+    INodeProfileReader profiles,
+    IOrgNodeReader nodes)
     : Application.IDirectoryPort
 {
+    public async Task<NodeProfileSnapshot?> GetProfileForNodeAsync(Guid nodeId, CancellationToken ct) =>
+        await profiles.ResolveForNodeAsync(nodeId, ct);
+
+    public async Task<IReadOnlyList<OrgNodeSummary>> GetSubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await nodes.GetSubtreeAsync(nodeId, ct);
+
+    public async Task<IReadOnlyList<NodeMember>> GetPeopleInSubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await nodes.GetPeopleInSubtreeAsync(nodeId, ct);
+
+    public async Task<HomeNodeScope?> GetHomeScopeAsync(Guid personId, CancellationToken ct) =>
+        await nodes.GetHomeScopeAsync(personId, ct);
+
     public async Task<PersonSummary?> GetPersonAsync(Guid personId, CancellationToken ct) =>
         await directory.GetPersonAsync(personId, ct);
 

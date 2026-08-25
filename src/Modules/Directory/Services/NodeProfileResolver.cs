@@ -61,6 +61,57 @@ internal sealed class NodeProfileResolver(DirectoryDbContext context) : INodePro
     public async Task<NodeProfileSnapshot?> ResolveForDepartmentAsync(Guid departmentId, CancellationToken ct) =>
         NodeProfileResolution.Resolve(await LoadAsync(await DepartmentChainAsync(departmentId, ct), ct));
 
+    /// <summary>
+    /// The profile in force at a node.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The legacy rows are consulted first, and that order is load-bearing rather than a preference. During the
+    /// shim <c>org_node.profile_id</c> is a <em>projection</em> of <c>unit.profile_id</c>, refreshed when the
+    /// projection sweeps — while an administrator attaching a profile writes the unit and nothing else. Walking
+    /// the tree first therefore answers with whatever the last sweep copied, which is stale the moment somebody
+    /// attaches anything, and a capability that reads as on because a sweep has not run yet is exactly the kind
+    /// of wrong nobody notices.
+    /// </para>
+    /// <para>
+    /// The tree walk is what answers for a node with no legacy twin — one created through the org admin — and it
+    /// becomes the only path once the legacy tables go.
+    /// </para>
+    /// </remarks>
+    public async Task<NodeProfileSnapshot?> ResolveForNodeAsync(Guid nodeId, CancellationToken ct)
+    {
+        if (await context.Units.AsNoTracking().AnyAsync(unit => unit.Id == nodeId, ct))
+        {
+            return await ResolveForUnitAsync(nodeId, ct);
+        }
+
+        if (await context.Departments.AsNoTracking().AnyAsync(department => department.Id == nodeId, ct))
+        {
+            return await ResolveForDepartmentAsync(nodeId, ct);
+        }
+
+        var path = await context.OrgNodes
+            .AsNoTracking()
+            .Where(node => node.Id == nodeId)
+            .Select(node => node.AncestorIds)
+            .SingleOrDefaultAsync(ct);
+
+        if (path is null || path.Length == 0)
+        {
+            return null;
+        }
+
+        var attached = await context.OrgNodes
+            .AsNoTracking()
+            .Where(node => path.Contains(node.Id) && node.ProfileId != null)
+            .Select(node => new { node.Id, ProfileId = node.ProfileId!.Value })
+            .ToDictionaryAsync(node => node.Id, node => node.ProfileId, ct);
+
+        var nearestFirst = path.Reverse().Where(attached.ContainsKey).Select(id => attached[id]).ToList();
+
+        return NodeProfileResolution.Resolve(await LoadAsync(nearestFirst, ct));
+    }
+
     /// <summary>Profile ids attached along a department's ancestry, nearest first.</summary>
     private async Task<List<Guid>> DepartmentChainAsync(Guid departmentId, CancellationToken ct)
     {

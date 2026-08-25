@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { GuidanceBanner } from '../guidance-banner/guidance-banner';
 
 /**
  * The page-title row every screen shares: title, purpose line, a slot for the page's own controls, and a slot for
@@ -12,6 +13,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 @Component({
   selector: 'app-page-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [GuidanceBanner],
   templateUrl: './page-header.html',
   styleUrl: './page-header.scss',
 })
@@ -21,6 +23,9 @@ export class PageHeader {
   /** One sentence: what this page is for. Transloco key `<feature>.page.purpose`, resolved by the caller. */
   readonly purpose = input<string>('');
 
-  /** Context — the person, unit or scope the page is rendered against. Secondary to the purpose, and quieter. */
+  /** Context — the person or scope the page is rendered against. Secondary to the purpose, and quieter. */
   readonly subtitle = input<string>('');
+
+  /** Landing pages draw the served next-best-action (§02.5). Detail pages do not — they are already an answer. */
+  readonly guidance = input(false);
 }

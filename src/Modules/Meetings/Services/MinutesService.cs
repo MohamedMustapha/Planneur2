@@ -394,3 +394,9 @@ internal sealed class MinutesService(
             action.LinkId,
             action.IsOverdueAt(today));
 }
+
+internal sealed class ActionItemReader(IMinutesService minutes) : IActionItemReader
+{
+    public async Task<IReadOnlyList<ActionItemView>> GetOpenForCallerAsync(CancellationToken ct) =>
+        await minutes.TrackAsync("me", "open", ct);
+}

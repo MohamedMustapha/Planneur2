@@ -48,7 +48,7 @@ internal sealed class ExternalConnectionConfiguration : IEntityTypeConfiguration
 
         // The scheduler's own question — "what is active and due" — and the administration list's, which is
         // everything in a department.
-        builder.HasIndex(connection => new { connection.DepartmentId, connection.Provider });
+        builder.HasIndex(connection => new { connection.NodeId, connection.Provider });
         builder.HasIndex(connection => connection.Active);
 
         builder.HasMany(connection => connection.Mappings)
@@ -80,7 +80,7 @@ internal sealed class ExternalMappingConfiguration : IEntityTypeConfiguration<Ex
         // The lookup the synchronizer runs per item: "this connection, this kind, this value". Unique because
         // two rows mapping one area path to two projects has no defensible answer.
         builder.HasIndex(mapping => new { mapping.ConnectionId, mapping.Kind, mapping.ExternalValue }).IsUnique();
-        builder.HasIndex(mapping => mapping.DepartmentId);
+        builder.HasIndex(mapping => mapping.NodeId);
     }
 }
 

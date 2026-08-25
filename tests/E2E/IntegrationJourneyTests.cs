@@ -135,17 +135,25 @@ public sealed class IntegrationJourneyTests(AspireStackFixture stack)
     [Fact]
     public async Task Pulled_tickets_fill_the_run_work_order_pool()
     {
-        // The department has to be on the work-order layout for its team board to be 6a — that is what
-        // default_board_layout is for, and why a helpdesk and a dev team can share one platform.
-        await ConfigureWorkOrderBoardAsync();
-
         var head = await stack.SignInAsync("olivier.marchand");
 
         await ExternalConnections.ServiceNowAsync(stack, head);
 
+        // The department has to be on the work-order layout for its node board to be 6a — that is what
+        // default_board_layout is for, and why a helpdesk and a dev team can share one platform.
+        //
+        // Arranged last, immediately before the board is opened: the row is shared with every other journey that
+        // sets a layout, so the further this sits from the assertion the more chance another has to put it back.
+        await ConfigureWorkOrderBoardAsync();
+
         var lead = await stack.SignInAsync("thomas.berthier");
 
-        await lead.GotoAsync("/team");
+        await lead.GotoAsync("/node");
+
+        // Asserted before it is clicked, so a board that rendered the wrong archetype reports what it did render
+        // rather than a bare click timeout.
+        await Expect(lead.GetByRole(AriaRole.Button, new() { Name = "Importer depuis ServiceNow" }))
+            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
         await lead.GetByRole(AriaRole.Button, new() { Name = "Importer depuis ServiceNow" })
             .ClickAsync(new() { Timeout = TimeoutMs });

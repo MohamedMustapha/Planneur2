@@ -2,6 +2,7 @@
   <app-page-header
     [title]="t('reports.title')"
     [subtitle]="reporting.report()?.scopeLabel ?? t('reports.subtitle')"
+    [guidance]="true"
   >
     <div slot="tabs" class="tabs">
       <!-- Drawn from what the server says this viewer may ask for, never from role names on the client. The
@@ -70,26 +71,44 @@
       </p>
     }
 
-    @if (needsProject()) {
+    @if (onNodeScope()) {
       <section class="card scope">
         <label class="field">
-          <span class="field__label">{{ t('reports.project') }}</span>
+          <span class="field__label">{{ t('reports.node') }}</span>
           <select
             class="select"
             [ngModel]="reporting.scopeId() ?? ''"
-            (ngModelChange)="selectProject($event)"
+            (ngModelChange)="selectNode($event)"
           >
-            <option value="">{{ t('reports.chooseProject') }}</option>
-            @for (project of projects.projects(); track project.id) {
-              <option [value]="project.id">{{ project.code }} — {{ project.name }}</option>
+            <option value="">{{ t('reports.myNode') }}</option>
+            @for (node of org.nodes(); track node.id) {
+              <option [value]="node.id">{{ node.name }}</option>
             }
           </select>
         </label>
       </section>
     }
 
-    @if (awaitingProject()) {
-      <p class="reports__empty card">{{ t('reports.pickProject') }}</p>
+    @if (needsItem()) {
+      <section class="card scope">
+        <label class="field">
+          <span class="field__label">{{ t('reports.item') }}</span>
+          <select
+            class="select"
+            [ngModel]="reporting.scopeId() ?? ''"
+            (ngModelChange)="selectItem($event)"
+          >
+            <option value="">{{ t('reports.chooseItem') }}</option>
+            @for (card of catalog.cards(); track card.id) {
+              <option [value]="card.id">{{ card.code }} — {{ card.name }}</option>
+            }
+          </select>
+        </label>
+      </section>
+    }
+
+    @if (awaitingItem()) {
+      <p class="reports__empty card">{{ t('reports.pickItem') }}</p>
     } @else if (reporting.rendering() === 'brief') {
       <!-- ------------------------------------------------------------------ The brief (v2 §07.3) -->
       <section class="card">

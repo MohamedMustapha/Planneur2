@@ -23,10 +23,6 @@
   "nav": {
     "ariaLabel": "Main navigation",
     "myBoard": "My board",
-    "myTeam": "My team",
-    "myUnit": "My unit",
-    "department": "Department",
-    "projects": "Projects",
     "portfolio": "Portfolio",
     "reports": "Reports",
     "kudos": "Kudos",
@@ -34,7 +30,11 @@
     "settings": "Settings",
     "problems": "Problems",
     "strategy": "Strategy",
-    "meetings": "Meetings"
+    "meetings": "Meetings",
+    "myWeek": "My week",
+    "myNode": "My scope",
+    "directory": "Org chart",
+    "more": "More"
   },
   "scope": {
     "ariaLabel": "Viewing scope",
@@ -95,11 +95,6 @@
     "noProject": "No project",
     "page": {
       "purpose": "Fill in this week’s slots — the target is 35 h."
-    },
-    "guidance": {
-      "remaining": "You have {{hours}} h left to log this week.",
-      "complete": "Your week is complete — nothing to do.",
-      "overtime": "This week is {{hours}} h over target — a justification is required."
     },
     "hoursShort": "{{hours}} h",
     "noEntriesHelp": "Drag across a day in the grid, or use Quick add."
@@ -425,12 +420,9 @@
   },
   "boards": {
     "title": "Schedules",
-    "subtitle": "The team, unit, project and department boards",
+    "subtitle": "The plan for your scope and your items",
     "my": "My board",
-    "team": "My team",
-    "unit": "My unit",
     "project": "Project",
-    "department": "Department",
     "weekNav": "Week navigation",
     "pool": "Queue",
     "poolEmpty": "Nothing waiting.",
@@ -452,7 +444,14 @@
     "description": "Description",
     "descriptionHint": "What the task is, in a line",
     "percentComplete": "Progress",
-    "addTask": "Add task"
+    "addTask": "Add task",
+    "node": "My scope",
+    "myNode": "My scope",
+    "showPeople": "Show people",
+    "showBranches": "Show branches",
+    "page": {
+      "purpose": "Compare the load across your scope, week by week."
+    }
   },
   "shift": {
     "morning": "Morning",
@@ -615,9 +614,6 @@
     "exportReady": "Download the PDF",
     "exportExpires": "The link is valid for a few minutes.",
     "periodNav": "Previous or next period",
-    "project": "Project",
-    "chooseProject": "Choose a project…",
-    "pickProject": "Choose a project to see its report.",
     "sectionEmpty": "Nothing in this period.",
     "genericError": "The report could not be produced.",
     "period": {
@@ -638,11 +634,9 @@
       "none": "No narrative for this period."
     },
     "scope": {
-      "my": "My work",
-      "team": "My project teams",
-      "unit": "My unit",
-      "department": "My department",
-      "project": "Project",
+      "me": "My work",
+      "node": "My scope",
+      "item": "Item",
       "portfolio": "Portfolio"
     },
     "section": {
@@ -661,7 +655,8 @@
       "cost": "Cost",
       "states": "Portfolio states",
       "archived": "Archived",
-      "priority": "Priorities"
+      "priority": "Priorities",
+      "identity": "Identity"
     },
     "metric": {
       "targetHours": "Target",
@@ -714,7 +709,8 @@
       "projects": "Projects",
       "contribution": "By department",
       "states": "By state",
-      "priority": "Highest priority"
+      "priority": "Highest priority",
+      "branchRollup": "By branch"
     },
     "note": {
       "overTarget": "The week is over target.",
@@ -732,7 +728,8 @@
         "active": "Active",
         "dephase": "Archived"
       },
-      "truncated": "List truncated: {{count}} more not shown."
+      "truncated": "List truncated: {{count}} more not shown.",
+      "notRunning": "Nothing is running on this item yet."
     },
     "brief": {
       "title": "Brief",
@@ -744,7 +741,12 @@
       "headline": "{{people}} people · ~{{hours}} h",
       "nothingToReport": "Nothing to report",
       "upcoming": "Coming up"
-    }
+    },
+    "node": "Scope",
+    "myNode": "My scope",
+    "item": "Item",
+    "chooseItem": "Choose an item…",
+    "pickItem": "Choose an item to see its report."
   },
   "kudos": {
     "title": "Kudos",
@@ -1042,7 +1044,10 @@
   },
   "obligations": {
     "weekOverTarget": "{{hours}} h over target",
-    "dismiss": "Hide until the next load"
+    "dismiss": "Hide until the next load",
+    "overdueActions": "{{count}} overdue action(s)",
+    "awaitingTriage": "{{count}} problem(s) awaiting triage",
+    "overTarget": "Week over target by {{hours}} h"
   },
   "profiles": {
     "title": "Node profiles",
@@ -1234,5 +1239,103 @@
     "noMembers": "Nobody is attached to this branch.",
     "moveTo": "Move to…",
     "moved": "Moved"
+  },
+  "guidance": {
+    "action": {
+      "closeIteration": "Iteration {{iteration}} of {{item}} ends on {{date}}.",
+      "closeIteration.cta": "Open the card",
+      "fillWeek": "You have {{hours}} h left to log this week.",
+      "fillWeek.cta": "Log hours",
+      "overdueActions": "{{count}} minute action(s) are overdue.",
+      "overdueActions.cta": "Open minutes",
+      "reviewItems": "Nothing is waiting on you: review your items.",
+      "reviewItems.cta": "Open the catalog",
+      "reviewNode": "Nothing is waiting on you: review your scope.",
+      "reviewNode.cta": "Open the plan",
+      "reviewObjectives": "Nothing is waiting on you: review the objectives.",
+      "reviewObjectives.cta": "Open strategy",
+      "reviewOrg": "Nothing is waiting on you: check the organisation.",
+      "reviewOrg.cta": "Open administration",
+      "triageProblems": "{{count}} problem(s) await your triage.",
+      "triageProblems.cta": "Triage",
+      "weekComplete": "Your week is complete — nothing to do.",
+      "weekComplete.cta": "See my week"
+    }
+  },
+  "coach": {
+    "skip": "Skip",
+    "next": "Next",
+    "done": "Done",
+    "replay": "Replay the tour",
+    "member": {
+      "week": {
+        "title": "Your week",
+        "body": "Log your hours here; the meter tracks your target."
+      },
+      "problems": {
+        "title": "What wastes your time",
+        "body": "Report an irritant — no role required."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only the task at hand. Always reversible, top right."
+      }
+    },
+    "head": {
+      "node": {
+        "title": "Your scope",
+        "body": "The branches beneath you, or the people where there are none."
+      },
+      "brief": {
+        "title": "The brief",
+        "body": "One block per branch, ready for a steering meeting."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only the comparison and today’s action."
+      }
+    },
+    "po": {
+      "items": {
+        "title": "Your items",
+        "body": "The catalog shows what already exists before you create one."
+      },
+      "progress": {
+        "title": "Progress",
+        "body": "Your item’s iterations and epics."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only progress and the steering meeting."
+      }
+    },
+    "pmo": {
+      "catalog": {
+        "title": "The portfolio",
+        "body": "Everything the organisation runs, as identity cards."
+      },
+      "objectives": {
+        "title": "Objectives",
+        "body": "What the items serve, and the gap that remains."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only the portfolio and the review."
+      }
+    },
+    "admin": {
+      "org": {
+        "title": "The organisation",
+        "body": "Levels, branches and placements change here, with no deployment."
+      },
+      "access": {
+        "title": "Access",
+        "body": "Roles and overrides, with their trail."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only the administration screen."
+      }
+    }
   }
 }

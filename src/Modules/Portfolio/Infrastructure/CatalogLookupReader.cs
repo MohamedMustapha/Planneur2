@@ -48,7 +48,8 @@ internal sealed class CatalogLookupReader(PortfolioDbContext context) : ICatalog
             item.Name,
             WireType(item.Type),
             WireState(item.State),
-            item.OwnerNodeId)),
+            item.OwnerNodeId,
+            item.ProjectId)),
     ];
 
     private static string WireState(PortfolioState state) => state switch

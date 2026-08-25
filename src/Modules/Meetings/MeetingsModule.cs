@@ -27,6 +27,7 @@ public static class MeetingsModule
         services.AddScoped<IMeetingSeriesService, MeetingSeriesService>();
         services.AddScoped<ISpecialDayService, SpecialDayService>();
         services.AddScoped<IMinutesService, MinutesService>();
+        services.AddScoped<IActionItemReader, ActionItemReader>();
         services.AddScoped<IMinutesDrafter, MinutesDrafter>();
         services.AddScoped<MeetingCalendarService>();
 

@@ -41,3 +41,11 @@ internal sealed class ProblemLookupReader(ProblemsDbContext context) : IProblemL
         ];
     }
 }
+
+internal sealed class ProblemTriageReader(ProblemsDbContext context) : IProblemTriageReader
+{
+    public async Task<int> CountAwaitingTriageAsync(CancellationToken ct) =>
+        await context.Problems
+            .AsNoTracking()
+            .CountAsync(problem => problem.Status == ProblemStatus.New, ct);
+}

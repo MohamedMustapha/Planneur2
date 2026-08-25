@@ -53,7 +53,7 @@ internal static class ExternalMirrorSeed
         var connection = new ExternalConnection
         {
             Id = Guid.CreateVersion7(),
-            DepartmentId = departmentId,
+            NodeId = departmentId,
             Provider = provider,
             Name = $"Seeded {provider}",
             BaseUrl = "https://seeded.invalid",
@@ -87,7 +87,10 @@ internal static class ExternalMirrorSeed
                 IsCurrentSprint = item.Sprint is not null,
                 ProjectId = item.ProjectId,
                 UnitId = item.UnitId,
-                DepartmentId = departmentId,
+
+                // The narrowest branch it belongs to, as the mapper would have hung it: a queue's tickets sit
+                // with the team that works them, not with the branch the connection happens to be wired at.
+                NodeId = item.UnitId ?? departmentId,
                 EstimatedHours = item.EstimatedHours,
                 UpdatedAtSource = now,
                 SyncedAt = now,

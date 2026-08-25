@@ -15,6 +15,12 @@
       </div>
     }
 
+    <!-- First run, once per browser and replayable from the user menu. Hidden in Focus mode, which is a
+         statement that the viewer already knows what they are here for. -->
+    @if (!focus.active()) {
+      <app-coach-marks />
+    }
+
     <main class="shell__content">
       <router-outlet />
     </main>

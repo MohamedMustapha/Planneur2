@@ -23,10 +23,6 @@
   "nav": {
     "ariaLabel": "Navegación principal",
     "myBoard": "Mi tablero",
-    "myTeam": "Mi equipo",
-    "myUnit": "Mi unidad",
-    "department": "Departamento",
-    "projects": "Proyectos",
     "portfolio": "Cartera",
     "reports": "Informes",
     "kudos": "Kudos",
@@ -34,7 +30,11 @@
     "settings": "Ajustes",
     "problems": "Problemas",
     "strategy": "Estrategia",
-    "meetings": "Reuniones"
+    "meetings": "Reuniones",
+    "myWeek": "Mi semana",
+    "myNode": "Mi ámbito",
+    "directory": "Organigrama",
+    "more": "Más"
   },
   "scope": {
     "ariaLabel": "Ámbito de consulta",
@@ -95,11 +95,6 @@
     "noProject": "Sin proyecto",
     "page": {
       "purpose": "Registre sus franjas de la semana — objetivo 35 h."
-    },
-    "guidance": {
-      "remaining": "Le quedan {{hours}} h por registrar esta semana.",
-      "complete": "Su semana está completa — nada que hacer.",
-      "overtime": "Semana {{hours}} h por encima del objetivo — se requiere una justificación."
     },
     "hoursShort": "{{hours}} h",
     "noEntriesHelp": "Arrastre sobre un día de la cuadrícula o use Añadir rápido."
@@ -425,12 +420,9 @@
   },
   "boards": {
     "title": "Planificaciones",
-    "subtitle": "Los tableros de equipo, unidad, proyecto y departamento",
+    "subtitle": "El plan de su ámbito y de sus proyectos",
     "my": "Mi tablero",
-    "team": "Mi equipo",
-    "unit": "Mi unidad",
     "project": "Proyecto",
-    "department": "Departamento",
     "weekNav": "Navegación por semanas",
     "pool": "Cola de espera",
     "poolEmpty": "Nada pendiente.",
@@ -452,7 +444,14 @@
     "description": "Descripción",
     "descriptionHint": "En una línea, de qué se trata",
     "percentComplete": "Progreso",
-    "addTask": "Añadir tarea"
+    "addTask": "Añadir tarea",
+    "node": "Mi ámbito",
+    "myNode": "Mi ámbito",
+    "showPeople": "Ver personas",
+    "showBranches": "Ver ramas",
+    "page": {
+      "purpose": "Comparar la carga de su ámbito, semana a semana."
+    }
   },
   "shift": {
     "morning": "Mañana",
@@ -615,9 +614,6 @@
     "exportReady": "Descargar el PDF",
     "exportExpires": "El enlace es válido unos minutos.",
     "periodNav": "Periodo anterior o siguiente",
-    "project": "Proyecto",
-    "chooseProject": "Elegir un proyecto…",
-    "pickProject": "Elija un proyecto para ver su informe.",
     "sectionEmpty": "Nada en este periodo.",
     "genericError": "No se ha podido generar el informe.",
     "period": {
@@ -638,11 +634,9 @@
       "none": "No hay resumen para este periodo."
     },
     "scope": {
-      "my": "Mi trabajo",
-      "team": "Mis equipos de proyecto",
-      "unit": "Mi unidad",
-      "department": "Mi departamento",
-      "project": "Proyecto",
+      "me": "Mi trabajo",
+      "node": "Mi ámbito",
+      "item": "Proyecto",
       "portfolio": "Cartera"
     },
     "section": {
@@ -661,7 +655,8 @@
       "cost": "Coste",
       "states": "Estados de la cartera",
       "archived": "Retirados",
-      "priority": "Prioridades"
+      "priority": "Prioridades",
+      "identity": "Ficha"
     },
     "metric": {
       "targetHours": "Objetivo",
@@ -714,7 +709,8 @@
       "projects": "Proyectos",
       "contribution": "Por departamento",
       "states": "Por estado",
-      "priority": "Mayor prioridad"
+      "priority": "Mayor prioridad",
+      "branchRollup": "Por rama"
     },
     "note": {
       "overTarget": "La semana supera el objetivo.",
@@ -732,7 +728,8 @@
         "active": "Activos",
         "dephase": "Retirados"
       },
-      "truncated": "Lista truncada: {{count}} más sin mostrar."
+      "truncated": "Lista truncada: {{count}} más sin mostrar.",
+      "notRunning": "Todavía no hay nada en marcha en este proyecto."
     },
     "brief": {
       "title": "Resumen",
@@ -744,7 +741,12 @@
       "headline": "{{people}} pers · ~{{hours}} h",
       "nothingToReport": "Sin novedades",
       "upcoming": "Próximamente"
-    }
+    },
+    "node": "Ámbito",
+    "myNode": "Mi ámbito",
+    "item": "Proyecto",
+    "chooseItem": "Elegir un proyecto…",
+    "pickItem": "Elija un proyecto para ver su informe."
   },
   "kudos": {
     "title": "Kudos",
@@ -1042,7 +1044,10 @@
   },
   "obligations": {
     "weekOverTarget": "{{hours}} h por encima del objetivo",
-    "dismiss": "Ocultar hasta la próxima carga"
+    "dismiss": "Ocultar hasta la próxima carga",
+    "overdueActions": "{{count}} acción(es) atrasada(s)",
+    "awaitingTriage": "{{count}} problema(s) por clasificar",
+    "overTarget": "Semana por encima del objetivo en {{hours}} h"
   },
   "profiles": {
     "title": "Perfiles de nodo",
@@ -1234,5 +1239,103 @@
     "noMembers": "Nadie está asignado a esta rama.",
     "moveTo": "Mover a…",
     "moved": "Movido"
+  },
+  "guidance": {
+    "action": {
+      "closeIteration": "La iteración {{iteration}} de {{item}} termina el {{date}}.",
+      "closeIteration.cta": "Abrir la ficha",
+      "fillWeek": "Le quedan {{hours}} h por registrar esta semana.",
+      "fillWeek.cta": "Registrar",
+      "overdueActions": "{{count}} acción(es) de acta están atrasadas.",
+      "overdueActions.cta": "Abrir las actas",
+      "reviewItems": "Nada le espera: revise sus proyectos.",
+      "reviewItems.cta": "Abrir el catálogo",
+      "reviewNode": "Nada le espera: revise su ámbito.",
+      "reviewNode.cta": "Abrir el plan",
+      "reviewObjectives": "Nada le espera: revise los objetivos.",
+      "reviewObjectives.cta": "Abrir la estrategia",
+      "reviewOrg": "Nada le espera: compruebe la organización.",
+      "reviewOrg.cta": "Abrir la administración",
+      "triageProblems": "{{count}} problema(s) esperan su clasificación.",
+      "triageProblems.cta": "Clasificar",
+      "weekComplete": "Su semana está completa — nada que hacer.",
+      "weekComplete.cta": "Ver mi semana"
+    }
+  },
+  "coach": {
+    "skip": "Omitir",
+    "next": "Siguiente",
+    "done": "Listo",
+    "replay": "Repetir la visita",
+    "member": {
+      "week": {
+        "title": "Su semana",
+        "body": "Registre sus horas aquí; el contador sigue su objetivo."
+      },
+      "problems": {
+        "title": "Lo que le hace perder tiempo",
+        "body": "Informe una molestia: no hace falta ningún rol."
+      },
+      "focus": {
+        "title": "Modo enfoque",
+        "body": "Solo deja la tarea del momento. Siempre reversible, arriba a la derecha."
+      }
+    },
+    "head": {
+      "node": {
+        "title": "Su ámbito",
+        "body": "Las ramas debajo de usted, o las personas si no hay ninguna."
+      },
+      "brief": {
+        "title": "La síntesis",
+        "body": "Un bloque por rama, listo para un comité."
+      },
+      "focus": {
+        "title": "Modo enfoque",
+        "body": "Solo deja la comparación y la acción del día."
+      }
+    },
+    "po": {
+      "items": {
+        "title": "Sus proyectos",
+        "body": "El catálogo muestra lo que ya existe antes de crear uno."
+      },
+      "progress": {
+        "title": "El avance",
+        "body": "Las iteraciones y épicas de su proyecto."
+      },
+      "focus": {
+        "title": "Modo enfoque",
+        "body": "Solo deja el avance y el comité."
+      }
+    },
+    "pmo": {
+      "catalog": {
+        "title": "La cartera",
+        "body": "Todo lo que la organización lleva, en fichas de identidad."
+      },
+      "objectives": {
+        "title": "Los objetivos",
+        "body": "Lo que sirven los proyectos, y la brecha que queda."
+      },
+      "focus": {
+        "title": "Modo enfoque",
+        "body": "Solo deja la cartera y la revisión."
+      }
+    },
+    "admin": {
+      "org": {
+        "title": "La organización",
+        "body": "Niveles, ramas y adscripciones se cambian aquí, sin despliegue."
+      },
+      "access": {
+        "title": "Los permisos",
+        "body": "Roles y excepciones, con su rastro."
+      },
+      "focus": {
+        "title": "Modo enfoque",
+        "body": "Solo deja la pantalla de administración."
+      }
+    }
   }
 }

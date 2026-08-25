@@ -135,39 +135,43 @@ public sealed class BoardTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task A_team_board_shows_unit_peers()
+    public async Task A_node_board_shows_the_people_attached_there()
     {
         await using var factory = await SeededAsync();
 
         await LogAsync(factory, SeedOrganisation.Mehdi, "quality-of-life", 3);
 
-        // Camille and Mehdi share the Infrastructure unit, and the matrix says unit peers see each other.
-        var board = await BoardAsync(factory, SeedOrganisation.Camille, "team");
+        // Camille and Mehdi hang off the same node, and the matrix says peers see each other.
+        var board = await BoardAsync(
+            factory, SeedOrganisation.Camille, "node", SeedOrganisation.Units.Infrastructure);
 
         board.Resources.Select(row => row.Id).ShouldContain(SeedOrganisation.Mehdi.UserId.ToString());
         board.Events.ShouldNotBeEmpty();
     }
 
     [Fact]
-    public async Task A_team_board_does_not_show_a_foreign_unit()
+    public async Task A_node_board_does_not_show_a_foreign_branch()
     {
         await using var factory = await SeededAsync();
 
         await LogAsync(factory, SeedOrganisation.Sofia, "quality-of-life", 3);
 
-        var board = await BoardAsync(factory, SeedOrganisation.Camille, "team");
+        var board = await BoardAsync(
+            factory, SeedOrganisation.Camille, "node", SeedOrganisation.Units.Infrastructure);
 
-        // Sofia is in Accounting, in another department. Nothing about asking for a board widens what RLS allows.
+        // Sofia hangs off another branch entirely. Nothing about asking for a board widens what RLS allows.
         board.Resources.Select(row => row.Id).ShouldNotContain(SeedOrganisation.Sofia.UserId.ToString());
     }
 
     [Fact]
-    public async Task A_member_cannot_drag_on_their_team_board()
+    public async Task A_member_cannot_drag_on_their_node_board()
     {
         await using var factory = await SeededAsync();
 
-        var member = await BoardAsync(factory, SeedOrganisation.Camille, "team");
-        var head = await BoardAsync(factory, SeedOrganisation.Thomas, "team");
+        var member = await BoardAsync(
+            factory, SeedOrganisation.Camille, "node", SeedOrganisation.Units.Infrastructure);
+        var head = await BoardAsync(
+            factory, SeedOrganisation.Thomas, "node", SeedOrganisation.Units.Infrastructure);
 
         // The server answers this rather than the client guessing: a board offering a gesture the server will
         // reject feels broken, and one hiding a gesture the server would allow feels arbitrary.
@@ -176,34 +180,35 @@ public sealed class BoardTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task A_department_board_has_a_row_per_unit()
+    public async Task A_node_board_over_children_has_a_row_per_child()
     {
         await using var factory = await SeededAsync();
 
         await LogAsync(factory, SeedOrganisation.Camille, "quality-of-life", 3);
 
-        var board = await BoardAsync(factory, SeedOrganisation.Olivier, "department");
+        var board = await BoardAsync(
+            factory, SeedOrganisation.Olivier, "node", SeedOrganisation.Departments.InformationSystems);
 
-        board.Resources.ShouldContain(row => row.Kind == "unit");
+        board.Resources.ShouldContain(row => row.Kind == "node");
 
-        // Read-only: a head correcting one person's hour does it on the unit board, where the rows are people.
+        // Read-only: a head correcting one person's hour expands to people, where the rows are people.
         board.Events.ShouldAllBe(row => !row.Editable);
         board.CanAssign.ShouldBeFalse();
     }
 
     [Fact]
-    public async Task A_department_board_is_empty_for_someone_outside_the_department()
+    public async Task A_node_board_is_empty_for_someone_outside_the_branch()
     {
         await using var factory = await SeededAsync();
 
         await LogAsync(factory, SeedOrganisation.Camille, "quality-of-life", 3);
 
-        // Laurent heads Finance. Asking for the IS department board is not refused — it simply contains nothing he
-        // may see, which is what "the scope narrows, it never lifts" means in practice.
+        // Laurent heads another branch. Asking for this one is not refused — it simply contains nothing he may
+        // see, which is what "the scope narrows, it never lifts" means in practice.
         var board = await BoardAsync(
             factory,
             SeedOrganisation.Laurent,
-            "department",
+            "node",
             SeedOrganisation.Departments.InformationSystems);
 
         board.Events.ShouldBeEmpty();
@@ -257,7 +262,7 @@ public sealed class BoardTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task A_unit_board_breaks_activity_out_by_project()
+    public async Task A_node_board_of_people_breaks_activity_out_by_project()
     {
         await using var factory = await SeededAsync();
         var projectId = await CrossDepartmentProjectAsync(factory);
@@ -265,7 +270,8 @@ public sealed class BoardTests(PostgresFixture postgres)
         await LogAsync(factory, SeedOrganisation.Camille, "project-build", 3, projectId);
         await LogAsync(factory, SeedOrganisation.Camille, "quality-of-life", 2);
 
-        var board = await BoardAsync(factory, SeedOrganisation.Thomas, "unit");
+        var board = await BoardAsync(
+            factory, SeedOrganisation.Thomas, "node", SeedOrganisation.Units.Infrastructure);
 
         // A person row with project lines nested beneath it, so somebody on four projects still reads as one
         // person rather than as four unrelated rows.
@@ -479,13 +485,14 @@ public sealed class BoardTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task A_lead_rosters_someone_and_the_shift_appears_on_the_team_board()
+    public async Task A_lead_rosters_someone_and_the_shift_appears_on_the_node_board()
     {
         await using var factory = await SeededAsync(boardLayout: "shifts");
 
         await PlanShiftAsync(factory, SeedOrganisation.Camille.UserId, "morning", Monday);
 
-        var board = await BoardAsync(factory, SeedOrganisation.Thomas, "team");
+        var board = await BoardAsync(
+            factory, SeedOrganisation.Thomas, "node", SeedOrganisation.Units.Infrastructure);
 
         board.Archetype.ShouldBe(BoardArchetypes.Shifts);
         board.Events.ShouldContain(row => row.Kind == "shift");
@@ -519,7 +526,8 @@ public sealed class BoardTests(PostgresFixture postgres)
 
         await PlanShiftAsync(factory, SeedOrganisation.Camille.UserId, "morning", Monday);
 
-        var short_ = await BoardAsync(factory, SeedOrganisation.Thomas, "team");
+        var short_ = await BoardAsync(
+            factory, SeedOrganisation.Thomas, "node", SeedOrganisation.Units.Infrastructure);
 
         var gap = short_.Coverage.Single(warning => warning.Day == Monday);
 
@@ -528,7 +536,8 @@ public sealed class BoardTests(PostgresFixture postgres)
 
         await PlanShiftAsync(factory, SeedOrganisation.Mehdi.UserId, "morning", Monday);
 
-        var covered = await BoardAsync(factory, SeedOrganisation.Thomas, "team");
+        var covered = await BoardAsync(
+            factory, SeedOrganisation.Thomas, "node", SeedOrganisation.Units.Infrastructure);
 
         covered.Coverage.ShouldNotContain(warning => warning.Day == Monday);
     }
@@ -602,14 +611,16 @@ public sealed class BoardTests(PostgresFixture postgres)
         CracraApplicationFactory factory,
         UserContext person,
         string type,
-        Guid? scopeId = null)
+        Guid? scopeId = null,
+        bool expandPeople = false)
     {
         factory.AsUser(person);
 
         var scope = scopeId is { } id ? $"&scopeId={id}" : string.Empty;
+        var expand = expandPeople ? "&expandPeople=true" : string.Empty;
 
         return (await factory.CreateClient().GetFromJsonAsync<BoardPayload>(
-            $"/api/scheduling/board?type={type}&from=2026-08-17&to=2026-08-23{scope}",
+            $"/api/scheduling/board?type={type}&from=2026-08-17&to=2026-08-23{scope}{expand}",
             TestContext.Current.CancellationToken))!;
     }
 

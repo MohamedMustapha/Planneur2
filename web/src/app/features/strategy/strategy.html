@@ -1,5 +1,9 @@
 <ng-container *transloco="let t">
-  <app-page-header [title]="t('strategy.title')" [subtitle]="t('strategy.subtitle')">
+  <app-page-header
+    [title]="t('strategy.title')"
+    [subtitle]="t('strategy.subtitle')"
+    [guidance]="true"
+  >
     <!-- The block is what is projected, not the button: a node inside @if is not a root node of the projected
          content, so a slot attribute on the button alone would never match and the control would vanish. -->
     <ng-container ngProjectAs="[slot=actions]">

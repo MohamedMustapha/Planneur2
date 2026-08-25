@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+
+.coach {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0 var(--space-6) var(--space-4);
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.coach__step {
+  flex: none;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.coach__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.coach__title {
+  color: var(--ink);
+  font-size: var(--text-base);
+}
+
+.coach__body {
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}

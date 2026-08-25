@@ -21,6 +21,10 @@ public sealed class CatalogJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
+        // Under "Plus" for a member: governance is not their day, but 01 3.1 makes discovery org-wide, so the
+        // catalog has to be reachable by anybody who wonders whether a thing already exists.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Plus" }).ClickAsync(new() { Timeout = TimeoutMs });
+
         await page.GetByRole(AriaRole.Navigation)
             .GetByRole(AriaRole.Link, new() { Name = "Portefeuille" })
             .ClickAsync(new() { Timeout = TimeoutMs });

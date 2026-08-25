@@ -98,6 +98,9 @@ public interface INodeProfileReader
 
     /// <summary>The effective profile for a department, walking it and its ancestors.</summary>
     Task<NodeProfileSnapshot?> ResolveForDepartmentAsync(Guid departmentId, CancellationToken ct);
+
+    /// <summary>The effective profile at a node, walking its ancestor path nearest-first.</summary>
+    Task<NodeProfileSnapshot?> ResolveForNodeAsync(Guid nodeId, CancellationToken ct);
 }
 
 // --- Integration events ------------------------------------------------------------------------------------------
@@ -146,7 +149,29 @@ public interface IOrgNodeReader
 
     /// <summary>A node and everything beneath it, in no particular order. RLS decides what the caller sees.</summary>
     Task<IReadOnlyList<OrgNodeSummary>> GetSubtreeAsync(Guid nodeId, CancellationToken ct);
+
+    /// <summary>People attached anywhere under a node, each carrying the path that says where.</summary>
+    Task<IReadOnlyList<NodeMember>> GetPeopleInSubtreeAsync(Guid nodeId, CancellationToken ct);
+
+    /// <summary>
+    /// A node's ancestry, root first and itself last. Empty where the node is unreadable or unknown.
+    /// </summary>
+    /// <remarks>
+    /// The upward walk, where <see cref="GetSubtreeAsync"/> is the downward one. Anything inherited down the tree
+    /// — a profile, a connection — is answered by asking which of these carries it.
+    /// </remarks>
+    Task<IReadOnlyList<Guid>> GetPathAsync(Guid nodeId, CancellationToken ct);
 }
+
+/// <summary>A person and where they hang. The path is what lets a caller fold them under any ancestor.</summary>
+public sealed record NodeMember(
+    Guid PersonId,
+    string DisplayName,
+    Guid NodeId,
+    IReadOnlyList<Guid> NodeAncestorIds,
+    Guid? UnitId,
+    Guid? DepartmentId,
+    bool Active);
 
 /// <summary>One node, as anything outside Directory sees it. Level is a number, never a name.</summary>
 public sealed record OrgNodeSummary(

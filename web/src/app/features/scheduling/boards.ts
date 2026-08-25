@@ -30,6 +30,7 @@ import {
   TimelineProgress,
 } from '../../shared/timeline/board-timeline/board-timeline';
 import { KudosMonthly } from '../kudos/kudos-monthly';
+import { OrgAdminStore } from '../../core/admin/org-admin.store';
 import { TaskCandidate, TaskPopup, TaskSeed } from './task-popup';
 
 /**
@@ -55,15 +56,11 @@ export class Boards {
   protected readonly session = inject(SessionStore);
   protected readonly directory = inject(DirectoryStore);
   protected readonly projects = inject(ProjectsStore);
+  protected readonly org = inject(OrgAdminStore);
   private readonly transloco = inject(TranslocoService);
 
-  /**
-   * Which board this route names, bound from the route's data by withComponentInputBinding.
-   *
-   * The rail has separate entries for "my team" and "department", and both have to land on the board they name —
-   * otherwise clicking Département shows the personal board with Département merely available as a tab.
-   */
-  readonly board = input<BoardType>('my');
+  /** Which board this screen opens on. One rail entry reaches it, and it is the node's. */
+  readonly board = input<BoardType>('node');
 
   protected readonly error = signal<string | null>(null);
   protected readonly busy = signal(false);
@@ -93,34 +90,23 @@ export class Boards {
   protected readonly rosterDay = signal(zonedDay(new Date(), this.preferences.timeZone()));
 
   /**
-   * The boards offered.
+   * The boards offered: my own week, the node, and an item.
    *
-   * All five, to everybody. Which rows land inside is RLS's answer, and hiding a tab because someone probably has
-   * nothing in it would be the client guessing at a decision the server already makes correctly — a member on a
-   * cross-department project genuinely does have a project board.
+   * Three, not five. The node board is one board at any depth (v2 §00 §3) — what it shows is the server's answer
+   * to which node it was asked about, not a different screen per rung.
    */
   protected readonly boards: readonly { id: BoardType; labelKey: string }[] = [
     { id: 'my', labelKey: 'boards.my' },
-    { id: 'team', labelKey: 'boards.team' },
-    { id: 'unit', labelKey: 'boards.unit' },
+    { id: 'node', labelKey: 'boards.node' },
     { id: 'project', labelKey: 'boards.project' },
-    { id: 'department', labelKey: 'boards.department' },
   ];
 
-  /**
-   * Whether this board carries the kudos counter.
-   *
-   * Team, unit and department only. A project board's rows are a team drawn from several units, and a count of
-   * recognition across them would mix departments whose modes disagree; the personal board is one person, and a
-   * counter of one is not a counter.
-   */
-  protected readonly showsKudos = computed(() =>
-    ['team', 'unit', 'department'].includes(this.scheduling.boardType()),
-  );
+  /** Nodes the viewer may look at. RLS already narrowed the list; picking one never widens it. */
+  protected readonly nodes = computed(() => this.org.nodes());
 
-  protected readonly kudosScope = computed<'unit' | 'department'>(() =>
-    this.scheduling.boardType() === 'department' ? 'department' : 'unit',
-  );
+  protected readonly showsKudos = computed(() => this.scheduling.boardType() === 'node');
+
+  protected readonly kudosScope = computed<'unit' | 'department'>(() => 'unit');
 
   protected readonly weekLabel = computed(() => {
     const { monday, sunday } = this.scheduling.week();
@@ -140,6 +126,8 @@ export class Boards {
    * simply answer with nothing.
    */
   protected readonly needsProjectScope = computed(() => this.scheduling.boardType() === 'project');
+
+  protected readonly onNodeBoard = computed(() => this.scheduling.boardType() === 'node');
 
   /** True while the project board is showing but no project has been picked. */
   protected readonly awaitingProject = computed(
@@ -192,6 +180,14 @@ export class Boards {
 
   protected selectProject(projectId: string): void {
     this.scheduling.show('project', projectId || null);
+  }
+
+  protected selectNode(nodeId: string): void {
+    this.scheduling.show('node', nodeId || null);
+  }
+
+  protected toggleExpandPeople(): void {
+    this.scheduling.expandPeople.update((expanded) => !expanded);
   }
 
   protected select(board: BoardType): void {

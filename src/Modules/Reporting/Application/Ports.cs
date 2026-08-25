@@ -54,13 +54,16 @@ public interface IActivityQueries
         CancellationToken ct);
 }
 
-/// <summary>The org tree, for the one report whose shape is the tree itself.</summary>
+/// <summary>The org tree, which is the shape of every scoped report now.</summary>
 public interface IOrgNodeQueries
 {
     Task<IReadOnlyList<OrgNodeSummary>> SubtreeAsync(Guid nodeId, CancellationToken ct);
 
-    /// <summary>Where the caller hangs off the tree, so a brief nobody scoped is their own.</summary>
+    /// <summary>Where the caller hangs off the tree, so a report nobody scoped is their own.</summary>
     Task<Guid?> HomeNodeAsync(Guid personId, CancellationToken ct);
+
+    /// <summary>People attached anywhere under a node, each carrying the path that says where.</summary>
+    Task<IReadOnlyList<NodeMember>> PeopleInSubtreeAsync(Guid nodeId, CancellationToken ct);
 }
 
 public interface IDirectoryQueries
@@ -75,8 +78,8 @@ public interface IDirectoryQueries
         IReadOnlyList<Guid> departmentIds,
         CancellationToken ct);
 
-    /// <summary>The node profile in force for the caller's branch (v2 §10), or null where none is attached.</summary>
-    Task<NodeProfileSnapshot?> NodeProfileAsync(Guid? unitId, Guid? departmentId, CancellationToken ct);
+    /// <summary>The node profile in force at a node (v2 §10), or null where none is attached above it.</summary>
+    Task<NodeProfileSnapshot?> NodeProfileAsync(Guid nodeId, CancellationToken ct);
 }
 
 public interface IProjectQueries
@@ -94,6 +97,9 @@ public interface IPortfolioQueries
     Task<PortfolioBoard> BoardAsync(CancellationToken ct);
 
     Task<IReadOnlyList<IterationSummary>> IterationsAsync(Guid projectId, CancellationToken ct);
+
+    /// <summary>One item, as the catalog knows it. Null where RLS hid it or it does not exist.</summary>
+    Task<CatalogCardRef?> ItemAsync(Guid itemId, CancellationToken ct);
 }
 
 public interface IMeetingQueries

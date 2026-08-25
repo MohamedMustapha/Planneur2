@@ -291,7 +291,8 @@ internal sealed class ActivityScheduler(
                 row.SupersedesEntryId,
                 row.Reconciled,
                 row.Note,
-                row.PercentComplete)),
+                row.PercentComplete,
+                row.NodeId)),
         ];
     }
 }

@@ -97,15 +97,8 @@ internal sealed class DirectoryAdapter(IDirectoryReader directory, INodeProfileR
             ? new Dictionary<Guid, string>()
             : await directory.GetDepartmentNameKeysAsync(departmentIds, ct);
 
-    public async Task<NodeProfileSnapshot?> NodeProfileAsync(
-        Guid? unitId,
-        Guid? departmentId,
-        CancellationToken ct) =>
-        unitId is { } unit
-            ? await profiles.ResolveForUnitAsync(unit, ct)
-            : departmentId is { } department
-                ? await profiles.ResolveForDepartmentAsync(department, ct)
-                : null;
+    public async Task<NodeProfileSnapshot?> NodeProfileAsync(Guid nodeId, CancellationToken ct) =>
+        nodeId == Guid.Empty ? null : await profiles.ResolveForNodeAsync(nodeId, ct);
 }
 
 internal sealed class ProjectAdapter(IProjectProvisioner projects, IProjectTeamReader teams) : IProjectQueries
@@ -135,14 +128,19 @@ internal sealed class ProjectAdapter(IProjectProvisioner projects, IProjectTeamR
         await teams.GetTeamAsync(projectId, ct);
 }
 
-internal sealed class PortfolioAdapter(IPortfolioIterationReader iterations, IPortfolioBoardReader board)
-    : IPortfolioQueries
+internal sealed class PortfolioAdapter(
+    IPortfolioIterationReader iterations,
+    IPortfolioBoardReader board,
+    ICatalogLookupReader catalog) : IPortfolioQueries
 {
     public async Task<PortfolioBoard> BoardAsync(CancellationToken ct) =>
         await board.GetBoardAsync(null, ct);
 
     public async Task<IReadOnlyList<IterationSummary>> IterationsAsync(Guid projectId, CancellationToken ct) =>
         await iterations.GetForProjectAsync(projectId, ct);
+
+    public async Task<CatalogCardRef?> ItemAsync(Guid itemId, CancellationToken ct) =>
+        (await catalog.GetByIdsAsync([itemId], ct)).FirstOrDefault();
 }
 
 internal sealed class MeetingAdapter(IMeetingCalendarReader meetings) : IMeetingQueries
@@ -312,4 +310,7 @@ internal sealed class OrgNodeQueries(IOrgNodeReader nodes) : IOrgNodeQueries
 
     public async Task<Guid?> HomeNodeAsync(Guid personId, CancellationToken ct) =>
         (await nodes.GetHomeScopeAsync(personId, ct))?.NodeId;
+
+    public async Task<IReadOnlyList<NodeMember>> PeopleInSubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await nodes.GetPeopleInSubtreeAsync(nodeId, ct);
 }

@@ -81,3 +81,9 @@ public interface IProblemLookupReader
 {
     Task<IReadOnlyList<ProblemRef>> GetByIdsAsync(IReadOnlyList<Guid> problemIds, CancellationToken ct);
 }
+
+/// <summary>How much is waiting on the caller, for the shell's guidance (v2 02.5).</summary>
+public interface IProblemTriageReader
+{
+    Task<int> CountAwaitingTriageAsync(CancellationToken ct);
+}

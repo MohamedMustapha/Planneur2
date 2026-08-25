@@ -57,6 +57,9 @@ public sealed class ArchitectureRules
         typeof(Cracra.Modules.Problems.Contracts.ProblemCard).Assembly,
         typeof(Cracra.Modules.Strategy.StrategyModule).Assembly,
         typeof(Cracra.Modules.Strategy.Contracts.StrategyView).Assembly,
+
+        // Guidance publishes nothing either: it reads five modules to advise the shell and is read by none.
+        typeof(Cracra.Modules.Guidance.GuidanceModule).Assembly,
     ];
 
     /// <summary>

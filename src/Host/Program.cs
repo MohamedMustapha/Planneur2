@@ -8,6 +8,7 @@ using Cracra.Host.DevSeed;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
 using Cracra.Modules.Finance;
+using Cracra.Modules.Guidance;
 using Cracra.Modules.Problems;
 using Cracra.Modules.Integrations;
 using Cracra.Modules.Kudos;
@@ -73,6 +74,7 @@ builder.Services.AddIntegrationsModule();
 builder.Services.AddFinanceModule();
 builder.Services.AddProblemsModule();
 builder.Services.AddStrategyModule();
+builder.Services.AddGuidanceModule();
 
 // --- Development data ----------------------------------------------------------------------------------------
 // Two projects and a few weeks of activity, so a fresh dev box opens on populated boards rather than on empty

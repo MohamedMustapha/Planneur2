@@ -132,7 +132,7 @@ public sealed class SummaryPromptTests
 
     private static ReportView Report() => new(
         "id",
-        ReportScopes.Unit,
+        ReportScopes.Node,
         null,
         "Infrastructure",
         new ReportPeriodView("week", new DateOnly(2026, 8, 17), new DateOnly(2026, 8, 23), 2026, 34, "reports.period.week"),
@@ -167,7 +167,7 @@ public sealed class SummaryPromptTests
                 [],
                 [new ReportNote("reports.note.archived", "Migration M365", "info")]),
         ],
-        [ReportScopes.Unit, ReportScopes.Team, ReportScopes.My],
+        [ReportScopes.Node, ReportScopes.Me],
         null,
         DateTimeOffset.UnixEpoch);
 }

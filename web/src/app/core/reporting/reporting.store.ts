@@ -6,7 +6,7 @@ import { ANTI_FORGERY_HEADER } from '../session/csrf.interceptor';
 
 /** Mirrors `Cracra.Modules.Reporting.Contracts`. */
 
-export type ReportScope = 'my' | 'team' | 'unit' | 'department' | 'project' | 'portfolio';
+export type ReportScope = 'me' | 'node' | 'item' | 'portfolio';
 
 export type ReportPeriodKind = 'week' | 'month' | 'custom';
 
@@ -165,7 +165,7 @@ export class ReportingStore {
 
     // The project report is the one that cannot be derived from who the caller is. Asking anyway and rendering
     // the server's refusal is a worse answer than the client saying what it already knows.
-    if (scope === 'project' && !this.scopeId()) {
+    if (scope === 'item' && !this.scopeId()) {
       return undefined;
     }
 

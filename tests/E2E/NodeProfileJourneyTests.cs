@@ -131,8 +131,9 @@ public sealed class NodeProfileJourneyTests(AspireStackFixture stack)
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
-        // The rail is present and populated — otherwise this asserts nothing.
-        await Expect(page.GetByRole(AriaRole.Link, new() { Name = "Mon tableau" }))
+        // The rail is present and populated — otherwise this asserts nothing. A PMO lands on the portfolio, so
+        // that is the entry that proves the rail drew.
+        await Expect(page.GetByRole(AriaRole.Link, new() { Name = "Portefeuille" }))
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
         await Expect(page.GetByRole(AriaRole.Link, new() { Name = "Finance" })).ToHaveCountAsync(0);
@@ -249,6 +250,10 @@ public sealed class NodeProfileJourneyTests(AspireStackFixture stack)
         var select = page.GetByRole(AriaRole.Dialog).GetByLabel("Type d'activité");
 
         await Expect(select).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+
+        // The taxonomy arrives on its own request, so a select holding nothing but its placeholder is a dialog
+        // that opened first rather than a branch with no subtypes.
+        await Expect(select.Locator("option")).Not.ToHaveCountAsync(1, new() { Timeout = TimeoutMs });
 
         var options = await select.Locator("option").AllTextContentsAsync();
 

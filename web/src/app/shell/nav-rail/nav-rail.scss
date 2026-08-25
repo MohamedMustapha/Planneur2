@@ -123,3 +123,25 @@
   color: var(--rail-ink-muted);
   font-size: var(--text-sm);
 }
+
+.rail__more {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+.rail--collapsed .rail__more {
+  align-items: center;
+}
+
+.rail__more-toggle {
+  color: var(--rail-ink-muted);
+  font-size: var(--text-sm);
+}
+
+.rail__item--secondary {
+  color: var(--rail-ink-muted);
+}
