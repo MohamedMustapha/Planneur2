@@ -96,10 +96,27 @@ internal sealed class RbacOverrideService(
 
         Audit(item, "revoked", now);
 
-        await context.SaveChangesAsync(ct);
+        // Reading an override is a wider right than writing one — a head reads their branch's overrides, and may
+        // only revoke the ones they could have granted. An UPDATE the policy refuses matches no row and raises
+        // nothing, so without this a head who tried to lift a grant made above them would be told it worked and
+        // find it still in force. §08.4's "beyond scope → 403", said on the way out as well as on the way in.
+        try
+        {
+            if (await context.SaveChangesAsync(ct) == 0)
+            {
+                throw new UnauthorizedAccessException(Refusal);
+            }
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new UnauthorizedAccessException(Refusal);
+        }
 
         resolver.Invalidate(item.PersonId);
     }
+
+    private const string Refusal =
+        "You can grant and revoke inside the branch you head, and only strictly beneath your own node.";
 
     private void Audit(RbacOverride item, string action, DateTimeOffset now) =>
         context.OverrideAudits.Add(new RbacOverrideAudit

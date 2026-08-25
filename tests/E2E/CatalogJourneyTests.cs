@@ -52,7 +52,14 @@ public sealed class CatalogJourneyTests(AspireStackFixture stack)
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Suivant" })
             .ClickAsync(new() { Timeout = TimeoutMs });
 
-        await dialog.GetByLabel("Nom").FillAsync(name);
+        // By role, not by label. Both steps render a <label class="field"><span>…</span> wrapping their control,
+        // and Angular patches that shape in place rather than replacing it — so for one frame after "Suivant"
+        // the label already reads "Nom" while the control beneath it is still step one's <select>. GetByLabel
+        // resolved to that select and fill failed with "Element is not an <input>", intermittently and only on a
+        // slow machine. Asking for the textbox makes the wait part of the locator: a combobox never satisfies it,
+        // so Playwright retries until the step has actually swapped.
+        await dialog.GetByRole(AriaRole.Textbox, new() { Name = "Nom" })
+            .FillAsync(name, new() { Timeout = TimeoutMs });
 
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Créer" })
             .ClickAsync(new() { Timeout = TimeoutMs });

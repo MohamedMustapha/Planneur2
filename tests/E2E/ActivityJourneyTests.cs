@@ -69,11 +69,16 @@ public sealed class ActivityJourneyTests(AspireStackFixture stack)
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Enregistrer", Exact = true })
             .ClickAsync(new() { Timeout = TimeoutMs });
 
-        // The entry lands in the week's list. First, because the Aspire stack persists between runs and an
-        // earlier run's identical note is still sitting there — which is fine: what matters is that this one
-        // arrived, not that it is the only one.
-        await Expect(page.GetByText("Revue de la documentation d'exploitation").First)
-            .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+        // The entry lands in the week's list — scoped to that list rather than to the page. The same note is
+        // also painted inside the timeline block, and the scheduler keeps copies of its blocks that never become
+        // visible, so a page-wide match found one of those and waited a minute for it to appear.
+        //
+        // First, because the Aspire stack persists between runs and an earlier run's identical note is still
+        // sitting there — which is fine: what matters is that this one arrived, not that it is the only one.
+        var logged = page.Locator(".board__entries .entry__note")
+            .Filter(new() { HasText = "Revue de la documentation d'exploitation" });
+
+        await Expect(logged.First).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 
     [Fact]
@@ -122,6 +127,12 @@ public sealed class ActivityJourneyTests(AspireStackFixture stack)
         var page = await stack.SignInAsync("camille.villeneuve");
 
         await page.GotoAsync("/board");
+
+        // Same reason as the hand-logged journey: the week's list is folded away in Focus mode and members start
+        // there (v2 §02). Left to itself this passed only when the sibling journey happened to run first and turn
+        // Focus off for Camille — the flag is server-persisted, so one test was quietly arranging another's
+        // preconditions, and the order that made that work is not one xUnit promises.
+        await AspireStackFixture.LeaveFocusModeAsync(page);
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Ajout rapide" })
             .ClickAsync(new() { Timeout = TimeoutMs });

@@ -12,6 +12,13 @@ import { SettingsTabs } from '../directory/settings-tabs';
 const GRANTABLE_ROLES = ['member', 'node-head', 'admin', 'project-lead', 'po', 'pmo'] as const;
 
 /**
+ * Roles whose reach does not stop at a branch, so only a global administrator or the PMO may hand them out
+ * (v2 08.1). Mirrors `access.outranks_a_branch`, which is the authority — this list only decides what the form
+ * offers, and offering a control that always comes back 403 teaches people to distrust the screen.
+ */
+const ROLES_BEYOND_A_BRANCH: readonly string[] = ['admin', 'pmo'];
+
+/**
  * The RBAC fallback view: pick a person, see where each of their roles comes from, grant or deny one by hand.
  *
  * The source badge is the point of the screen. A role that came from an LDAP group and a role somebody granted
@@ -30,7 +37,16 @@ export class RbacAdmin {
   private readonly directory = inject(DirectoryStore);
   private readonly departments = inject(DepartmentScopeStore);
 
-  protected readonly roles = GRANTABLE_ROLES;
+  /** True for the global-admin surface, false for a head running their own branch (v2 08.1). */
+  protected readonly grantsEverywhere = computed(
+    () => this.access.has('admin') || this.access.has('pmo'),
+  );
+
+  protected readonly roles = computed<readonly string[]>(() =>
+    this.grantsEverywhere()
+      ? GRANTABLE_ROLES
+      : GRANTABLE_ROLES.filter((role) => !ROLES_BEYOND_A_BRANCH.includes(role)),
+  );
 
   protected readonly people = signal<readonly PersonSummary[]>([]);
   protected readonly selected = signal<PersonSummary | null>(null);

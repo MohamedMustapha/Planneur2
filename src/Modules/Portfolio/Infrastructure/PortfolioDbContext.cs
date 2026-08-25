@@ -26,6 +26,9 @@ public sealed class PortfolioDbContext(DbContextOptions<PortfolioDbContext> opti
 
     public DbSet<ItemMember> Members => Set<ItemMember>();
 
+    /// <summary>The org-wide discovery projection (v2 §01 §3.1). Read-only here; a trigger maintains it.</summary>
+    public DbSet<ItemDiscovery> Discovery => Set<ItemDiscovery>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PortfolioDbContext).Assembly);
@@ -150,6 +153,28 @@ internal sealed class ItemDependencyConfiguration : IEntityTypeConfiguration<Ite
 
         // The "consumed by" half of the catalog reads this end, and reads it for every platform card drawn.
         builder.HasIndex(edge => edge.DependsOnItemId);
+    }
+}
+
+internal sealed class ItemDiscoveryConfiguration : IEntityTypeConfiguration<ItemDiscovery>
+{
+    public void Configure(EntityTypeBuilder<ItemDiscovery> builder)
+    {
+        builder.ToTable("item_discovery");
+        builder.HasKey(row => row.ItemId);
+
+        builder.Property(row => row.ItemId).ValueGeneratedNever();
+        builder.Property(row => row.Code).HasMaxLength(64).IsRequired();
+        builder.Property(row => row.Name).HasMaxLength(256).IsRequired();
+        builder.Property(row => row.Type).HasMaxLength(32).IsRequired();
+        builder.Property(row => row.Classification).HasMaxLength(16).IsRequired();
+        builder.Property(row => row.Category).HasMaxLength(64);
+        builder.Property(row => row.State).HasMaxLength(20).IsRequired();
+        builder.Property(row => row.Summary).HasMaxLength(4000);
+
+        builder.HasIndex(row => row.OwnerNodeId);
+        builder.HasIndex(row => row.Type);
+        builder.HasIndex(row => row.State);
     }
 }
 

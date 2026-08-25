@@ -147,6 +147,14 @@ create or replace function access.is_scoped() returns boolean
     language sql stable
     as $$ select access.uid() is not null $$;
 
+-- Roles whose reach does not stop at a branch. A head's authority does stop at one, so these are the roles a head
+-- may never hand out (v2 08.1) -- granting a role that outranks the granter is escalation in its plainest form.
+-- The list lives here, with the roles themselves, rather than in the policy that consults it: a second copy in a
+-- module migration is a copy that stops being updated the day a role is added.
+create or replace function access.outranks_a_branch(p_role text) returns boolean
+    language sql immutable
+    as $$ select p_role in ('pmo', 'admin', 'system') $$;
+
 -- -------------------------------------------------------------------------------------------------------------
 -- Node-tree plumbing (v2 01 3, 09 Ph.1-3). Lives here rather than in a module migration because every module's
 -- migration calls it and module migrations run in registration order, which puts some of them before Directory's.

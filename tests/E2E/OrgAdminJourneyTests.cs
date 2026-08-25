@@ -29,7 +29,7 @@ public sealed class OrgAdminJourneyTests(AspireStackFixture stack)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
         // Whatever the deployment's depth, the tree arrives as one flat list the server has already walked.
-        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Infrastructure" }).First)
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Exploitation & Production" }).First)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 
@@ -40,7 +40,7 @@ public sealed class OrgAdminJourneyTests(AspireStackFixture stack)
 
         await page.GotoAsync("/settings/org");
 
-        await page.GetByRole(AriaRole.Button, new() { Name = "Infrastructure" }).First
+        await page.GetByRole(AriaRole.Button, new() { Name = "Exploitation & Production" }).First
             .ClickAsync(new() { Timeout = TimeoutMs });
 
         var drawer = page.GetByRole(AriaRole.Dialog);
@@ -77,6 +77,56 @@ public sealed class OrgAdminJourneyTests(AspireStackFixture stack)
 
         await Expect(page.GetByRole(AriaRole.Alert))
             .ToContainTextAsync("pas la modifier", new() { Timeout = TimeoutMs });
+    }
+
+    [Fact]
+    public async Task A_head_moves_somebody_into_another_branch_of_their_own()
+    {
+        var page = await stack.SignInAsync("olivier.marchand");
+
+        await page.GotoAsync("/settings/org");
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Exploitation & Production" }).First
+            .ClickAsync(new() { Timeout = TimeoutMs });
+
+        var drawer = page.GetByRole(AriaRole.Dialog);
+        var member = drawer.GetByRole(AriaRole.Listitem).First;
+
+        await Expect(member).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+
+        var moved = (await member.Locator(".member__name").InnerTextAsync()).Trim();
+
+        // The select offers every branch Olivier can *read*, which is a wider set than the branches he may move
+        // somebody into -- it includes the placeholder top he sits under. Picking by position walked straight into
+        // one of those and asserted that a refusal was a move. So the destination is a sibling beneath his own
+        // node, which is what "another branch of their own" means, and the label is read back afterwards because
+        // where the person landed is where the rest of this has to look.
+        var destination = member.GetByLabel("Déplacer vers…");
+
+        await destination.SelectOptionAsync(
+            new SelectOptionValue { Label = "Études & Développement" },
+            new() { Timeout = TimeoutMs });
+
+        var landing = (await destination.Locator("option:checked").InnerTextAsync()).Trim();
+
+        await member.GetByRole(AriaRole.Button, new() { Name = "Déplacer" })
+            .ClickAsync(new() { Timeout = TimeoutMs });
+
+        // The person is somebody else's now, so this branch stops listing them. Asserting the chip here would be
+        // asserting that the move did not happen.
+        await Expect(drawer.GetByRole(AriaRole.Listitem).Filter(new() { HasText = moved }))
+            .ToHaveCountAsync(0, new() { Timeout = TimeoutMs });
+
+        await page.GetByRole(AriaRole.Button, new() { Name = landing }).First
+            .ClickAsync(new() { Timeout = TimeoutMs });
+
+        // §08.1's team-member management, moved off the boards: the correction is a fact about the person from
+        // now on, which is why the row says so rather than looking like whatever LDAP last said.
+        var landed = page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Listitem)
+            .Filter(new() { HasText = moved });
+
+        await Expect(landed).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+        await Expect(landed.GetByText("Déplacé")).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 
     private static IPageAssertions Expect(IPage page) => Assertions.Expect(page);

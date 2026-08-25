@@ -191,16 +191,50 @@ public sealed class CatalogTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task A_member_does_not_read_another_branchs_catalog()
+    public async Task A_member_discovers_another_branchs_item_but_reads_none_of_its_detail()
+    {
+        // §01 §3.1's whole sentence, both halves. Sofia is an ordinary member in Finance and the cluster is IS's:
+        // she is told it exists, because a duplicate she cannot see is a duplicate she will ask to have built. She
+        // is told nothing that would cost anything to know.
+        await using var factory = await SeededAsync();
+
+        var id = await CreateAsync(factory, SeedOrganisation.Olivier, "Kubernetes cluster", "platform");
+
+        var found = await SearchAsync(factory, SeedOrganisation.Sofia, "kubernetes");
+
+        var card = found.Single(candidate => candidate.Id == id);
+
+        card.Name.ShouldBe("Kubernetes cluster");
+        card.Type.ShouldBe("platform");
+        // Olivier's own node, because the wizard owns a new item where its author sits — the point here is that a
+        // stranger is told *whose* it is, not which node that turns out to be.
+        card.OwnerNodeId.ShouldBe(SeedOrganisation.Units.Development);
+
+        // The detail-only half of the card, absent rather than blanked: an estimate and a lead are most of what the
+        // card was withholding.
+        card.LeadPersonId.ShouldBeNull();
+        card.EstimateAmount.ShouldBeNull();
+        card.TeamHeadcount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Discovering_an_item_does_not_open_its_identity_card()
     {
         await using var factory = await SeededAsync();
 
-        await CreateAsync(factory, SeedOrganisation.Olivier, "Kubernetes cluster", "platform");
+        var id = await CreateAsync(factory, SeedOrganisation.Olivier, "Kubernetes cluster", "platform");
 
-        // Sofia is a member in Finance. Discovery is for heads; a member sees their own branch.
-        var found = await SearchAsync(factory, SeedOrganisation.Sofia, "kubernetes");
+        (await SearchAsync(factory, SeedOrganisation.Sofia, "kubernetes")).ShouldNotBeEmpty();
 
-        found.ShouldBeEmpty();
+        factory.AsUser(SeedOrganisation.Sofia);
+
+        // Discovery widened one projection, not the row behind it. If this ever returns 200 the two halves have
+        // been collapsed into one and the estimate went org-wide with the name.
+        var response = await factory.CreateClient().GetAsync(
+            $"/api/portfolio/items/{id}",
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -227,6 +261,9 @@ public sealed class CatalogTests(PostgresFixture postgres)
 
         // Its own branch still reads it. Confidential means "not org-wide", not "invisible".
         (await SearchAsync(factory, SeedOrganisation.Olivier, "Sensitive")).ShouldNotBeEmpty();
+
+        // And the opt-out reaches the wider audience discovery just gained, not only the heads it used to have.
+        (await SearchAsync(factory, SeedOrganisation.Sofia, "Sensitive")).ShouldBeEmpty();
     }
 
     [Fact]

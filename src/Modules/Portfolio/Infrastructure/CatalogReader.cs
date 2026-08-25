@@ -22,70 +22,82 @@ namespace Cracra.Modules.Portfolio.Infrastructure;
 /// </remarks>
 internal sealed class CatalogReader(PortfolioDbContext context, IDirectoryReader directory) : ICatalogReader
 {
+    /// <summary>
+    /// The catalog grid, read through the discovery projection (v2 §01 §3.1).
+    /// </summary>
+    /// <remarks>
+    /// Two reads, not one. The projection answers "what exists", org-wide, because a duplicate nobody outside the
+    /// owning branch can see is a duplicate that gets built twice. The item table then answers "and what may this
+    /// caller actually know about it", and RLS silently drops the rest — so an item a stranger may only discover
+    /// comes back named and placed, with the estimate, the lead and the team absent rather than blanked.
+    /// </remarks>
     public async Task<IReadOnlyList<CatalogCard>> BrowseAsync(CatalogFilter filter, CancellationToken ct)
     {
-        var query = context.Items.AsNoTracking();
+        var query = context.Discovery.AsNoTracking();
 
         if (filter.Type is { Length: > 0 } type)
         {
-            var parsed = ItemTypes.Parse(type);
-            query = query.Where(item => item.Type == parsed);
+            var parsed = ItemTypes.Parse(type).ToString();
+            query = query.Where(row => row.Type == parsed);
         }
 
         if (filter.Classification is { Length: > 0 } classification)
         {
-            var parsed = ItemClassifications.Parse(classification);
-            query = query.Where(item => item.Classification == parsed);
+            var parsed = ItemClassifications.Parse(classification).ToString();
+            query = query.Where(row => row.Classification == parsed);
         }
 
         if (filter.State is { Length: > 0 } state)
         {
-            var parsed = ParseState(state);
-            query = query.Where(item => item.State == parsed);
+            var parsed = ParseState(state).ToString();
+            query = query.Where(row => row.State == parsed);
         }
 
         if (filter.Category is { Length: > 0 } category)
         {
-            query = query.Where(item => item.Category == category);
+            query = query.Where(row => row.Category == category);
         }
 
         if (filter.OwnerNodeId is { } owner)
         {
-            query = query.Where(item => item.OwnerNodeId == owner);
+            query = query.Where(row => row.OwnerNodeId == owner);
         }
 
         if (filter.SharedOnly)
         {
             // Shared means somebody else leans on it. Expressed as "has an incoming edge" rather than as a type,
             // because a run-service other services consume is every bit as shared as a platform is.
-            query = query.Where(item => context.Dependencies.Any(edge => edge.DependsOnItemId == item.Id));
+            query = query.Where(row => context.Dependencies.Any(edge => edge.DependsOnItemId == row.ItemId));
         }
 
-        var items = await query
-            .OrderBy(item => item.Type)
-            .ThenBy(item => item.Code)
+        var rows = await query
+            .OrderBy(row => row.Type)
+            .ThenBy(row => row.Code)
             .Take(filter.Limit)
             .ToListAsync(ct);
 
-        return await CardsAsync(items, ct);
+        return await CardsAsync(rows, ct);
     }
 
     public async Task<IReadOnlyList<CatalogCard>> SearchAsync(string query, int limit, CancellationToken ct)
     {
         var pattern = $"%{query}%";
 
-        var items = await context.Items
+        // Also the projection: "does something like this already exist" is the question the wizard asks on the way
+        // to creating a duplicate, and it is worth least to the person best placed to ask it if it only searches
+        // their own branch.
+        var rows = await context.Discovery
             .AsNoTracking()
-            .Where(item =>
-                EF.Functions.ILike(item.Name, pattern)
-                || EF.Functions.ILike(item.Code, pattern)
-                || (item.Category != null && EF.Functions.ILike(item.Category, pattern))
-                || (item.Summary != null && EF.Functions.ILike(item.Summary, pattern)))
-            .OrderBy(item => item.Name)
+            .Where(row =>
+                EF.Functions.ILike(row.Name, pattern)
+                || EF.Functions.ILike(row.Code, pattern)
+                || (row.Category != null && EF.Functions.ILike(row.Category, pattern))
+                || (row.Summary != null && EF.Functions.ILike(row.Summary, pattern)))
+            .OrderBy(row => row.Name)
             .Take(limit)
             .ToListAsync(ct);
 
-        return await CardsAsync(items, ct);
+        return await CardsAsync(rows, ct);
     }
 
     public async Task<CatalogItemDetail?> DetailAsync(Guid itemId, CancellationToken ct)
@@ -248,6 +260,62 @@ internal sealed class CatalogReader(PortfolioDbContext context, IDirectoryReader
 
         return views;
     }
+
+    /// <summary>
+    /// Turns discovered rows into cards, filled in as far as this caller is entitled to (v2 §01 §3.1).
+    /// </summary>
+    /// <remarks>
+    /// The item query is not filtered here; RLS filters it. Whatever comes back is what the caller may read in
+    /// full, and every discovered row it did not cover falls through to the narrow card. That is the whole
+    /// "discovery yes, detail no" rule, and it is expressed as the difference between two result sets rather than
+    /// as a permission check in C# — so it cannot drift from <c>can_read_item</c>, because it *is*
+    /// <c>can_read_item</c>.
+    /// </remarks>
+    private async Task<IReadOnlyList<CatalogCard>> CardsAsync(
+        IReadOnlyList<ItemDiscovery> rows,
+        CancellationToken ct)
+    {
+        if (rows.Count == 0)
+        {
+            return [];
+        }
+
+        var ids = rows.Select(row => row.ItemId).ToArray();
+
+        var readable = await context.Items
+            .AsNoTracking()
+            .Where(item => ids.Contains(item.Id))
+            .ToListAsync(ct);
+
+        var full = (await CardsAsync(readable, ct)).ToDictionary(card => card.Id);
+
+        return [.. rows.Select(row => full.TryGetValue(row.ItemId, out var card) ? card : Narrow(row))];
+    }
+
+    /// <summary>The discovery projection as a card: what it is and whose, and nothing that would cost anything.</summary>
+    private static CatalogCard Narrow(ItemDiscovery row) => new(
+        row.ItemId,
+        row.Code,
+        row.Name,
+        Wire(Enum.Parse<ItemType>(row.Type)),
+        row.Category,
+        Wire(Enum.Parse<ItemClassification>(row.Classification)),
+        Wire(Enum.Parse<PortfolioState>(row.State)),
+        // Deliberately absent rather than zeroed-with-meaning: a stranger learning that an item has eleven people
+        // and a €400k estimate has learned most of what the card was withholding.
+        AwaitingVersion: null,
+        row.OwnerNodeId,
+        LeadPersonId: null,
+        PoPersonId: null,
+        row.Summary,
+        EstimateAmount: null,
+        Currency: string.Empty,
+        TeamHeadcount: 0,
+        DependencyCount: 0,
+        ConsumedByCount: 0,
+        QueuedEpicCount: 0,
+        CurrentIterationName: null,
+        row.Confidential);
 
     private async Task<IReadOnlyList<CatalogCard>> CardsAsync(
         IReadOnlyList<PortfolioItem> items,

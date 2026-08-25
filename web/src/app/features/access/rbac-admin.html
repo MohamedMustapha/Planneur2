@@ -116,7 +116,7 @@
             <label class="field">
               <span class="field__label">{{ t('access.role') }}</span>
               <select class="select" [ngModel]="formRole()" (ngModelChange)="formRole.set($event)">
-                @for (role of roles; track role) {
+                @for (role of roles(); track role) {
                   <option [value]="role">{{ role }}</option>
                 }
               </select>
@@ -127,7 +127,11 @@
               <select class="select" [ngModel]="formScopeType()" (ngModelChange)="formScopeType.set($event)">
                 <option value="Unit">{{ t('access.scope.unit') }}</option>
                 <option value="Department">{{ t('access.scope.department') }}</option>
-                <option value="Global">{{ t('access.scope.global') }}</option>
+                <!-- A head grants inside their branch; a global scope is not something they can be refused
+                     halfway through, so it is absent rather than offered and rejected (v2 08.1). -->
+                @if (grantsEverywhere()) {
+                  <option value="Global">{{ t('access.scope.global') }}</option>
+                }
               </select>
             </label>
 
