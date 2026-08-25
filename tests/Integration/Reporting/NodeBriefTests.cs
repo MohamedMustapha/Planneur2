@@ -267,6 +267,9 @@ public sealed class NodeBriefTests(PostgresFixture postgres)
         await factory.Services.GetRequiredService<IDirectorySynchronizer>()
             .SynchronizeAsync(TestContext.Current.CancellationToken);
 
+        // The seeded shape, not whatever the administration tests left in the shared database.
+        await OrgTreeReset.ApplyAsync(factory, TestContext.Current.CancellationToken);
+
         return factory;
     }
 }
