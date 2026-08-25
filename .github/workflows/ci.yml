@@ -43,8 +43,11 @@ jobs:
           global-json-file: global.json
 
       # Testcontainers starts Postgres itself; the runner just needs a Docker daemon, which ubuntu-latest has.
+      # `dotnet run` rather than `dotnet test`: the MSBuild wrapper prints the counts and swallows the names, so
+      # a red build says "Failed: 1 of 475" and nothing about which one. The runner underneath prints each
+      # failure and its assertion, which is the difference between a log you can act on and a rerun.
       - name: Integration
-        run: dotnet test tests/Integration/Cracra.Tests.Integration.csproj -c Release
+        run: dotnet run --project tests/Integration/Cracra.Tests.Integration.csproj -c Release
 
   web:
     name: Angular build
@@ -97,8 +100,9 @@ jobs:
       - name: Install Chromium
         run: pwsh tests/E2E/bin/Release/net10.0/playwright.ps1 install chromium --with-deps
 
+      # Same reason as the integration job: names and assertions rather than a count.
       - name: E2E
-        run: dotnet test tests/E2E/Cracra.Tests.E2E.csproj --no-build -c Release
+        run: dotnet run --project tests/E2E/Cracra.Tests.E2E.csproj --no-build -c Release
         env:
           # The AppHost demands every parameter; CI supplies throwaway values. These are not secrets — the stack
           # they protect is destroyed with the runner.
