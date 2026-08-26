@@ -111,6 +111,7 @@ jobs:
           Parameters__app-rw-password: ci-runtime-password
           Parameters__keycloak-admin-password: ci-keycloak-password
           Parameters__bff-client-secret: cracra-bff-dev-secret
+          Parameters__sync-client-secret: cracra-sync-dev-secret
           Parameters__storage-access-key: ci-access-key
           Parameters__storage-secret-key: ci-secret-key
 
