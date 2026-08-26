@@ -33,6 +33,8 @@ public static class ActivitiesModule
         // so RLS answers "may this lead plan for this person" exactly as it does for the API.
         services.AddScoped<Contracts.IActivityScheduler, ActivityScheduler>();
 
+        services.AddScoped<Contracts.IWeeklySummaryReader, WeeklySummaryReader>();
+
         // --- The S10 seam, filled ---------------------------------------------------------------------------
         // The one line S5's comment promised would change. The dropdown, its query, the pre-fill and every test
         // around them stayed exactly as they were; what moved is where the tasks come from — a mirror table

@@ -20,21 +20,25 @@ namespace Cracra.Modules.Reporting.Contracts;
 public static class ReportScopes
 {
     /// <summary>The viewer's own week. The one scope everybody has.</summary>
-    public const string My = "my";
+    public const string Me = "me";
 
-    /// <summary>The teams of the projects the viewer is on.</summary>
-    public const string Team = "team";
+    /// <summary>
+    /// A branch of the tree, at whatever depth (v2 00 3).
+    /// </summary>
+    /// <remarks>
+    /// One scope where there were three. A unit report and a department report were the same question asked of
+    /// two rungs, and naming the rungs meant a fourth level needed a fourth scope, a fourth translation key and a
+    /// fourth branch in the composer. The node id carries the depth instead.
+    /// </remarks>
+    public const string Node = "node";
 
-    public const string Unit = "unit";
-    public const string Department = "department";
-
-    /// <summary>One project, for whoever leads it.</summary>
-    public const string Project = "project";
+    /// <summary>One portfolio item, for whoever leads it.</summary>
+    public const string Item = "item";
 
     /// <summary>Everything, for the PMO.</summary>
     public const string Portfolio = "portfolio";
 
-    public static readonly IReadOnlyList<string> All = [My, Team, Unit, Department, Project, Portfolio];
+    public static readonly IReadOnlyList<string> All = [Me, Node, Item, Portfolio];
 }
 
 public static class ReportPeriods
@@ -136,7 +140,16 @@ public sealed record ReportView(
     IReadOnlyList<ReportSection> Sections,
     IReadOnlyList<string> AvailableScopes,
     ReportSummaryView? Summary,
-    DateTimeOffset GeneratedAt);
+    DateTimeOffset GeneratedAt,
+    /// <summary>
+    /// The node profile's headline sentence, rendered from this report's own figures (v2 §10.5).
+    /// </summary>
+    /// <remarks>
+    /// Null where no profile is in force, where the profile configures no pattern, or where the scope spans
+    /// branches. All three are the same answer from the reader's point of view — the report opens with its own
+    /// heading — so they are one nullable field rather than a state to distinguish.
+    /// </remarks>
+    string? Headline = null);
 
 /// <summary>A stored export and the short-lived link to fetch it.</summary>
 public sealed record ReportExportView(string ReportId, string Format, Uri Url, DateTimeOffset ExpiresAt, long Bytes);
@@ -158,3 +171,56 @@ public sealed record SummaryGenerated(
     string Model,
     int PromptCharacters,
     int CompletionCharacters) : IntegrationEvent;
+
+// =================================================================================================================
+// The node brief (v2 §01.4).
+//
+// One shape at every depth. A brief for a node returns what its directly-attached people did, plus one block per
+// direct child already aggregated over that child's whole subtree — so a head at any level can hand their brief
+// upward and it slots into their parent's report as a single block, instead of being copy-pasted into it.
+// =================================================================================================================
+
+/// <summary>Deterministic totals. Every number here is computed in code; the model only ever writes prose.</summary>
+public sealed record BriefTotals(
+    decimal ActualHours,
+    decimal PlannedHours,
+    int EntryCount,
+    int PeopleCount)
+{
+    public static readonly BriefTotals Zero = new(0m, 0m, 0, 0);
+
+    public static BriefTotals operator +(BriefTotals left, BriefTotals right) => new(
+        left.ActualHours + right.ActualHours,
+        left.PlannedHours + right.PlannedHours,
+        left.EntryCount + right.EntryCount,
+        left.PeopleCount + right.PeopleCount);
+}
+
+/// <param name="Own">What people attached directly to this node did.</param>
+/// <param name="Subtree">
+/// <paramref name="Own"/> plus every descendant's. The rollup invariant is that this equals Own plus the sum of
+/// the children's Subtree — which holds by construction because both are folded from the same per-node slices.
+/// </param>
+/// <summary>Where a node's hours went, biggest first. Three of these are what a headline sentence is made of.</summary>
+public sealed record BriefHighlight(string ActivityTypeCode, decimal ActualHours);
+
+/// <summary>Something dated the brief has to mention: the next COPIL, a freeze, a go-live (v2 §07.3).</summary>
+public sealed record BriefUpcoming(string Kind, string NameKey, DateTimeOffset At, string? Severity);
+
+public sealed record NodeBriefBlock(
+    Guid NodeId,
+    Guid? ParentId,
+    int LevelNo,
+    string Code,
+    string Name,
+    BriefTotals Own,
+    BriefTotals Subtree,
+    IReadOnlyList<NodeBriefBlock> Children,
+    IReadOnlyList<BriefHighlight> Highlights);
+
+public sealed record NodeBriefView(
+    Guid NodeId,
+    ReportPeriodView Period,
+    string Depth,
+    NodeBriefBlock Node,
+    IReadOnlyList<BriefUpcoming> Upcoming);

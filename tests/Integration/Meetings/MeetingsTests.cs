@@ -474,7 +474,8 @@ public sealed class MeetingsTests(PostgresFixture postgres)
 
         await CreateSpecialDayAsync(factory, SeedOrganisation.Olivier, date: Monday.AddDays(2));
 
-        var board = await BoardAsync(factory, SeedOrganisation.Olivier, "department");
+        var board = await BoardAsync(
+            factory, SeedOrganisation.Olivier, "node", SeedOrganisation.Departments.InformationSystems);
 
         // The seam S6 left open, now filled: the board payload and every client template were unchanged, and this
         // is the evidence that the registration swap actually reaches the canvas.
@@ -492,8 +493,10 @@ public sealed class MeetingsTests(PostgresFixture postgres)
 
         await CreateSeriesAsync(factory, SeedOrganisation.Thomas);
 
-        var infrastructure = await BoardAsync(factory, SeedOrganisation.Thomas, "team");
-        var development = await BoardAsync(factory, SeedOrganisation.Olivier, "team");
+        var infrastructure = await BoardAsync(
+            factory, SeedOrganisation.Thomas, "node", SeedOrganisation.Units.Infrastructure);
+        var development = await BoardAsync(
+            factory, SeedOrganisation.Olivier, "node", SeedOrganisation.Units.Development);
 
         // Olivier heads the department and can *see* Infrastructure's stand-up. Drawing it on Development's board
         // would bury the things that board exists to show — so the overlay source narrows to the board that asked.
@@ -511,7 +514,7 @@ public sealed class MeetingsTests(PostgresFixture postgres)
         var board = await BoardAsync(
             factory,
             SeedOrganisation.Laurent,
-            "department",
+            "node",
             SeedOrganisation.Departments.InformationSystems);
 
         // Asking for another department's board is not refused; it simply contains nothing Laurent may see. The

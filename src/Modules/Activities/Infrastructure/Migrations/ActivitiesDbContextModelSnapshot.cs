@@ -128,6 +128,17 @@ namespace Cracra.Modules.Activities.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("modified_by");
 
+                    b.PrimitiveCollection<Guid[]>("NodeAncestorIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("node_ancestor_ids");
+
+                    b.Property<Guid>("NodeId")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
+
                     b.Property<string>("Note")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")

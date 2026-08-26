@@ -10,7 +10,7 @@
         <span class="project__fact">
           <span class="project__fact-label">{{ t('projects.cost') }}</span>
           <span class="num project__fact-value">
-            {{ detail.costAmount | number: '1.0-0' }} {{ detail.costCurrency }}
+            {{ detail.costAmount | localizedNumber: '1.0-0' }} {{ detail.costCurrency }}
           </span>
         </span>
 

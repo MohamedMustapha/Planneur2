@@ -79,7 +79,7 @@ internal static class ExternalConnections
             Headers = AntiForgery,
             DataObject = new Dictionary<string, object?>
             {
-                ["departmentId"] = InformationSystems,
+                ["nodeId"] = InformationSystems,
                 ["provider"] = provider,
                 ["name"] = name,
 

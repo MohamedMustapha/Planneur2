@@ -1,4 +1,4 @@
-using Microsoft.Playwright;
+﻿using Microsoft.Playwright;
 
 namespace Cracra.Tests.E2E;
 
@@ -35,7 +35,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Capex", new() { Timeout = TimeoutMs });
@@ -56,7 +56,13 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/finance");
+        // This journey is a before-and-after, and the "before" is "nothing is priced yet" — which its own
+        // "after" destroys. The Aspire stack persists between runs, so without this the test passes once on a
+        // fresh database and fails on every run after it, for a reason that looks nothing like its cause.
+        // Cleared through the public API, so the arrangement obeys the policies a head would.
+        await ClearRateCardsAsync(page);
+
+        await page.GotoAsync("/finance/capex-opex");
 
         // Before: hours and the entered cost, and the screen says so rather than showing a zero somebody would
         // read as "this was free".
@@ -85,7 +91,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Règles et taux" })
             .ClickAsync(new() { Timeout = TimeoutMs });
@@ -107,7 +113,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Exporter (Excel)" })
             .ClickAsync(new() { Timeout = TimeoutMs });
@@ -125,7 +131,7 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
 
         // The rail does not offer it, so this is somebody typing the URL — which the client is deliberately not
         // the thing that stops.
-        await page.GotoAsync("/finance");
+        await page.GotoAsync("/finance/capex-opex");
 
         await Expect(page.Locator(".finance__error"))
             .ToContainTextAsync("chefs de département", new() { Timeout = TimeoutMs });
@@ -157,6 +163,26 @@ public sealed class FinanceJourneyTests(AspireStackFixture stack)
     /// same RLS a real head and a real developer would. A precondition set up behind the application's back can
     /// arrange states the application would never allow.
     /// </remarks>
+    /// <summary>Removes every rate card this head can see, so the "nothing is priced" state is reachable again.</summary>
+    private static async Task ClearRateCardsAsync(IPage page)
+    {
+        // The header goes on the GET too: the BFF requires it on every proxied /api call, not only on writes.
+        var existing = await page.APIRequest.GetAsync(
+            "/api/finance/rate-cards",
+            new APIRequestContextOptions { Headers = AntiForgery });
+
+        existing.Status.ShouldBe(200);
+
+        foreach (var card in (await existing.JsonAsync())!.Value.EnumerateArray())
+        {
+            var id = card.GetProperty("id").GetString();
+
+            await page.APIRequest.DeleteAsync(
+                $"/api/finance/rate-cards/{id}",
+                new APIRequestContextOptions { Headers = AntiForgery });
+        }
+    }
+
     private async Task ProjectWithLoggedHoursAsync()
     {
         var head = await stack.SignInAsync("olivier.marchand");

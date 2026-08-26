@@ -1,4 +1,4 @@
-using Cracra.BuildingBlocks.Abstractions;
+﻿using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Persistence.Behaviors;
 using Cracra.BuildingBlocks.Web.Users;
@@ -141,7 +141,7 @@ internal sealed class LogActivityHandler(
         var placement = await directory.GetPlacementAsync(personId, ct)
             ?? throw new DomainRuleViolationException("That person is not in the directory.");
 
-        var policy = await directory.GetPolicyAsync(placement.DepartmentId, ct);
+        var policy = await directory.GetPolicyAsync(placement.DepartmentId, placement.UnitId, ct);
 
         var kind = Enum.Parse<ActivityKind>(request.Kind, ignoreCase: true);
         SourceCodes.TryParse(request.Source, out var source);
@@ -237,7 +237,7 @@ internal sealed class AmendActivityHandler(
     {
         var entry = await repository.GetAsync(request.Id, ct);
 
-        var policy = await directory.GetPolicyAsync(entry.DepartmentId, ct);
+        var policy = await directory.GetPolicyAsync(entry.DepartmentId, entry.UnitId, ct);
 
         if (request.ProjectId is { } projectId && !await projects.IsMemberAsync(projectId, entry.PersonId, ct))
         {

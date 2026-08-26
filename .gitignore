@@ -12,6 +12,9 @@ TestResults/
 node_modules/
 web/dist/
 web/.angular/
+# The Angular build cache also lands at the repo root when the dev server is started from here
+# rather than from web/, which is what the AppHost does.
+/.angular/
 npm-debug.log*
 
 # Aspire / local

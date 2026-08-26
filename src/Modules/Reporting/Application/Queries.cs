@@ -1,3 +1,4 @@
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Reporting.Contracts;
@@ -25,6 +26,35 @@ internal sealed class GetReportHandler(ReportRequestService reports)
         await reports.ComposeAsync(
             reports.Describe(request.Scope, request.ScopeId, request.Period, request.From, request.To, request.Language),
             ct);
+}
+
+public sealed record GetNodeBriefQuery(
+    Guid NodeId,
+    string? Period,
+    DateOnly? From,
+    DateOnly? To,
+    string? Depth) : IRequest<NodeBriefView?>;
+
+internal sealed class GetNodeBriefHandler(INodeBriefComposer briefs)
+    : IRequestHandler<GetNodeBriefQuery, NodeBriefView?>
+{
+    public async Task<NodeBriefView?> Handle(GetNodeBriefQuery request, CancellationToken ct)
+    {
+        var depth = request.Depth is { Length: > 0 } asked ? asked.ToLowerInvariant() : BriefDepths.Direct;
+
+        if (!BriefDepths.Supported.Contains(depth, StringComparer.Ordinal))
+        {
+            throw new DomainRuleViolationException($"'{request.Depth}' is not a supported depth.");
+        }
+
+        var period = ReportPeriod.Resolve(
+            request.Period,
+            request.From,
+            request.To,
+            DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime));
+
+        return await briefs.ComposeAsync(request.NodeId, period, depth, ct);
+    }
 }
 
 /// <summary>
@@ -56,7 +86,7 @@ internal sealed class ReportRequestService(ReportComposer composer, ISummaryStor
 
         return new ReportDescriptor(
             resolved,
-            ReportScope.RequiresScopeId(resolved) ? scopeId : null,
+            ReportScope.AcceptsScopeId(resolved) ? scopeId : null,
             ReportPeriod.Resolve(period, from, to, DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime)),
             // The viewer's own language, not a query parameter's, unless one was given. A report that silently
             // switched language would read as a bug to the person holding it.

@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Abstractions;
+using Cracra.BuildingBlocks.Abstractions;
 
 namespace Cracra.Modules.Activities.Domain;
 
@@ -35,6 +35,10 @@ public sealed class ActivityEntry
     public Guid UnitId { get; private init; }
 
     public Guid DepartmentId { get; private init; }
+
+    public Guid NodeId { get; private set; }
+
+    public Guid[] NodeAncestorIds { get; private set; } = [];
 
     /// <summary>The taxonomy code, resolved against the department's configuration when the entry was written.</summary>
     public string ActivityTypeCode { get; private set; } = string.Empty;

@@ -1,0 +1,383 @@
+<ng-container *transloco="let t">
+  <app-page-header
+    [title]="t('meetings.title')"
+    [purpose]="t('meetings.page.purpose')"
+    [guidance]="true"
+  />
+
+  @if (failure()) {
+    <p class="alert" role="alert">{{ t('meetings.failed') }}</p>
+  }
+
+  <section class="panel">
+    <header class="panel__head">
+      <h2 class="panel__title">{{ t('meetings.upcoming') }}</h2>
+
+      <label class="facet">
+        <span class="facet__label">{{ t('meetings.level') }}</span>
+        <select class="control" (change)="setLevel($any($event.target).value)">
+          <option value="">{{ t('common.all') }}</option>
+          @for (level of levels; track level) {
+            <option [value]="level" [selected]="levelFilter() === level">
+              {{ t('meetings.levelOption.' + level) }}
+            </option>
+          }
+        </select>
+      </label>
+    </header>
+
+    @if (meetings.windowLoading()) {
+      <p class="muted">{{ t('common.loading') }}</p>
+    } @else if (occurrences().length === 0) {
+      <p class="muted">{{ t('meetings.noOccurrences') }}</p>
+    } @else {
+      <ul class="occurrences">
+        @for (occurrence of occurrences(); track occurrence.id) {
+          <li class="occurrence">
+            <div class="occurrence__when">
+              <span class="occurrence__date">{{ occurrence.startsAt | date: 'EEE d MMM' }}</span>
+              <span class="occurrence__time">{{ occurrence.startsAt | date: 'HH:mm' }}</span>
+            </div>
+
+            <div class="occurrence__what">
+              <span class="occurrence__name">{{ t(occurrence.nameKey) }}</span>
+              <span class="chip">{{ t('meetings.levelOption.' + occurrence.level) }}</span>
+              @if (occurrence.minutesPublished) {
+                <span class="chip chip--done">{{ t('meetings.crPublished') }}</span>
+              } @else if (occurrence.minutesId) {
+                <span class="chip chip--draft">{{ t('meetings.crDraft') }}</span>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="button"
+              [disabled]="busy()"
+              (click)="write(occurrence)"
+            >
+              {{ occurrence.minutesId ? t('meetings.openCr') : t('meetings.writeCr') }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="panel">
+    <header class="panel__head">
+      <h2 class="panel__title">{{ t('meetings.latestCrs') }}</h2>
+    </header>
+
+    @if (minutes.latest().length === 0) {
+      <p class="muted">{{ t('meetings.noCrs') }}</p>
+    } @else {
+      <ul class="digests">
+        @for (digest of minutes.latest(); track digest.id) {
+          <li class="digest">
+            <span class="digest__date">{{ digest.occurredAt | date: 'd MMM' }}</span>
+            <span class="digest__name">{{ t(digest.nameKey) }}</span>
+            <span class="chip">{{ t('meetings.levelOption.' + digest.level) }}</span>
+            @if (digest.summary) {
+              <p class="digest__summary">{{ digest.summary }}</p>
+            }
+            <span class="digest__counts">
+              {{ t('meetings.decisionCount', { count: digest.decisionCount }) }} ·
+              {{ t('meetings.openActionCount', { count: digest.openActionCount }) }}
+            </span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="panel">
+    <header class="panel__head">
+      <h2 class="panel__title">
+        {{ t('meetings.tracker') }}
+        @if (minutes.overdueCount() > 0) {
+          <span class="badge badge--late">{{ minutes.overdueCount() }}</span>
+        }
+      </h2>
+
+      <div class="facets">
+        @if (isHead()) {
+          <label class="facet">
+            <span class="facet__label">{{ t('meetings.trackerOwner') }}</span>
+            <select class="control" (change)="setTrackerOwner($any($event.target).value)">
+              <option value="me" [selected]="minutes.trackerOwner() === 'me'">
+                {{ t('meetings.ownerMe') }}
+              </option>
+              <option value="scope" [selected]="minutes.trackerOwner() === 'scope'">
+                {{ t('meetings.ownerScope') }}
+              </option>
+            </select>
+          </label>
+        }
+
+        <label class="facet">
+          <span class="facet__label">{{ t('meetings.trackerStatus') }}</span>
+          <select class="control" (change)="setTrackerStatus($any($event.target).value)">
+            <option value="open" [selected]="minutes.trackerStatus() === 'open'">
+              {{ t('meetings.statusOpen') }}
+            </option>
+            <option value="overdue" [selected]="minutes.trackerStatus() === 'overdue'">
+              {{ t('meetings.statusOverdue') }}
+            </option>
+            <option value="all" [selected]="minutes.trackerStatus() === 'all'">
+              {{ t('common.all') }}
+            </option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    @if (minutes.actions().length === 0) {
+      <p class="muted">{{ t('meetings.noActions') }}</p>
+    } @else {
+      <ul class="actions">
+        @for (action of minutes.actions(); track action.id) {
+          <li class="action" [class.action--late]="action.overdue">
+            <span class="action__title">{{ action.title }}</span>
+            <span class="action__owner">{{ action.ownerName ?? t('common.unknown') }}</span>
+            <span class="action__due">
+              {{ action.due ? (action.due | date: 'd MMM') : t('meetings.noDue') }}
+            </span>
+            @if (action.linkType !== 'none') {
+              <span class="chip">{{ t('meetings.linkOption.' + action.linkType) }}</span>
+            }
+            @if (action.status === 'open') {
+              <button
+                type="button"
+                class="button button--quiet"
+                [disabled]="busy()"
+                (click)="settleFromTracker(action.minutesId, action.id)"
+              >
+                {{ t('meetings.markDone') }}
+              </button>
+            } @else {
+              <span class="chip chip--done">{{ t('meetings.actionStatus.' + action.status) }}</span>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  @if (editing(); as minute) {
+    <div class="drawer" role="dialog" aria-modal="true">
+      <header class="drawer__head">
+        <h2 class="drawer__title">{{ t('meetings.crTitle') }}</h2>
+        <span class="chip">{{ t('meetings.levelOption.' + minute.level) }}</span>
+        @if (minute.published) {
+          <span class="chip chip--done">{{ t('meetings.crPublished') }}</span>
+        }
+        <button type="button" class="button button--quiet" (click)="close()">
+          {{ t('common.close') }}
+        </button>
+      </header>
+
+      <section class="field">
+        <label class="field__label" for="cr-agenda">{{ t('meetings.agenda') }}</label>
+        <textarea
+          id="cr-agenda"
+          class="control control--area"
+          rows="3"
+          [disabled]="minute.published"
+          [ngModel]="draftAgenda()"
+          (ngModelChange)="draftAgenda.set($event)"
+          (blur)="saveText()"
+        ></textarea>
+        @if (!minute.published) {
+          <div class="row">
+            <button type="button" class="button button--quiet" [disabled]="busy()" (click)="proposeSummary()">
+              {{ t('meetings.proposeSummary') }}
+            </button>
+            <span class="muted">{{ t('meetings.proposeHint') }}</span>
+          </div>
+        }
+      </section>
+
+      @if (!minute.published && people().length > 0) {
+        <section class="field">
+          <span class="field__label">{{ t('meetings.attendance') }}</span>
+          <ul class="attendance">
+            @for (person of people(); track person.id) {
+              <li>
+                <button
+                  type="button"
+                  class="chip chip--toggle"
+                  [class.chip--on]="attendees().has(person.id)"
+                  [disabled]="busy()"
+                  (click)="toggleAttendance(person.id)"
+                >
+                  {{ person.displayName }}
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <section class="field">
+        <span class="field__label">{{ t('meetings.decisions') }}</span>
+
+        @if (minute.decisions.length === 0) {
+          <p class="muted">{{ t('meetings.noDecisions') }}</p>
+        } @else {
+          <ul class="decisions">
+            @for (decision of minute.decisions; track decision.id) {
+              <li class="decision">
+                <span class="decision__text">{{ decision.text }}</span>
+                @if (decision.decidedBy) {
+                  <span class="decision__by">{{ decision.decidedBy }}</span>
+                }
+                @if (decision.rationale) {
+                  <p class="decision__why">{{ decision.rationale }}</p>
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        @if (!minute.published) {
+          <div class="row">
+            <input
+              class="control"
+              type="text"
+              [placeholder]="t('meetings.decisionText')"
+              [ngModel]="decisionText()"
+              (ngModelChange)="decisionText.set($event)"
+            />
+            <input
+              class="control"
+              type="text"
+              [placeholder]="t('meetings.decidedBy')"
+              [ngModel]="decisionBy()"
+              (ngModelChange)="decisionBy.set($event)"
+            />
+            <button type="button" class="button" [disabled]="busy()" (click)="decide()">
+              {{ t('meetings.addDecision') }}
+            </button>
+          </div>
+        }
+      </section>
+
+      <section class="field">
+        <span class="field__label">{{ t('meetings.actions') }}</span>
+
+        @if (minute.actions.length === 0) {
+          <p class="muted">{{ t('meetings.noActions') }}</p>
+        } @else {
+          <ul class="actions">
+            @for (action of minute.actions; track action.id) {
+              <li class="action" [class.action--late]="action.overdue">
+                <span class="action__title">{{ action.title }}</span>
+                <span class="action__owner">{{ action.ownerName ?? t('common.unknown') }}</span>
+                <span class="action__due">
+                  {{ action.due ? (action.due | date: 'd MMM') : t('meetings.noDue') }}
+                </span>
+                @if (action.linkType !== 'none') {
+                  <span class="chip">{{ t('meetings.linkOption.' + action.linkType) }}</span>
+                }
+                @if (action.status === 'open') {
+                  <button
+                    type="button"
+                    class="button button--quiet"
+                    [disabled]="busy()"
+                    (click)="settle(action.id)"
+                  >
+                    {{ t('meetings.markDone') }}
+                  </button>
+                } @else {
+                  <span class="chip chip--done">
+                    {{ t('meetings.actionStatus.' + action.status) }}
+                  </span>
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        <div class="row">
+          <input
+            class="control"
+            type="text"
+            [placeholder]="t('meetings.actionTitle')"
+            [ngModel]="actionTitle()"
+            (ngModelChange)="actionTitle.set($event)"
+          />
+
+          <select
+            class="control"
+            [ngModel]="actionOwner()"
+            (ngModelChange)="actionOwner.set($event)"
+          >
+            <option value="">{{ t('meetings.ownerMe') }}</option>
+            @for (person of people(); track person.id) {
+              <option [value]="person.id">{{ person.displayName }}</option>
+            }
+          </select>
+
+          <input
+            class="control"
+            type="date"
+            [ngModel]="actionDue()"
+            (ngModelChange)="actionDue.set($event)"
+          />
+
+          <select class="control" (change)="setLinkType($any($event.target).value)">
+            @for (kind of linkTypes; track kind) {
+              <option [value]="kind" [selected]="actionLinkType() === kind">
+                {{ t('meetings.linkOption.' + kind) }}
+              </option>
+            }
+          </select>
+
+          @if (actionLinkType() !== 'none') {
+            <select
+              class="control"
+              [ngModel]="actionLinkId()"
+              (ngModelChange)="actionLinkId.set($event)"
+            >
+              <option value="">{{ t('common.none') }}</option>
+              @for (option of linkOptions(); track option.id) {
+                <option [value]="option.id">{{ option.label }}</option>
+              }
+            </select>
+          }
+
+          <button type="button" class="button" [disabled]="busy()" (click)="assign()">
+            {{ t('meetings.addAction') }}
+          </button>
+        </div>
+      </section>
+
+      <section class="field">
+        <label class="field__label" for="cr-summary">{{ t('meetings.summary') }}</label>
+        <textarea
+          id="cr-summary"
+          class="control control--area"
+          rows="4"
+          [disabled]="minute.published"
+          [ngModel]="draftSummary()"
+          (ngModelChange)="draftSummary.set($event)"
+          (blur)="saveText()"
+        ></textarea>
+      </section>
+
+      @if (!minute.published) {
+        <footer class="drawer__foot">
+          <p class="muted">{{ t('meetings.publishHint') }}</p>
+          <button
+            type="button"
+            class="button button--primary"
+            [disabled]="busy() || !canPublish()"
+            (click)="publish()"
+          >
+            {{ t('meetings.publish') }}
+          </button>
+        </footer>
+      }
+    </div>
+  }
+</ng-container>

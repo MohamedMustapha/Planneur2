@@ -27,7 +27,10 @@ public static class ReportingModule
         services.AddScoped<ReportComposer>();
         services.AddScoped<ReportRequestService>();
 
+        services.AddScoped<INodeBriefComposer, NodeBriefComposer>();
+
         services.AddScoped<IActivityQueries, ActivityAdapter>();
+        services.AddScoped<IOrgNodeQueries, OrgNodeQueries>();
         services.AddScoped<IDirectoryQueries, DirectoryAdapter>();
         services.AddScoped<IProjectQueries, ProjectAdapter>();
         services.AddScoped<IPortfolioQueries, PortfolioAdapter>();

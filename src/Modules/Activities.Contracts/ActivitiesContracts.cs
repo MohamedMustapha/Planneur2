@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Messaging;
+using Cracra.BuildingBlocks.Messaging;
 
 namespace Cracra.Modules.Activities.Contracts;
 
@@ -34,7 +34,9 @@ public sealed record ActivityEntryView(
     bool Reconciled,
     string? Note,
     /// <summary>0-100 where somebody set one, null where the board should fall back to plan-versus-actual.</summary>
-    int? PercentComplete = null);
+    int? PercentComplete = null,
+    /// <summary>The branch this hour hangs off. What a cross-branch item's contribution table groups by.</summary>
+    Guid NodeId = default);
 
 /// <summary>
 /// The shape of a working day, as the department defines it.
@@ -169,7 +171,39 @@ public interface IActivityScheduler
         DateOnly from,
         DateOnly to,
         CancellationToken ct);
+
+    /// <summary>
+    /// Hours over a window, grouped by the node each entry is attached to, for every node in a subtree.
+    /// </summary>
+    /// <remarks>
+    /// Grouped rather than rolled up: the caller owns the tree and can fold these into any shape it needs, and a
+    /// per-node total that the caller sums itself is what makes the rollup invariant hold by construction instead
+    /// of by two aggregations agreeing. RLS still applies, so this returns the viewer's own view of the subtree.
+    /// </remarks>
+    Task<IReadOnlyList<NodeHoursSlice>> GetHoursByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct);
+
+    /// <summary>Where each node's hours actually went, one row per node and activity type (v2 §07.3).</summary>
+    Task<IReadOnlyList<NodeActivitySlice>> GetHoursByNodeAndTypeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct);
 }
+
+/// <summary>One node's hours against one activity type. The brief's "what did they actually do" line.</summary>
+public sealed record NodeActivitySlice(Guid NodeId, string ActivityTypeCode, decimal ActualHours);
+
+/// <summary>What one node's directly-attached people logged over a window.</summary>
+public sealed record NodeHoursSlice(
+    Guid NodeId,
+    decimal ActualHours,
+    decimal PlannedHours,
+    int EntryCount,
+    int PeopleCount);
 
 /// <summary>
 /// A department's activity types, as this module resolved them.
@@ -202,4 +236,10 @@ public interface IActivityTaxonomyReader
     /// because a map would bake in the assumption that the hierarchy is only ever one level deep.
     /// </remarks>
     Task<IReadOnlyList<ActivityTypeOption>> GetTypesAsync(Guid? departmentId, CancellationToken ct);
+}
+
+/// <summary>The caller's own week, for modules that advise rather than draw it (v2 02.5).</summary>
+public interface IWeeklySummaryReader
+{
+    Task<WeeklySummary> GetCurrentAsync(CancellationToken ct);
 }

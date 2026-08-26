@@ -22,12 +22,19 @@ public static class PortfolioModule
         services.AddScoped<IPortfolioRepository, PortfolioRepository>();
         services.AddScoped<IProjectsPort, ProjectsAdapter>();
         services.AddScoped<IDirectoryPort, DirectoryAdapter>();
+        services.AddScoped<IDirectoryNodePort, DirectoryNodeAdapter>();
+        services.AddScoped<ICatalogReader, CatalogReader>();
+        services.AddScoped<Contracts.IPortfolioItemProvisioner, ItemProvisioner>();
 
         // Iteration ranges, drawn as overlays on the S6 project board.
         services.AddScoped<Contracts.IPortfolioIterationReader, PortfolioIterationReader>();
 
         // The lifecycle board, counted by S8's department and portfolio reports.
         services.AddScoped<Contracts.IPortfolioBoardReader, PortfolioBoardReader>();
+
+        // Item references, read by Strategy when it draws an objective's contributions (v2 §06).
+        services.AddScoped<Contracts.ICatalogLookupReader, CatalogLookupReader>();
+        services.AddScoped<Contracts.IIterationDeadlineReader, IterationDeadlineReader>();
 
         services.AddMediatorHandlersFrom(typeof(PortfolioModule).Assembly);
 

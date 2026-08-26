@@ -1,0 +1,278 @@
+<ng-container *transloco="let t">
+  <app-page-header
+    [title]="t('admin.title')"
+    [purpose]="t('admin.page.purpose')"
+    [guidance]="true"
+  />
+  <app-settings-tabs />
+
+  @if (failure(); as reason) {
+    <p class="alert" role="alert">
+      {{ reason === 'forbidden' ? t('admin.forbidden') : t('admin.failed') }}
+    </p>
+  }
+
+  <div class="admin">
+    <section class="panel">
+      <header class="panel__head">
+        <h2 class="panel__title">{{ t('admin.tree') }}</h2>
+      </header>
+
+      @if (org.isLoading()) {
+        <p class="muted">{{ t('common.loading') }}</p>
+      } @else if (org.nodes().length === 0) {
+        <p class="muted">{{ t('admin.noNodes') }}</p>
+      } @else {
+        <ul class="tree">
+          @for (node of org.nodes(); track node.id) {
+            <li class="tree__row" [class.tree__row--off]="!node.active">
+              <button
+                type="button"
+                class="link"
+                [style.padding-inline-start]="indent(node.depth)"
+                (click)="choose(node)"
+              >
+                {{ node.name || node.code }}
+              </button>
+              <span class="muted">{{ node.code }}</span>
+              @if (node.headName) {
+                <span class="chip">{{ node.headName }}</span>
+              }
+              @if (!node.active) {
+                <span class="chip chip--off">{{ t('admin.inactive') }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="panel">
+      <header class="panel__head">
+        <h2 class="panel__title">{{ t('admin.levels') }}</h2>
+      </header>
+
+      <ul class="levels">
+        @for (level of org.levels(); track level.levelNo) {
+          <li class="level">
+            <span class="num">{{ level.levelNo }}</span>
+            <span class="level__code">{{ level.code }}</span>
+            @if (!level.peopleAllowed) {
+              <span class="chip">{{ t('admin.noPeople') }}</span>
+            }
+            @if (level.isOptional) {
+              <span class="chip">{{ t('admin.optional') }}</span>
+            }
+            <button type="button" class="link" (click)="editLevel(level)">
+              {{ t('admin.edit') }}
+            </button>
+          </li>
+        }
+      </ul>
+
+      @if (editingLevel(); as level) {
+        <div class="form">
+          <label class="field">
+            <span class="field__label">{{ t('admin.levelCode') }}</span>
+            <input
+              class="control"
+              type="text"
+              [ngModel]="level.code"
+              (ngModelChange)="patchLevel({ code: $event })"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('admin.levelLabel') }}</span>
+            <input
+              class="control"
+              type="text"
+              [ngModel]="level.labelKey"
+              (ngModelChange)="patchLevel({ labelKey: $event })"
+            />
+          </label>
+
+          <label class="field">
+            <span class="field__label">{{ t('admin.headLabel') }}</span>
+            <input
+              class="control"
+              type="text"
+              [ngModel]="level.headLabelKey"
+              (ngModelChange)="patchLevel({ headLabelKey: $event })"
+            />
+          </label>
+
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              [ngModel]="level.peopleAllowed"
+              (ngModelChange)="patchLevel({ peopleAllowed: $event })"
+            />
+            {{ t('admin.peopleAllowed') }}
+          </label>
+
+          <label class="checkbox">
+            <input
+              type="checkbox"
+              [ngModel]="level.isOptional"
+              (ngModelChange)="patchLevel({ isOptional: $event })"
+            />
+            {{ t('admin.isOptional') }}
+          </label>
+
+          <button type="button" class="button button--primary" [disabled]="busy()" (click)="saveLevel()">
+            {{ t('common.save') }}
+          </button>
+        </div>
+      }
+    </section>
+  </div>
+
+  <section class="panel">
+    <header class="panel__head">
+      <h2 class="panel__title">{{ t('admin.audit') }}</h2>
+    </header>
+
+    @if (trail().length === 0) {
+      <p class="muted">{{ t('admin.noAudit') }}</p>
+    } @else {
+      <ul class="trail">
+        @for (entry of trail(); track entry.id) {
+          <li class="trail__line">
+            <span class="num">{{ entry.occurredAt | date: 'd MMM HH:mm' }}</span>
+            <span class="chip">{{ t('admin.action.' + entry.action) }}</span>
+            <span>{{ entry.detail }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  @if (selected(); as node) {
+    <div class="drawer" role="dialog" aria-modal="true">
+      <header class="drawer__head">
+        <h2 class="drawer__title">{{ node.name || node.code }}</h2>
+        <button type="button" class="button button--quiet" (click)="close()">
+          {{ t('common.close') }}
+        </button>
+      </header>
+
+      <section class="form">
+        <label class="field">
+          <span class="field__label">{{ t('admin.name') }}</span>
+          <input class="control" type="text" [ngModel]="draftName()" (ngModelChange)="draftName.set($event)" />
+        </label>
+        <button type="button" class="button" [disabled]="busy()" (click)="rename()">
+          {{ t('admin.rename') }}
+        </button>
+      </section>
+
+      <section class="form">
+        <label class="field">
+          <span class="field__label">{{ t('admin.parent') }}</span>
+          <select class="control" [ngModel]="draftParent()" (ngModelChange)="draftParent.set($event)">
+            <option value="">{{ t('admin.atTheTop') }}</option>
+            @for (candidate of parentOptions(); track candidate.id) {
+              <option [value]="candidate.id">{{ candidate.name || candidate.code }}</option>
+            }
+          </select>
+        </label>
+        <p class="muted">{{ t('admin.reparentHint') }}</p>
+        <button type="button" class="button" [disabled]="busy()" (click)="reparent()">
+          {{ t('admin.move') }}
+        </button>
+      </section>
+
+      <section class="form">
+        <label class="field">
+          <span class="field__label">{{ t('admin.head') }}</span>
+          <select class="control" [ngModel]="draftHead()" (ngModelChange)="draftHead.set($event)">
+            <option value="">{{ t('common.none') }}</option>
+            @for (person of people(); track person.id) {
+              <option [value]="person.id">{{ person.displayName }}</option>
+            }
+          </select>
+        </label>
+        <button type="button" class="button" [disabled]="busy()" (click)="setHead()">
+          {{ t('common.save') }}
+        </button>
+      </section>
+
+      <section class="form">
+        <span class="field__label">{{ t('admin.members') }}</span>
+        @if (org.members().length === 0) {
+          <p class="muted">{{ t('admin.noMembers') }}</p>
+        } @else {
+          <ul class="members">
+            @for (member of org.members(); track member.personId) {
+              <li class="member">
+                <span class="member__name">{{ member.displayName }}</span>
+                @if (!member.fromDirectory) {
+                  <span class="chip">{{ t('admin.moved') }}</span>
+                }
+                <select
+                  class="control"
+                  [attr.aria-label]="t('admin.moveTo')"
+                  [ngModel]="moveTo()[member.personId] ?? ''"
+                  (ngModelChange)="chooseDestination(member.personId, $event)"
+                >
+                  <option value="">{{ t('admin.moveTo') }}</option>
+                  @for (candidate of org.nodes(); track candidate.id) {
+                    @if (candidate.id !== node.id) {
+                      <option [value]="candidate.id">{{ candidate.name || candidate.code }}</option>
+                    }
+                  }
+                </select>
+                <button
+                  type="button"
+                  class="button"
+                  [disabled]="busy() || !moveTo()[member.personId]"
+                  (click)="movePerson(member.personId)"
+                >
+                  {{ t('admin.move') }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="form">
+        <span class="field__label">{{ t('admin.addChild') }}</span>
+        <div class="row">
+          <input
+            class="control"
+            type="text"
+            [placeholder]="t('admin.levelCode')"
+            [ngModel]="childCode()"
+            (ngModelChange)="childCode.set($event)"
+          />
+          <input
+            class="control"
+            type="text"
+            [placeholder]="t('admin.name')"
+            [ngModel]="childName()"
+            (ngModelChange)="childName.set($event)"
+          />
+          <select class="control" [ngModel]="childLevel()" (ngModelChange)="childLevel.set($event)">
+            @for (level of org.levels(); track level.levelNo) {
+              @if (level.levelNo > node.levelNo) {
+                <option [value]="level.levelNo">{{ level.code }}</option>
+              }
+            }
+          </select>
+          <button type="button" class="button" [disabled]="busy()" (click)="addChild()">
+            {{ t('admin.create') }}
+          </button>
+        </div>
+      </section>
+
+      <footer class="drawer__foot">
+        <p class="muted">{{ t('admin.deactivateHint') }}</p>
+        <button type="button" class="button" [disabled]="busy()" (click)="toggleActive()">
+          {{ node.active ? t('admin.deactivate') : t('admin.reactivate') }}
+        </button>
+      </footer>
+    </div>
+  }
+</ng-container>

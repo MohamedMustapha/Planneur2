@@ -36,6 +36,20 @@ internal sealed class ActivityAdapter(IActivityScheduler activities, IDepartment
         CancellationToken ct) =>
         personIds.Count == 0 ? [] : await activities.GetForPeopleAsync(personIds, from, to, ct);
 
+    public async Task<IReadOnlyList<NodeHoursSlice>> HoursByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct) =>
+        await activities.GetHoursByNodeAsync(rootNodeId, from, to, ct);
+
+    public async Task<IReadOnlyList<NodeActivitySlice>> HighlightsByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct) =>
+        await activities.GetHoursByNodeAndTypeAsync(rootNodeId, from, to, ct);
+
     public async Task<IReadOnlyList<ActivityEntryView>> ForProjectAsync(
         Guid projectId,
         DateOnly from,
@@ -61,7 +75,8 @@ internal sealed class ActivityAdapter(IActivityScheduler activities, IDepartment
     }
 }
 
-internal sealed class DirectoryAdapter(IDirectoryReader directory) : IDirectoryQueries
+internal sealed class DirectoryAdapter(IDirectoryReader directory, INodeProfileReader profiles)
+    : IDirectoryQueries
 {
     public async Task<PersonSummary?> PersonAsync(Guid personId, CancellationToken ct) =>
         await directory.GetPersonAsync(personId, ct);
@@ -81,6 +96,9 @@ internal sealed class DirectoryAdapter(IDirectoryReader directory) : IDirectoryQ
         departmentIds.Count == 0
             ? new Dictionary<Guid, string>()
             : await directory.GetDepartmentNameKeysAsync(departmentIds, ct);
+
+    public async Task<NodeProfileSnapshot?> NodeProfileAsync(Guid nodeId, CancellationToken ct) =>
+        nodeId == Guid.Empty ? null : await profiles.ResolveForNodeAsync(nodeId, ct);
 }
 
 internal sealed class ProjectAdapter(IProjectProvisioner projects, IProjectTeamReader teams) : IProjectQueries
@@ -110,14 +128,19 @@ internal sealed class ProjectAdapter(IProjectProvisioner projects, IProjectTeamR
         await teams.GetTeamAsync(projectId, ct);
 }
 
-internal sealed class PortfolioAdapter(IPortfolioIterationReader iterations, IPortfolioBoardReader board)
-    : IPortfolioQueries
+internal sealed class PortfolioAdapter(
+    IPortfolioIterationReader iterations,
+    IPortfolioBoardReader board,
+    ICatalogLookupReader catalog) : IPortfolioQueries
 {
     public async Task<PortfolioBoard> BoardAsync(CancellationToken ct) =>
         await board.GetBoardAsync(null, ct);
 
     public async Task<IReadOnlyList<IterationSummary>> IterationsAsync(Guid projectId, CancellationToken ct) =>
         await iterations.GetForProjectAsync(projectId, ct);
+
+    public async Task<CatalogCardRef?> ItemAsync(Guid itemId, CancellationToken ct) =>
+        (await catalog.GetByIdsAsync([itemId], ct)).FirstOrDefault();
 }
 
 internal sealed class MeetingAdapter(IMeetingCalendarReader meetings) : IMeetingQueries
@@ -278,4 +301,16 @@ internal sealed class SummaryStore(ReportingDbContext context, IUserContext user
         summary.Language,
         summary.PromptHash,
         summary.CreatedAt);
+}
+
+internal sealed class OrgNodeQueries(IOrgNodeReader nodes) : IOrgNodeQueries
+{
+    public async Task<IReadOnlyList<OrgNodeSummary>> SubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await nodes.GetSubtreeAsync(nodeId, ct);
+
+    public async Task<Guid?> HomeNodeAsync(Guid personId, CancellationToken ct) =>
+        (await nodes.GetHomeScopeAsync(personId, ct))?.NodeId;
+
+    public async Task<IReadOnlyList<NodeMember>> PeopleInSubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await nodes.GetPeopleInSubtreeAsync(nodeId, ct);
 }

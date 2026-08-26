@@ -68,6 +68,71 @@ namespace Cracra.Modules.Finance.Data.Migrations
                     b.ToTable("outbox_message", "finance");
                 });
 
+            modelBuilder.Entity("Cracra.Modules.Finance.Domain.Budget", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<int>("FiscalYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("fiscal_year");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<Guid>("ModifiedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("modified_by");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("OwnerNodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_node_id");
+
+                    b.Property<decimal>("PlannedAmount")
+                        .HasPrecision(16, 2)
+                        .HasColumnType("numeric(16,2)")
+                        .HasColumnName("planned_amount");
+
+                    b.Property<Guid>("ScopeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("scope_id");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("scope_type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_budget");
+
+                    b.HasIndex("OwnerNodeId", "FiscalYear")
+                        .HasDatabaseName("ix_budget_owner_node_id_fiscal_year");
+
+                    b.HasIndex("ScopeType", "ScopeId", "FiscalYear")
+                        .IsUnique()
+                        .HasDatabaseName("ix_budget_scope_type_scope_id_fiscal_year");
+
+                    b.ToTable("budget", "finance");
+                });
+
             modelBuilder.Entity("Cracra.Modules.Finance.Domain.CapexOpexRule", b =>
                 {
                     b.Property<Guid>("Id")
@@ -124,8 +189,289 @@ namespace Cracra.Modules.Finance.Data.Migrations
 
                     b.ToTable("capex_opex_rule", "finance", t =>
                         {
-                            t.HasCheckConstraint("ck_capex_opex_rule_treatments", "build_treatment in ('capex', 'opex', 'excluded')\nand run_treatment in ('capex', 'opex', 'excluded')\nand qol_treatment in ('capex', 'opex', 'excluded')\nand admin_treatment in ('capex', 'opex', 'excluded')");
+                            t.HasCheckConstraint("ck_capex_opex_rule_treatments", "build_treatment in ('capex', 'opex', 'excluded')\r\nand run_treatment in ('capex', 'opex', 'excluded')\r\nand qol_treatment in ('capex', 'opex', 'excluded')\r\nand admin_treatment in ('capex', 'opex', 'excluded')");
                         });
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Finance.Domain.CostComponent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(16, 2)
+                        .HasColumnType("numeric(16,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<Guid?>("ExternalWorkerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("external_worker_id");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("label");
+
+                    b.Property<Guid?>("LicenseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("license_id");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<Guid>("ModifiedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("modified_by");
+
+                    b.Property<Guid?>("NodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("OwnerNodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_node_id");
+
+                    b.Property<DateOnly>("PeriodEnd")
+                        .HasColumnType("date")
+                        .HasColumnName("period_end");
+
+                    b.Property<DateOnly>("PeriodStart")
+                        .HasColumnType("date")
+                        .HasColumnName("period_start");
+
+                    b.Property<string>("Treatment")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("treatment");
+
+                    b.Property<bool>("TreatmentOverridden")
+                        .HasColumnType("boolean")
+                        .HasColumnName("treatment_overridden");
+
+                    b.HasKey("Id")
+                        .HasName("pk_cost_component");
+
+                    b.HasIndex("ItemId")
+                        .HasDatabaseName("ix_cost_component_item_id");
+
+                    b.HasIndex("NodeId")
+                        .HasDatabaseName("ix_cost_component_node_id");
+
+                    b.HasIndex("OwnerNodeId")
+                        .HasDatabaseName("ix_cost_component_owner_node_id");
+
+                    b.HasIndex("PeriodStart", "PeriodEnd")
+                        .HasDatabaseName("ix_cost_component_period_start_period_end");
+
+                    b.ToTable("cost_component", "finance", t =>
+                        {
+                            t.HasCheckConstraint("ck_cost_component_owner", "(item_id is null) <> (node_id is null)");
+                        });
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Finance.Domain.ExternalWorker", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.Property<DateOnly?>("ContractEnd")
+                        .HasColumnType("date")
+                        .HasColumnName("contract_end");
+
+                    b.Property<DateOnly>("ContractStart")
+                        .HasColumnType("date")
+                        .HasColumnName("contract_start");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("display_name");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<Guid>("ModifiedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("modified_by");
+
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
+
+                    b.Property<Guid?>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("rate");
+
+                    b.Property<string>("RateUnit")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("rate_unit");
+
+                    b.Property<string>("Role")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("role");
+
+                    b.Property<string>("Vendor")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("vendor");
+
+                    b.HasKey("Id")
+                        .HasName("pk_external_worker");
+
+                    b.HasIndex("ContractEnd")
+                        .HasDatabaseName("ix_external_worker_contract_end");
+
+                    b.HasIndex("ItemId")
+                        .HasDatabaseName("ix_external_worker_item_id");
+
+                    b.HasIndex("NodeId")
+                        .HasDatabaseName("ix_external_worker_node_id");
+
+                    b.ToTable("external_worker", "finance");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Finance.Domain.License", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.Property<string>("BillingCycle")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("billing_cycle");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<Guid>("ModifiedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("modified_by");
+
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("product_name");
+
+                    b.Property<DateOnly?>("RenewalDate")
+                        .HasColumnType("date")
+                        .HasColumnName("renewal_date");
+
+                    b.Property<int>("Seats")
+                        .HasColumnType("integer")
+                        .HasColumnName("seats");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.Property<string>("Vendor")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("vendor");
+
+                    b.HasKey("Id")
+                        .HasName("pk_license");
+
+                    b.HasIndex("ItemId")
+                        .HasDatabaseName("ix_license_item_id");
+
+                    b.HasIndex("NodeId")
+                        .HasDatabaseName("ix_license_node_id");
+
+                    b.HasIndex("RenewalDate")
+                        .HasDatabaseName("ix_license_renewal_date");
+
+                    b.ToTable("license", "finance");
                 });
 
             modelBuilder.Entity("Cracra.Modules.Finance.Domain.RateCard", b =>

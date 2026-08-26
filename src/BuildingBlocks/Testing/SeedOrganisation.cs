@@ -1,4 +1,5 @@
-﻿using Cracra.BuildingBlocks.Web.Users;
+using Cracra.BuildingBlocks.Web.Users;
+using Cracra.Modules.Directory.Services;
 
 namespace Cracra.BuildingBlocks.Testing;
 
@@ -105,14 +106,39 @@ public static class SeedOrganisation
         string userName,
         Guid unitId,
         Guid departmentId,
-        params string[] roles) => new()
+        params string[] roles)
+    {
+        var headed = new List<Guid>();
+
+        if (roles.Contains(ContextualRole.UnitHead, StringComparer.Ordinal))
+        {
+            headed.Add(unitId);
+        }
+
+        if (roles.Contains(ContextualRole.DepartmentHead, StringComparer.Ordinal))
+        {
+            headed.Add(departmentId);
+        }
+
+        var collapsed = roles
+            .Select(role => ContextualRole.LegacyHeadRoles.Contains(role, StringComparer.Ordinal)
+                ? ContextualRole.NodeHead
+                : role)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        return new UserContext
         {
             IsAuthenticated = true,
             UserId = Guid.Parse(id),
             UserName = userName,
             UnitId = unitId,
             DepartmentIds = [departmentId],
-            Roles = roles,
+            NodeId = unitId,
+            NodePath = [OrgTreeSql.UnclassifiedRootId, departmentId, unitId],
+            HeadedNodes = headed,
+            Roles = collapsed,
             Language = SupportedLanguages.French,
         };
+    }
 }

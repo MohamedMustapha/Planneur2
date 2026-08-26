@@ -23,15 +23,18 @@
   "nav": {
     "ariaLabel": "Main navigation",
     "myBoard": "My board",
-    "myTeam": "My team",
-    "myUnit": "My unit",
-    "department": "Department",
-    "projects": "Projects",
     "portfolio": "Portfolio",
     "reports": "Reports",
     "kudos": "Kudos",
     "finance": "Finance",
-    "settings": "Settings"
+    "settings": "Settings",
+    "problems": "Problems",
+    "strategy": "Strategy",
+    "meetings": "Meetings",
+    "myWeek": "My week",
+    "myNode": "My scope",
+    "directory": "Org chart",
+    "more": "More"
   },
   "scope": {
     "ariaLabel": "Viewing scope",
@@ -93,11 +96,6 @@
     "page": {
       "purpose": "Fill in this week’s slots — the target is 35 h."
     },
-    "guidance": {
-      "remaining": "You have {{hours}} h left to log this week.",
-      "complete": "Your week is complete — nothing to do.",
-      "overtime": "This week is {{hours}} h over target — a justification is required."
-    },
     "hoursShort": "{{hours}} h",
     "noEntriesHelp": "Drag across a day in the grid, or use Quick add."
   },
@@ -107,7 +105,14 @@
     "close": "Close",
     "cancel": "Cancel",
     "delete": "Delete",
-    "choose": "Choose…"
+    "choose": "Choose…",
+    "next": "Next",
+    "back": "Back",
+    "hidden": "Hidden",
+    "save": "Save",
+    "none": "None",
+    "all": "All",
+    "unknown": "Unknown"
   },
   "org": {
     "title": "Organisation directory",
@@ -156,7 +161,9 @@
     "workingDay": "Working day",
     "workingDayHint": "The day's bounds and its morning / afternoon sessions. Drives the board's axis and the quick-add presets. An empty object means the defaults (06:00–20:00, 09:00–13:00, 14:00–18:00).",
     "shiftTemplates": "Shift slots",
-    "shiftTemplatesHint": "Slots the scheduler offers and their minimum staffing. Consumed by slice S6."
+    "shiftTemplatesHint": "Slots the scheduler offers and their minimum staffing. Consumed by slice S6.",
+    "tabProfiles": "Profiles",
+    "tabOrg": "Organisation"
   },
   "directory": {
     "functionalRole": {
@@ -292,6 +299,70 @@
     "scope": {
       "all": "All",
       "mine": "Mine"
+    },
+    "type": {
+      "project": "Project",
+      "platform": "Platform",
+      "product": "Product",
+      "run-service": "Run service",
+      "business-initiative": "Business initiative",
+      "intelligence": "Intelligence"
+    },
+    "classification": {
+      "build": "Build",
+      "run": "Run",
+      "mixed": "Mixed"
+    },
+    "epic": {
+      "idea": "Idea",
+      "planned": "Planned",
+      "in-progress": "In progress",
+      "done": "Done",
+      "deferred": "Deferred"
+    },
+    "catalog": {
+      "title": "Catalog",
+      "subtitle": "{{count}} items you can see",
+      "new": "New",
+      "facets": "Filters",
+      "type": "Type",
+      "classification": "Classification",
+      "state": "Lifecycle",
+      "category": "Category",
+      "any": "Any",
+      "sharedOnly": "Shared only",
+      "empty": "Nothing matches these filters.",
+      "team": "Team",
+      "consumes": "Consumes",
+      "consumedBy": "Consumed by",
+      "estimate": "Estimate",
+      "confidential": "Confidential",
+      "noTeam": "Nobody is on this yet.",
+      "noDependencies": "Depends on nothing.",
+      "notConsumed": "Nothing leans on this.",
+      "node": "Node",
+      "awaitingBanner": "A {{version}} is queued behind what is live.",
+      "createFailed": "Could not create it. Check the name and type.",
+      "epics": "Features",
+      "noEpics": "No features listed.",
+      "epicName": "Feature name",
+      "version": "Version",
+      "declareNext": "Declare the queued version",
+      "findDependency": "Search for what this consumes…",
+      "awaitFailed": "Not possible: at least one planned or deferred feature is needed.",
+      "dependencyFailed": "Dependency refused: it would close a loop.",
+      "iterations": "Iterations",
+      "noIterations": "No iterations planned.",
+      "iterationFailed": "Iteration refused. Check the start date."
+    },
+    "wizard": {
+      "step1": "1. Type",
+      "step2": "2. Identity",
+      "name": "Name",
+      "summary": "Summary",
+      "categoryHint": "infra, collaboration, security…",
+      "similar": "This may already exist:",
+      "create": "Create"
     }
   },
   "activity": {
@@ -316,7 +387,22 @@
       "project-build": "Project — BUILD",
       "project-run": "Project — RUN",
       "quality-of-life": "Quality of life",
-      "recruitment-admin": "Recruitment & admin"
+      "recruitment-admin": "Recruitment & admin",
+      "dev": "Development",
+      "architecture": "Architecture",
+      "testing": "Testing",
+      "deployment": "Deployment",
+      "incident": "Incident",
+      "request": "Request",
+      "patching": "Patching",
+      "on-call": "On call",
+      "triage": "Triage",
+      "intervention": "Intervention",
+      "escalation": "Escalation",
+      "research": "Research",
+      "analysis": "Analysis",
+      "note": "Note production",
+      "watch": "Watch"
     },
     "source": {
       "manual": "Typed in",
@@ -334,12 +420,9 @@
   },
   "boards": {
     "title": "Schedules",
-    "subtitle": "The team, unit, project and department boards",
+    "subtitle": "The plan for your scope and your items",
     "my": "My board",
-    "team": "My team",
-    "unit": "My unit",
     "project": "Project",
-    "department": "Department",
     "weekNav": "Week navigation",
     "pool": "Queue",
     "poolEmpty": "Nothing waiting.",
@@ -361,7 +444,14 @@
     "description": "Description",
     "descriptionHint": "What the task is, in a line",
     "percentComplete": "Progress",
-    "addTask": "Add task"
+    "addTask": "Add task",
+    "node": "My scope",
+    "myNode": "My scope",
+    "showPeople": "Show people",
+    "showBranches": "Show branches",
+    "page": {
+      "purpose": "Compare the load across your scope, week by week."
+    }
   },
   "shift": {
     "morning": "Morning",
@@ -455,7 +545,67 @@
       "FR": "Fri",
       "SA": "Sat",
       "SU": "Sun"
-    }
+    },
+    "page": {
+      "purpose": "What is coming, what came out of it, and what you still owe."
+    },
+    "upcoming": "Coming up",
+    "level": "Level",
+    "levelOption": {
+      "unit": "Team",
+      "node": "Branch",
+      "cross-node": "Cross-branch",
+      "service": "Service",
+      "project": "Project"
+    },
+    "noOccurrences": "No meetings in the fortnight.",
+    "writeCr": "Write the minutes",
+    "openCr": "Open the minutes",
+    "crDraft": "Draft",
+    "crPublished": "Published",
+    "latestCrs": "Latest minutes",
+    "noCrs": "Nothing published to your scopes.",
+    "decisionCount": "{{count}} decision(s)",
+    "openActionCount": "{{count}} open action(s)",
+    "tracker": "Actions",
+    "trackerOwner": "Scope",
+    "ownerMe": "Me",
+    "ownerScope": "My scope",
+    "trackerStatus": "Status",
+    "statusOpen": "Open",
+    "statusOverdue": "Overdue",
+    "noActions": "Nothing outstanding.",
+    "noDue": "No date",
+    "markDone": "Done",
+    "actionStatus": {
+      "open": "Open",
+      "done": "Done",
+      "dropped": "Dropped"
+    },
+    "crTitle": "Minutes",
+    "agenda": "Agenda",
+    "attendance": "Present",
+    "decisions": "Decisions",
+    "noDecisions": "Nothing recorded yet.",
+    "decisionText": "What was decided",
+    "decidedBy": "Decided by",
+    "addDecision": "Add",
+    "actions": "Actions",
+    "actionTitle": "What is to be done",
+    "addAction": "Add",
+    "linkOption": {
+      "none": "No link",
+      "problem": "Problem",
+      "item": "Item",
+      "objective": "Objective"
+    },
+    "summary": "Summary",
+    "publish": "Publish",
+    "publishHint": "Publishing distributes the minutes to their scope. Decisions are fixed afterwards.",
+    "failed": "That did not work.",
+    "crossNodeTargets": "Branches involved",
+    "proposeSummary": "Propose a summary",
+    "proposeHint": "A draft to review: the model uses only the decisions and actions already recorded."
   },
   "reports": {
     "title": "Status report",
@@ -464,9 +614,6 @@
     "exportReady": "Download the PDF",
     "exportExpires": "The link is valid for a few minutes.",
     "periodNav": "Previous or next period",
-    "project": "Project",
-    "chooseProject": "Choose a project…",
-    "pickProject": "Choose a project to see its report.",
     "sectionEmpty": "Nothing in this period.",
     "genericError": "The report could not be produced.",
     "period": {
@@ -487,11 +634,9 @@
       "none": "No narrative for this period."
     },
     "scope": {
-      "my": "My work",
-      "team": "My project teams",
-      "unit": "My unit",
-      "department": "My department",
-      "project": "Project",
+      "me": "My work",
+      "node": "My scope",
+      "item": "Item",
       "portfolio": "Portfolio"
     },
     "section": {
@@ -510,7 +655,8 @@
       "cost": "Cost",
       "states": "Portfolio states",
       "archived": "Archived",
-      "priority": "Priorities"
+      "priority": "Priorities",
+      "identity": "Identity"
     },
     "metric": {
       "targetHours": "Target",
@@ -563,7 +709,8 @@
       "projects": "Projects",
       "contribution": "By department",
       "states": "By state",
-      "priority": "Highest priority"
+      "priority": "Highest priority",
+      "branchRollup": "By branch"
     },
     "note": {
       "overTarget": "The week is over target.",
@@ -581,8 +728,25 @@
         "active": "Active",
         "dephase": "Archived"
       },
-      "truncated": "List truncated: {{count}} more not shown."
-    }
+      "truncated": "List truncated: {{count}} more not shown.",
+      "notRunning": "Nothing is running on this item yet."
+    },
+    "brief": {
+      "title": "Brief",
+      "depthDirect": "One line per branch",
+      "depthAll": "Expand everything",
+      "showDetails": "Details",
+      "showBrief": "Back to the brief",
+      "empty": "Nothing to report this period.",
+      "headline": "{{people}} people · ~{{hours}} h",
+      "nothingToReport": "Nothing to report",
+      "upcoming": "Coming up"
+    },
+    "node": "Scope",
+    "myNode": "My scope",
+    "item": "Item",
+    "chooseItem": "Choose an item…",
+    "pickItem": "Choose an item to see its report."
   },
   "kudos": {
     "title": "Kudos",
@@ -790,7 +954,80 @@
     "effectiveTo": "Until",
     "effectiveToHint": "Exclusive. Empty means still current.",
     "current": "current",
-    "addRateCard": "Add the rate"
+    "addRateCard": "Add the rate",
+    "consolidated": {
+      "title": "Consolidated budget",
+      "subtitle": "Fiscal year {{year}}",
+      "node": "Node",
+      "capex": "Capex",
+      "opex": "Opex",
+      "planned": "Budget",
+      "variance": "Variance",
+      "own": "Own",
+      "subtree": "Total",
+      "mode": "View",
+      "both": "Capex and opex",
+      "landed": "Showing the highest node you head.",
+      "noBudget": "—",
+      "licenses": "Licences",
+      "externals": "Consultants",
+      "renewing": "Renewing within 90 days",
+      "expiring": "Contracts ending",
+      "seats": "Seats",
+      "annual": "Annual cost",
+      "renewal": "Renewal",
+      "contractEnd": "Contract end",
+      "empty": "Nothing to show for this year.",
+      "export": "Export"
+    },
+    "editor": {
+      "manage": "Manage",
+      "envelope": "Envelope",
+      "costs": "Costs",
+      "licenses": "Licences",
+      "externals": "Consultants",
+      "scope": "Scope",
+      "scopeOption": {
+        "node": "The branch",
+        "item": "An item"
+      },
+      "item": "Item",
+      "planned": "Planned amount",
+      "notes": "Note",
+      "noCosts": "No cost lines yet.",
+      "label": "Label",
+      "amount": "Amount",
+      "onTheBranch": "On the branch",
+      "add": "Add",
+      "product": "Product",
+      "vendor": "Vendor",
+      "seats": "Seats",
+      "unitCost": "Unit cost",
+      "consultant": "Name",
+      "role": "Role",
+      "rate": "Rate",
+      "licenceHint": "A licence records its own cost line: nothing to enter twice.",
+      "failed": "That did not save.",
+      "kindOption": {
+        "internal-effort": "Internal effort",
+        "license": "Licence",
+        "external-worker": "Consultant",
+        "cloud": "Cloud",
+        "hardware": "Hardware",
+        "service-fee": "Service fee",
+        "other": "Other"
+      },
+      "cycleOption": {
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly",
+        "one-off": "One-off"
+      },
+      "rateUnitOption": {
+        "day": "Per day",
+        "hour": "Per hour"
+      }
+    }
   },
   "preferences": {
     "language": "Language",
@@ -807,6 +1044,298 @@
   },
   "obligations": {
     "weekOverTarget": "{{hours}} h over target",
-    "dismiss": "Hide until the next load"
+    "dismiss": "Hide until the next load",
+    "overdueActions": "{{count}} overdue action(s)",
+    "awaitingTriage": "{{count}} problem(s) awaiting triage",
+    "overTarget": "Week over target by {{hours}} h"
+  },
+  "profiles": {
+    "title": "Node profiles",
+    "subtitle": "A branch's behaviour, as data",
+    "existing": "Existing profiles",
+    "editor": "Editor",
+    "attach": "Attachment",
+    "new": "New",
+    "clone": "Clone",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Profile saved.",
+    "none": "No profiles yet.",
+    "code": "Code",
+    "labelKey": "Label key",
+    "boardArchetypes": "Boards (comma separated)",
+    "itemTypes": "Item types",
+    "solvesCategories": "Problem categories solved",
+    "headlinePattern": "Report headline pattern",
+    "activityTaxonomy": "Activity taxonomy (JSON)",
+    "capabilities": "Capabilities (JSON)",
+    "budgetDefaults": "Budget treatment (JSON)",
+    "inheritHint": "Leave empty to inherit from above.",
+    "attachUnit": "Unit",
+    "attachProfile": "Profile",
+    "chooseUnit": "Choose a unit",
+    "inherit": "Inherit",
+    "applyAttachment": "Attach",
+    "loadFailed": "Could not load the profiles.",
+    "saveFailed": "Could not save the profile."
+  },
+  "profile": {
+    "delivery": "Delivery",
+    "dispatch": "Dispatch",
+    "advisory": "Advisory"
+  },
+  "problems": {
+    "title": "Problems",
+    "subtitle": "What is costing you time",
+    "report": "Report a problem",
+    "sort": "Sort by",
+    "sortImpact": "Impact",
+    "sortVotes": "Votes",
+    "sortRecent": "Recent",
+    "empty": "Nothing reported yet.",
+    "votes": "votes",
+    "proposals": "proposals",
+    "hoursLost": "{{hours}} h/year lost",
+    "vote": "Me too",
+    "voted": "You voted",
+    "propose": "Propose a fix",
+    "triage": "Triage",
+    "accept": "Accept",
+    "decline": "Decline",
+    "duplicate": "Duplicate",
+    "convert": "Convert to a project",
+    "reason": "Reason",
+    "titleField": "What happens?",
+    "descriptionField": "Details",
+    "categoryField": "Category",
+    "timeLossField": "Hours lost each time",
+    "frequencyField": "How often",
+    "affectedField": "People affected",
+    "similar": "Already reported?",
+    "submit": "Send",
+    "converted": "Converted to a project",
+    "category": {
+      "work-process": "Work process",
+      "project": "Project",
+      "quality-of-life": "Quality of life",
+      "tooling": "Tooling",
+      "data": "Data",
+      "other": "Other"
+    },
+    "frequency": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "occasional": "Occasional"
+    },
+    "status": {
+      "new": "New",
+      "triaged": "Triaged",
+      "accepted": "Accepted",
+      "converted": "Converted",
+      "resolved": "Resolved",
+      "declined": "Declined",
+      "duplicate": "Duplicate"
+    }
+  },
+  "strategy": {
+    "title": "Strategy",
+    "subtitle": "What we committed to, and what is moving it",
+    "none": "No strategy has been set for your scope yet.",
+    "noObjectives": "This strategy has no objectives yet.",
+    "addObjective": "Add an objective",
+    "progress": "{{percent}}% done",
+    "expected": "{{percent}}% expected by now",
+    "attention": "{{count}} objective(s) need attention.",
+    "due": "due",
+    "overridden": "status set by hand",
+    "noWork": "Nothing is working on this.",
+    "alignment": "Alignment",
+    "unlinkedObjectives": "Objectives with no work behind them",
+    "unlinkedItems": "Work serving no objective",
+    "allLinked": "Every objective has work behind it.",
+    "allServed": "Every item serves an objective.",
+    "link": "Link",
+    "unlink": "Unlink",
+    "contributions": "Work behind this",
+    "keyResults": "Key results",
+    "reading": "Where it stands now",
+    "record": "Record",
+    "overrideStatus": "Status",
+    "derived": "Work it out from the numbers",
+    "titleField": "What are we trying to do?",
+    "descriptionField": "Details",
+    "metricField": "How is it measured?",
+    "baselineField": "Starting point",
+    "targetField": "Target",
+    "unitField": "Unit",
+    "dueField": "Due",
+    "weightField": "Weight",
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "closed": "Closed"
+    },
+    "objectiveStatus": {
+      "on-track": "On track",
+      "at-risk": "At risk",
+      "off-track": "Off track",
+      "done": "Done"
+    },
+    "metric": {
+      "number": "A number",
+      "percent": "A percentage",
+      "currency": "An amount",
+      "milestone": "A milestone",
+      "qualitative": "A judgement"
+    }
+  },
+  "admin": {
+    "title": "Organisation structure",
+    "page": {
+      "purpose": "The levels, the tree of branches, and the trail of what was done to them."
+    },
+    "tree": "Tree",
+    "levels": "Levels",
+    "audit": "Trail",
+    "noNodes": "No branch is visible to you.",
+    "noAudit": "Nothing recent.",
+    "inactive": "Inactive",
+    "noPeople": "No people",
+    "optional": "Optional",
+    "edit": "Edit",
+    "levelCode": "Code",
+    "levelLabel": "Label",
+    "headLabel": "Head's title",
+    "peopleAllowed": "People may attach here",
+    "isOptional": "Optional level",
+    "name": "Name",
+    "rename": "Rename",
+    "parent": "Hangs off",
+    "atTheTop": "At the top",
+    "move": "Move",
+    "head": "Head",
+    "addChild": "Create a branch under it",
+    "create": "Create",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "reparentHint": "Moving a branch moves everything beneath it, and re-scopes who sees what at once.",
+    "deactivateHint": "A deactivated branch keeps its history; nobody new attaches to it.",
+    "forbidden": "You can see this branch but not change it.",
+    "failed": "That did not work.",
+    "action": {
+      "node-created": "Branch created",
+      "node-renamed": "Renamed",
+      "node-reparented": "Moved",
+      "node-deactivated": "Deactivated",
+      "node-reactivated": "Reactivated",
+      "node-head-set": "Head",
+      "level-saved": "Level",
+      "role-granted": "Role granted",
+      "role-revoked": "Role revoked",
+      "member-moved": "Person moved"
+    },
+    "members": "Members",
+    "noMembers": "Nobody is attached to this branch.",
+    "moveTo": "Move to…",
+    "moved": "Moved"
+  },
+  "guidance": {
+    "action": {
+      "closeIteration": "Iteration {{iteration}} of {{item}} ends on {{date}}.",
+      "closeIteration.cta": "Open the card",
+      "fillWeek": "You have {{hours}} h left to log this week.",
+      "fillWeek.cta": "Log hours",
+      "overdueActions": "{{count}} minute action(s) are overdue.",
+      "overdueActions.cta": "Open minutes",
+      "reviewItems": "Nothing is waiting on you: review your items.",
+      "reviewItems.cta": "Open the catalog",
+      "reviewNode": "Nothing is waiting on you: review your scope.",
+      "reviewNode.cta": "Open the plan",
+      "reviewObjectives": "Nothing is waiting on you: review the objectives.",
+      "reviewObjectives.cta": "Open strategy",
+      "reviewOrg": "Nothing is waiting on you: check the organisation.",
+      "reviewOrg.cta": "Open administration",
+      "triageProblems": "{{count}} problem(s) await your triage.",
+      "triageProblems.cta": "Triage",
+      "weekComplete": "Your week is complete — nothing to do.",
+      "weekComplete.cta": "See my week"
+    }
+  },
+  "coach": {
+    "skip": "Skip",
+    "next": "Next",
+    "done": "Done",
+    "replay": "Replay the tour",
+    "member": {
+      "week": {
+        "title": "Your week",
+        "body": "Log your hours here; the meter tracks your target."
+      },
+      "problems": {
+        "title": "What wastes your time",
+        "body": "Report an irritant — no role required."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only the task at hand. Always reversible, top right."
+      }
+    },
+    "head": {
+      "node": {
+        "title": "Your scope",
+        "body": "The branches beneath you, or the people where there are none."
+      },
+      "brief": {
+        "title": "The brief",
+        "body": "One block per branch, ready for a steering meeting."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only the comparison and today’s action."
+      }
+    },
+    "po": {
+      "items": {
+        "title": "Your items",
+        "body": "The catalog shows what already exists before you create one."
+      },
+      "progress": {
+        "title": "Progress",
+        "body": "Your item’s iterations and epics."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only progress and the steering meeting."
+      }
+    },
+    "pmo": {
+      "catalog": {
+        "title": "The portfolio",
+        "body": "Everything the organisation runs, as identity cards."
+      },
+      "objectives": {
+        "title": "Objectives",
+        "body": "What the items serve, and the gap that remains."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only the portfolio and the review."
+      }
+    },
+    "admin": {
+      "org": {
+        "title": "The organisation",
+        "body": "Levels, branches and placements change here, with no deployment."
+      },
+      "access": {
+        "title": "Access",
+        "body": "Roles and overrides, with their trail."
+      },
+      "focus": {
+        "title": "Focus mode",
+        "body": "Keeps only the administration screen."
+      }
+    }
   }
 }

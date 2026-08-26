@@ -112,6 +112,7 @@ describe('PreferencesStore', () => {
       departments: [],
       functionalRoleCodes: [],
       contextualRoles: [],
+      profile: null,
       ...overrides,
     };
   }

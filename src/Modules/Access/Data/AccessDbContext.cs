@@ -23,6 +23,8 @@ public sealed class AccessDbContext(DbContextOptions<AccessDbContext> options)
 
     public DbSet<ProjectMembership> ProjectMemberships => Set<ProjectMembership>();
 
+    public DbSet<AdminAuditEntry> AdminAudit => Set<AdminAuditEntry>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AccessDbContext).Assembly);
@@ -106,5 +108,24 @@ internal sealed class ProjectMembershipConfiguration : IEntityTypeConfiguration<
         // inside RLS predicates, which means once per row scanned — they need to be index lookups, not scans.
         builder.HasIndex(membership => membership.ProjectId);
         builder.HasIndex(membership => membership.DepartmentId);
+    }
+}
+
+internal sealed class AdminAuditEntryConfiguration : IEntityTypeConfiguration<AdminAuditEntry>
+{
+    public void Configure(EntityTypeBuilder<AdminAuditEntry> builder)
+    {
+        builder.ToTable("admin_audit");
+        builder.HasKey(entry => entry.Id);
+
+        builder.Property(entry => entry.Id).ValueGeneratedNever();
+        builder.Property(entry => entry.Action).HasMaxLength(64).IsRequired();
+        builder.Property(entry => entry.TargetType).HasMaxLength(32).IsRequired();
+        builder.Property(entry => entry.Detail).HasMaxLength(2000).IsRequired();
+
+        // The trail's two questions: "what happened here" and "what happened lately", both newest first.
+        builder.HasIndex(entry => new { entry.NodeId, entry.OccurredAt });
+        builder.HasIndex(entry => entry.OccurredAt);
+        builder.HasIndex(entry => entry.ActorPersonId);
     }
 }

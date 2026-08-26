@@ -33,7 +33,7 @@ public static class BffEndpoints
                 user.FindFirstValue("name"),
                 user.FindFirstValue("unit_id"),
                 ReadMulti(user, "dept_ids"),
-                ReadMulti(user, "contextual_roles"),
+                CollapseLegacyHeads(ReadMulti(user, "contextual_roles")),
                 user.FindFirstValue("functional_role"),
                 NormalizeLanguage(user.FindFirstValue("locale"))));
         }).AllowAnonymous();
@@ -65,6 +65,22 @@ public static class BffEndpoints
 
         return app;
     }
+
+    /// <summary>
+    /// Speaks the API's vocabulary rather than the realm's: v2 §01 collapsed the level-specific head roles into
+    /// one <c>node-head</c>, and the realm still issues the v1 names.
+    /// </summary>
+    /// <remarks>
+    /// The API does this in its effective-role middleware, and these roles decide only what the client draws — but
+    /// a client that hides every head control from a head is broken all the same, and it fails silently: the
+    /// button is simply absent, with no error anywhere to explain it. Duplicated rather than shared because the
+    /// BFF deliberately references nothing of the API's; the claim names beside it are literals for the same
+    /// reason.
+    /// </remarks>
+    private static string[] CollapseLegacyHeads(string[] roles) =>
+        [.. roles
+            .Select(role => role is "unit-head" or "dept-head" ? "node-head" : role)
+            .Distinct(StringComparer.Ordinal)];
 
     private static string[] ReadMulti(ClaimsPrincipal user, string claimType) =>
         [.. user.FindAll(claimType)

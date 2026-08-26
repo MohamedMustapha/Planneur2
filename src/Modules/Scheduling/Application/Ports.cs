@@ -1,4 +1,4 @@
-﻿using Cracra.Modules.Activities.Contracts;
+using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Scheduling.Contracts;
 using Cracra.Modules.Scheduling.Domain;
@@ -48,7 +48,23 @@ public interface IDirectoryPort
     Task<IReadOnlyList<Domain.ShiftTemplate>> GetShiftTemplatesAsync(Guid departmentId, CancellationToken ct);
 
     /// <summary>Which archetype a department's boards default to, from <c>default_board_layout</c>.</summary>
+    /// <remarks>
+    /// The pre-v2 answer, kept as the fallback for a deployment that has authored no profiles. Where a profile is
+    /// in force it wins, because the whole point of v2 §10 is that two units under one department can render
+    /// different boards — which a single department-wide column cannot express.
+    /// </remarks>
     Task<string> GetDefaultBoardLayoutAsync(Guid departmentId, CancellationToken ct);
+
+    /// <summary>The profile in force at a node, resolved through inheritance. Null where none is attached.</summary>
+    Task<NodeProfileSnapshot?> GetNodeProfileAsync(Guid? unitId, Guid departmentId, CancellationToken ct);
+
+    Task<NodeProfileSnapshot?> GetProfileForNodeAsync(Guid nodeId, CancellationToken ct);
+
+    Task<IReadOnlyList<OrgNodeSummary>> GetSubtreeAsync(Guid nodeId, CancellationToken ct);
+
+    Task<IReadOnlyList<NodeMember>> GetPeopleInSubtreeAsync(Guid nodeId, CancellationToken ct);
+
+    Task<HomeNodeScope?> GetHomeScopeAsync(Guid personId, CancellationToken ct);
 }
 
 public interface IProjectsPort

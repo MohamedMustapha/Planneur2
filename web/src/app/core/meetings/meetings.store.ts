@@ -11,6 +11,22 @@ export type SpecialDaySeverity = 'info' | 'warning' | 'critical';
 
 export type AttendanceResponse = 'accepted' | 'declined' | 'tentative';
 
+/**
+ * How wide a meeting reaches (v2 §07.1).
+ *
+ * Not the same question as the scope, which says who it targets. The scope decides who may see the meeting; the
+ * level decides how its CR is distributed and how a brief composes upward.
+ */
+export type MeetingLevel = 'unit' | 'node' | 'cross-node' | 'service' | 'project';
+
+export const MEETING_LEVELS: readonly MeetingLevel[] = [
+  'unit',
+  'node',
+  'cross-node',
+  'service',
+  'project',
+];
+
 export interface MeetingSeriesView {
   readonly id: string;
   readonly kind: string;
@@ -29,6 +45,9 @@ export interface MeetingSeriesView {
   readonly location: string | null;
   readonly videoLink: string | null;
   readonly active: boolean;
+  readonly level: MeetingLevel;
+  /** The child nodes a cross-node series brings together. Empty at every other level. */
+  readonly scopeIds: readonly string[];
 }
 
 export interface MeetingOccurrenceView {
@@ -45,6 +64,10 @@ export interface MeetingOccurrenceView {
   readonly videoLink: string | null;
   readonly notesRef: string | null;
   readonly myResponse: AttendanceResponse | null;
+  readonly level: MeetingLevel;
+  /** Null until somebody opens the CR, which is what the "write it" control keys off. */
+  readonly minutesId: string | null;
+  readonly minutesPublished: boolean;
 }
 
 export interface SpecialDayView {
@@ -83,6 +106,8 @@ export interface MeetingSeriesPayload {
   readonly location: string | null;
   readonly videoLink: string | null;
   readonly active: boolean;
+  readonly level: MeetingLevel;
+  readonly scopeIds: readonly string[];
 }
 
 export interface SpecialDayPayload {
@@ -96,7 +121,15 @@ export interface SpecialDayPayload {
   readonly description: string | null;
 }
 
-export const MEETING_KINDS = ['weekly', 'copil', 'retro', 'one-on-one', 'custom'] as const;
+export const MEETING_KINDS = [
+  'weekly',
+  'weekly-node',
+  'copil',
+  'service-review',
+  'retro',
+  'one-on-one',
+  'custom',
+] as const;
 
 export const SPECIAL_DAY_KINDS = [
   'patch-party',
@@ -193,7 +226,27 @@ export class MeetingsStore {
     this.upcomingResource.reload();
   }
 
-  /** The occurrences of one window. Not a resource: the manager asks for a window, it does not watch one. */
+  /** The occurrences of one window, as a resource, because the meetings page watches its own fortnight. */
+  readonly windowFrom = signal(asDate(new Date()));
+  readonly windowTo = signal(asDate(new Date(Date.now() + 13 * 86_400_000)));
+
+  private readonly windowResource = httpResource<readonly MeetingOccurrenceView[]>(() =>
+    this.session.isAuthenticated()
+      ? `/api/meetings/occurrences?from=${this.windowFrom()}&to=${this.windowTo()}`
+      : undefined,
+  );
+
+  readonly window = computed<readonly MeetingOccurrenceView[]>(
+    () => this.windowResource.value() ?? [],
+  );
+
+  readonly windowLoading = this.windowResource.isLoading;
+
+  reloadWindow(): void {
+    this.windowResource.reload();
+  }
+
+  /** The occurrences of one window, asked for once. The manager asks for a window; it does not watch one. */
   async occurrences(from: Date, to: Date): Promise<readonly MeetingOccurrenceView[]> {
     return firstValueFrom(
       this.http.get<MeetingOccurrenceView[]>(

@@ -1,4 +1,4 @@
-﻿using Cracra.Modules.Activities.Contracts;
+using Cracra.Modules.Activities.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Integrations.Contracts;
 using Cracra.Modules.Meetings.Contracts;
@@ -20,9 +20,25 @@ namespace Cracra.Modules.Scheduling.Infrastructure;
 /// the whole "join of already-authorized sets" idea — so using the reference reader here would silently widen
 /// every board past what the matrix allows.
 /// </remarks>
-internal sealed class DirectoryAdapter(IDirectoryReader directory, IDepartmentConfigReader configs)
+internal sealed class DirectoryAdapter(
+    IDirectoryReader directory,
+    IDepartmentConfigReader configs,
+    INodeProfileReader profiles,
+    IOrgNodeReader nodes)
     : Application.IDirectoryPort
 {
+    public async Task<NodeProfileSnapshot?> GetProfileForNodeAsync(Guid nodeId, CancellationToken ct) =>
+        await profiles.ResolveForNodeAsync(nodeId, ct);
+
+    public async Task<IReadOnlyList<OrgNodeSummary>> GetSubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await nodes.GetSubtreeAsync(nodeId, ct);
+
+    public async Task<IReadOnlyList<NodeMember>> GetPeopleInSubtreeAsync(Guid nodeId, CancellationToken ct) =>
+        await nodes.GetPeopleInSubtreeAsync(nodeId, ct);
+
+    public async Task<HomeNodeScope?> GetHomeScopeAsync(Guid personId, CancellationToken ct) =>
+        await nodes.GetHomeScopeAsync(personId, ct);
+
     public async Task<PersonSummary?> GetPersonAsync(Guid personId, CancellationToken ct) =>
         await directory.GetPersonAsync(personId, ct);
 
@@ -57,6 +73,14 @@ internal sealed class DirectoryAdapter(IDirectoryReader directory, IDepartmentCo
 
         return config?.DefaultBoardLayout ?? "week";
     }
+
+    public async Task<NodeProfileSnapshot?> GetNodeProfileAsync(
+        Guid? unitId,
+        Guid departmentId,
+        CancellationToken ct) =>
+        unitId is { } unit
+            ? await profiles.ResolveForUnitAsync(unit, ct)
+            : await profiles.ResolveForDepartmentAsync(departmentId, ct);
 }
 
 internal sealed class ProjectsAdapter(IProjectProvisioner projects, IProjectTeamReader teams)

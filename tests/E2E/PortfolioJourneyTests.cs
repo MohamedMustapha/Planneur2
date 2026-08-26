@@ -20,7 +20,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/portfolio");
+        await page.GotoAsync("/portfolio/flux");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Portefeuille", new() { Timeout = TimeoutMs });
@@ -40,7 +40,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/portfolio");
+        await page.GotoAsync("/portfolio/flux");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Proposer un candidat" })
             .ClickAsync(new() { Timeout = TimeoutMs });
@@ -64,7 +64,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("mehdi.sadaoui");
 
-        await page.GotoAsync("/portfolio");
+        await page.GotoAsync("/portfolio/flux");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Portefeuille", new() { Timeout = TimeoutMs });
@@ -82,11 +82,17 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
 
         var rail = page.GetByRole(AriaRole.Navigation);
 
+        // Under "Plus" for a member, and reachable — see CatalogJourneyTests for why it is there rather than
+        // hidden outright.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Plus" }).ClickAsync(new() { Timeout = TimeoutMs });
+
         await rail.GetByRole(AriaRole.Link, new() { Name = "Portefeuille" })
             .ClickAsync(new() { Timeout = TimeoutMs });
 
+        // The rail lands on the catalog now, not the flux board (v2 §03.2): the question people arrive with is
+        // "does this already exist", and the kanban answers a different one.
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
-            .ToContainTextAsync("Portefeuille", new() { Timeout = TimeoutMs });
+            .ToContainTextAsync("Catalogue", new() { Timeout = TimeoutMs });
 
         // The placeholder said "S4"; the real screen says nothing of the sort.
         await Expect(page.GetByText("S4", new() { Exact = true }))
@@ -98,7 +104,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/portfolio");
+        await page.GotoAsync("/portfolio/flux");
 
         var name = $"Socle {Guid.CreateVersion7().ToString("N")[^12..]}";
 
@@ -149,7 +155,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
         await Expect(page.Locator(".project__member-name").Filter(new() { HasText = "Camille Villeneuve" }))
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
-        await page.GotoAsync("/portfolio");
+        await page.GotoAsync("/portfolio/flux");
 
         card = page.Locator("article.item-card").Filter(new() { HasText = name });
 
@@ -205,7 +211,7 @@ public sealed class PortfolioJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/portfolio");
+        await page.GotoAsync("/portfolio/flux");
 
         var name = $"Trace {Guid.CreateVersion7().ToString("N")[^12..]}";
 

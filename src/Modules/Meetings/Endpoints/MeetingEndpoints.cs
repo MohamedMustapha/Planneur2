@@ -100,6 +100,12 @@ public class MeetingSeriesBody
 
     public bool Active { get; set; } = true;
 
+    /// <summary>unit / node / cross-node / service / project. Omitted means whatever the scope implies.</summary>
+    public string? Level { get; set; }
+
+    /// <summary>The child nodes a cross-node series brings together. Ignored at every other level.</summary>
+    public List<Guid>? ScopeIds { get; set; }
+
     internal MeetingSeriesRequest ToRequest() => new(
         Kind,
         NameKey,
@@ -113,7 +119,9 @@ public class MeetingSeriesBody
         OwnerPersonId,
         Location,
         VideoLink,
-        Active);
+        Active,
+        Level,
+        ScopeIds);
 }
 
 public sealed class CreateSeriesCommand : MeetingSeriesBody;

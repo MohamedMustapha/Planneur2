@@ -6,7 +6,12 @@ import { DepartmentScopeStore } from '../scope/department-scope.store';
 
 /** Mirrors `Cracra.Modules.Portfolio.Contracts`. */
 
-export type PortfolioState = 'considered' | 'committed' | 'active' | 'dephase';
+export type PortfolioState =
+  | 'considered'
+  | 'committed'
+  | 'active'
+  | 'awaiting-vnext'
+  | 'dephase';
 
 export type IterationLength = 'oneweek' | 'twoweeks' | 'onemonth' | 'custom';
 

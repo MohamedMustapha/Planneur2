@@ -23,15 +23,18 @@
   "nav": {
     "ariaLabel": "Navigation principale",
     "myBoard": "Mon tableau",
-    "myTeam": "Mon équipe",
-    "myUnit": "Mon unité",
-    "department": "Département",
-    "projects": "Projets",
     "portfolio": "Portefeuille",
     "reports": "Rapports",
     "kudos": "Kudos",
     "finance": "Finance",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "problems": "Problèmes",
+    "strategy": "Stratégie",
+    "meetings": "Réunions",
+    "myWeek": "Ma semaine",
+    "myNode": "Mon périmètre",
+    "directory": "Organigramme",
+    "more": "Plus"
   },
   "scope": {
     "ariaLabel": "Périmètre de consultation",
@@ -93,11 +96,6 @@
     "page": {
       "purpose": "Renseignez vos créneaux de la semaine — objectif 35 h."
     },
-    "guidance": {
-      "remaining": "Il vous reste {{hours}} h à saisir cette semaine.",
-      "complete": "Votre semaine est complète — rien à faire.",
-      "overtime": "Semaine au-delà de l’objectif de {{hours}} h — une justification est requise."
-    },
     "hoursShort": "{{hours}} h",
     "noEntriesHelp": "Glissez dans une journée de la grille, ou utilisez Ajout rapide."
   },
@@ -107,7 +105,14 @@
     "close": "Fermer",
     "cancel": "Annuler",
     "delete": "Supprimer",
-    "choose": "Choisir…"
+    "choose": "Choisir…",
+    "next": "Suivant",
+    "back": "Retour",
+    "hidden": "Masqué",
+    "save": "Enregistrer",
+    "none": "Aucun",
+    "all": "Tous",
+    "unknown": "Inconnu"
   },
   "org": {
     "title": "Annuaire de l'organisation",
@@ -156,7 +161,9 @@
     "workingDay": "Journée de travail",
     "workingDayHint": "Bornes de la journée et sessions matin / après-midi. Détermine l'axe du tableau et les raccourcis de saisie. Objet vide = valeurs par défaut (06:00–20:00, 09:00–13:00, 14:00–18:00).",
     "shiftTemplates": "Créneaux de service",
-    "shiftTemplatesHint": "Créneaux proposés par le planning et leur effectif minimum. Consommé par le lot S6."
+    "shiftTemplatesHint": "Créneaux proposés par le planning et leur effectif minimum. Consommé par le lot S6.",
+    "tabProfiles": "Profils",
+    "tabOrg": "Organisation"
   },
   "directory": {
     "functionalRole": {
@@ -292,6 +299,70 @@
     "scope": {
       "all": "Tout",
       "mine": "Les miens"
+    },
+    "type": {
+      "project": "Projet",
+      "platform": "Plateforme",
+      "product": "Produit",
+      "run-service": "Service récurrent",
+      "business-initiative": "Initiative métier",
+      "intelligence": "Intelligence économique"
+    },
+    "classification": {
+      "build": "Build",
+      "run": "Run",
+      "mixed": "Mixte"
+    },
+    "epic": {
+      "idea": "Idée",
+      "planned": "Planifié",
+      "in-progress": "En cours",
+      "done": "Terminé",
+      "deferred": "Reporté"
+    },
+    "catalog": {
+      "title": "Catalogue",
+      "subtitle": "{{count}} éléments que vous pouvez consulter",
+      "new": "Nouveau",
+      "facets": "Filtres",
+      "type": "Type",
+      "classification": "Classification",
+      "state": "Cycle de vie",
+      "category": "Catégorie",
+      "any": "Tous",
+      "sharedOnly": "Partagés uniquement",
+      "empty": "Rien ne correspond à ces filtres.",
+      "team": "Équipe",
+      "consumes": "Consomme",
+      "consumedBy": "Consommé par",
+      "estimate": "Estimation",
+      "confidential": "Confidentiel",
+      "noTeam": "Personne n’est encore affecté.",
+      "noDependencies": "Ne dépend de rien.",
+      "notConsumed": "Rien ne s’appuie dessus.",
+      "node": "Entité",
+      "awaitingBanner": "Une version {{version}} est en attente derrière ce qui est en production.",
+      "createFailed": "Création impossible. Vérifiez le nom et le type.",
+      "epics": "Fonctionnalités",
+      "noEpics": "Aucune fonctionnalité listée.",
+      "epicName": "Nom de la fonctionnalité",
+      "version": "Version",
+      "declareNext": "Déclarer la version en attente",
+      "findDependency": "Chercher ce que cela consomme…",
+      "awaitFailed": "Impossible : il faut au moins une fonctionnalité planifiée ou reportée.",
+      "dependencyFailed": "Dépendance refusée : elle fermerait une boucle.",
+      "iterations": "Itérations",
+      "noIterations": "Aucune itération planifiée.",
+      "iterationFailed": "Itération refusée. Vérifiez la date de début."
+    },
+    "wizard": {
+      "step1": "1. Type",
+      "step2": "2. Identité",
+      "name": "Nom",
+      "summary": "Résumé",
+      "categoryHint": "infra, collaboration, sécurité…",
+      "similar": "Cela existe peut-être déjà :",
+      "create": "Créer"
     }
   },
   "activity": {
@@ -316,7 +387,22 @@
       "project-build": "Projet — BUILD",
       "project-run": "Projet — RUN",
       "quality-of-life": "Qualité de vie",
-      "recruitment-admin": "Recrutement & administratif"
+      "recruitment-admin": "Recrutement & administratif",
+      "dev": "Développement",
+      "architecture": "Architecture",
+      "testing": "Tests",
+      "deployment": "Déploiement",
+      "incident": "Incident",
+      "request": "Demande",
+      "patching": "Correctifs",
+      "on-call": "Astreinte",
+      "triage": "Tri",
+      "intervention": "Intervention",
+      "escalation": "Escalade",
+      "research": "Recherche",
+      "analysis": "Analyse",
+      "note": "Production de notes",
+      "watch": "Veille"
     },
     "source": {
       "manual": "Saisie manuelle",
@@ -334,12 +420,9 @@
   },
   "boards": {
     "title": "Plannings",
-    "subtitle": "Les tableaux d'équipe, d'unité, de projet et de département",
+    "subtitle": "Le plan de votre périmètre et de vos projets",
     "my": "Mon tableau",
-    "team": "Mon équipe",
-    "unit": "Mon unité",
     "project": "Projet",
-    "department": "Département",
     "weekNav": "Navigation par semaine",
     "pool": "File d'attente",
     "poolEmpty": "Aucune demande en attente.",
@@ -361,7 +444,14 @@
     "description": "Description",
     "descriptionHint": "En une ligne, de quoi il s'agit",
     "percentComplete": "Avancement",
-    "addTask": "Ajouter la tâche"
+    "addTask": "Ajouter la tâche",
+    "node": "Mon périmètre",
+    "myNode": "Mon périmètre",
+    "showPeople": "Voir les personnes",
+    "showBranches": "Voir les branches",
+    "page": {
+      "purpose": "Comparer la charge de votre périmètre, semaine par semaine."
+    }
   },
   "shift": {
     "morning": "Matin",
@@ -455,7 +545,67 @@
       "FR": "Ven",
       "SA": "Sam",
       "SU": "Dim"
-    }
+    },
+    "page": {
+      "purpose": "Ce qui arrive, ce qui en est sorti, et ce que vous devez encore faire."
+    },
+    "upcoming": "À venir",
+    "level": "Niveau",
+    "levelOption": {
+      "unit": "Équipe",
+      "node": "Branche",
+      "cross-node": "Inter-branches",
+      "service": "Service",
+      "project": "Projet"
+    },
+    "noOccurrences": "Aucune réunion dans la quinzaine.",
+    "writeCr": "Écrire le CR",
+    "openCr": "Ouvrir le CR",
+    "crDraft": "Brouillon",
+    "crPublished": "Publié",
+    "latestCrs": "Derniers CR",
+    "noCrs": "Aucun CR publié pour vos périmètres.",
+    "decisionCount": "{{count}} décision(s)",
+    "openActionCount": "{{count}} action(s) ouverte(s)",
+    "tracker": "Actions",
+    "trackerOwner": "Portée",
+    "ownerMe": "Moi",
+    "ownerScope": "Mon périmètre",
+    "trackerStatus": "État",
+    "statusOpen": "Ouvertes",
+    "statusOverdue": "En retard",
+    "noActions": "Rien en attente.",
+    "noDue": "Sans échéance",
+    "markDone": "Fait",
+    "actionStatus": {
+      "open": "Ouverte",
+      "done": "Faite",
+      "dropped": "Abandonnée"
+    },
+    "crTitle": "Compte-rendu",
+    "agenda": "Ordre du jour",
+    "attendance": "Présents",
+    "decisions": "Décisions",
+    "noDecisions": "Aucune décision enregistrée.",
+    "decisionText": "Ce qui a été décidé",
+    "decidedBy": "Décidé par",
+    "addDecision": "Ajouter",
+    "actions": "Actions",
+    "actionTitle": "Ce qu'il faut faire",
+    "addAction": "Ajouter",
+    "linkOption": {
+      "none": "Sans lien",
+      "problem": "Irritant",
+      "item": "Élément",
+      "objective": "Objectif"
+    },
+    "summary": "Synthèse",
+    "publish": "Publier",
+    "publishHint": "La publication diffuse le CR à son périmètre. Après, les décisions ne changent plus.",
+    "failed": "L'opération a échoué.",
+    "crossNodeTargets": "Branches concernées",
+    "proposeSummary": "Proposer une synthèse",
+    "proposeHint": "Brouillon à relire : le modèle n’utilise que les décisions et actions déjà saisies."
   },
   "reports": {
     "title": "Rapport d’activité",
@@ -464,9 +614,6 @@
     "exportReady": "Télécharger le PDF",
     "exportExpires": "Lien valable quelques minutes.",
     "periodNav": "Période précédente ou suivante",
-    "project": "Projet",
-    "chooseProject": "Choisir un projet…",
-    "pickProject": "Choisissez un projet pour afficher son rapport.",
     "sectionEmpty": "Rien sur cette période.",
     "genericError": "Le rapport n’a pas pu être produit.",
     "period": {
@@ -487,11 +634,9 @@
       "none": "Aucune synthèse pour cette période."
     },
     "scope": {
-      "my": "Mon travail",
-      "team": "Mes équipes projet",
-      "unit": "Mon unité",
-      "department": "Mon département",
-      "project": "Projet",
+      "me": "Mon travail",
+      "node": "Mon périmètre",
+      "item": "Projet",
       "portfolio": "Portefeuille"
     },
     "section": {
@@ -510,7 +655,8 @@
       "cost": "Coût",
       "states": "États du portefeuille",
       "archived": "Déphasés",
-      "priority": "Priorités"
+      "priority": "Priorités",
+      "identity": "Fiche"
     },
     "metric": {
       "targetHours": "Objectif",
@@ -563,7 +709,8 @@
       "projects": "Projets",
       "contribution": "Par département",
       "states": "Par état",
-      "priority": "Les plus prioritaires"
+      "priority": "Les plus prioritaires",
+      "branchRollup": "Par branche"
     },
     "note": {
       "overTarget": "Semaine au-dessus de l’objectif.",
@@ -581,8 +728,25 @@
         "active": "Actifs",
         "dephase": "Déphasés"
       },
-      "truncated": "Liste tronquée : {{count}} de plus non affichés."
-    }
+      "truncated": "Liste tronquée : {{count}} de plus non affichés.",
+      "notRunning": "Rien n’est encore lancé sur ce projet."
+    },
+    "brief": {
+      "title": "Brief",
+      "depthDirect": "Une ligne par branche",
+      "depthAll": "Tout déplier",
+      "showDetails": "Détails",
+      "showBrief": "Revenir au brief",
+      "empty": "Rien à rapporter sur la période.",
+      "headline": "{{people}} pers · ~{{hours}} h",
+      "nothingToReport": "RAS",
+      "upcoming": "À venir"
+    },
+    "node": "Périmètre",
+    "myNode": "Mon périmètre",
+    "item": "Projet",
+    "chooseItem": "Choisir un projet…",
+    "pickItem": "Choisissez un projet pour afficher son rapport."
   },
   "kudos": {
     "title": "Kudos",
@@ -790,7 +954,80 @@
     "effectiveTo": "Jusqu'au",
     "effectiveToHint": "Exclu. Vide = toujours en vigueur.",
     "current": "en cours",
-    "addRateCard": "Ajouter le taux"
+    "addRateCard": "Ajouter le taux",
+    "consolidated": {
+      "title": "Budget consolidé",
+      "subtitle": "Exercice {{year}}",
+      "node": "Entité",
+      "capex": "Capex",
+      "opex": "Opex",
+      "planned": "Budget",
+      "variance": "Écart",
+      "own": "Propre",
+      "subtree": "Total",
+      "mode": "Vue",
+      "both": "Capex et opex",
+      "landed": "Vous voyez l’entité la plus haute que vous dirigez.",
+      "noBudget": "—",
+      "licenses": "Licences",
+      "externals": "Prestataires",
+      "renewing": "Renouvellements à 90 jours",
+      "expiring": "Contrats qui se terminent",
+      "seats": "Postes",
+      "annual": "Coût annuel",
+      "renewal": "Renouvellement",
+      "contractEnd": "Fin de contrat",
+      "empty": "Rien à afficher pour cet exercice.",
+      "export": "Exporter"
+    },
+    "editor": {
+      "manage": "Gérer",
+      "envelope": "Enveloppe",
+      "costs": "Coûts",
+      "licenses": "Licences",
+      "externals": "Prestataires",
+      "scope": "Portée",
+      "scopeOption": {
+        "node": "La branche",
+        "item": "Un élément"
+      },
+      "item": "Élément",
+      "planned": "Montant prévu",
+      "notes": "Note",
+      "noCosts": "Aucune ligne de coût.",
+      "label": "Intitulé",
+      "amount": "Montant",
+      "onTheBranch": "Sur la branche",
+      "add": "Ajouter",
+      "product": "Produit",
+      "vendor": "Fournisseur",
+      "seats": "Postes",
+      "unitCost": "Coût unitaire",
+      "consultant": "Nom",
+      "role": "Rôle",
+      "rate": "Tarif",
+      "licenceHint": "Une licence enregistre sa propre ligne de coût : rien à saisir deux fois.",
+      "failed": "L'enregistrement a échoué.",
+      "kindOption": {
+        "internal-effort": "Effort interne",
+        "license": "Licence",
+        "external-worker": "Prestataire",
+        "cloud": "Cloud",
+        "hardware": "Matériel",
+        "service-fee": "Prestation",
+        "other": "Autre"
+      },
+      "cycleOption": {
+        "monthly": "Mensuel",
+        "quarterly": "Trimestriel",
+        "yearly": "Annuel",
+        "one-off": "Ponctuel"
+      },
+      "rateUnitOption": {
+        "day": "Par jour",
+        "hour": "Par heure"
+      }
+    }
   },
   "preferences": {
     "language": "Langue",
@@ -807,6 +1044,298 @@
   },
   "obligations": {
     "weekOverTarget": "{{hours}} h au-delà de l’objectif",
-    "dismiss": "Masquer jusqu’au prochain chargement"
+    "dismiss": "Masquer jusqu’au prochain chargement",
+    "overdueActions": "{{count}} action(s) en retard",
+    "awaitingTriage": "{{count}} problème(s) à trier",
+    "overTarget": "Semaine au-delà de l’objectif de {{hours}} h"
+  },
+  "profiles": {
+    "title": "Profils de nœud",
+    "subtitle": "Le comportement d'une branche, sous forme de données",
+    "existing": "Profils existants",
+    "editor": "Éditeur",
+    "attach": "Rattachement",
+    "new": "Nouveau",
+    "clone": "Dupliquer",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Profil enregistré.",
+    "none": "Aucun profil pour l'instant.",
+    "code": "Code",
+    "labelKey": "Clé de libellé",
+    "boardArchetypes": "Plannings (séparés par des virgules)",
+    "itemTypes": "Types d'objets",
+    "solvesCategories": "Catégories de problèmes traitées",
+    "headlinePattern": "Phrase d'accroche du rapport",
+    "activityTaxonomy": "Taxonomie d'activités (JSON)",
+    "capabilities": "Capacités (JSON)",
+    "budgetDefaults": "Traitement budgétaire (JSON)",
+    "inheritHint": "Laisser vide pour hériter du niveau supérieur.",
+    "attachUnit": "Unité",
+    "attachProfile": "Profil",
+    "chooseUnit": "Choisir une unité",
+    "inherit": "Hériter",
+    "applyAttachment": "Rattacher",
+    "loadFailed": "Impossible de charger les profils.",
+    "saveFailed": "Impossible d'enregistrer le profil."
+  },
+  "profile": {
+    "delivery": "Delivery",
+    "dispatch": "Dispatch",
+    "advisory": "Études"
+  },
+  "problems": {
+    "title": "Problèmes",
+    "subtitle": "Ce qui vous fait perdre du temps",
+    "report": "Signaler un problème",
+    "sort": "Trier par",
+    "sortImpact": "Impact",
+    "sortVotes": "Votes",
+    "sortRecent": "Récents",
+    "empty": "Rien de signalé pour l’instant.",
+    "votes": "votes",
+    "proposals": "propositions",
+    "hoursLost": "{{hours}} h/an perdues",
+    "vote": "Moi aussi",
+    "voted": "Vous avez voté",
+    "propose": "Proposer une solution",
+    "triage": "Trier",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "duplicate": "Doublon",
+    "convert": "Convertir en projet",
+    "reason": "Motif",
+    "titleField": "Que se passe-t-il ?",
+    "descriptionField": "Détails",
+    "categoryField": "Catégorie",
+    "timeLossField": "Heures perdues à chaque fois",
+    "frequencyField": "Fréquence",
+    "affectedField": "Personnes concernées",
+    "similar": "Déjà signalé ?",
+    "submit": "Envoyer",
+    "converted": "Converti en projet",
+    "category": {
+      "work-process": "Processus",
+      "project": "Projet",
+      "quality-of-life": "Qualité de vie",
+      "tooling": "Outillage",
+      "data": "Données",
+      "other": "Autre"
+    },
+    "frequency": {
+      "daily": "Quotidien",
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuel",
+      "occasional": "Occasionnel"
+    },
+    "status": {
+      "new": "Nouveau",
+      "triaged": "Trié",
+      "accepted": "Accepté",
+      "converted": "Converti",
+      "resolved": "Résolu",
+      "declined": "Refusé",
+      "duplicate": "Doublon"
+    }
+  },
+  "strategy": {
+    "title": "Stratégie",
+    "subtitle": "Ce sur quoi nous nous sommes engagés, et ce qui le fait avancer",
+    "none": "Aucune stratégie n'a encore été définie pour votre périmètre.",
+    "noObjectives": "Cette stratégie n'a pas encore d'objectifs.",
+    "addObjective": "Ajouter un objectif",
+    "progress": "{{percent}} % atteint",
+    "expected": "{{percent}} % attendus à ce jour",
+    "attention": "{{count}} objectif(s) demandent votre attention.",
+    "due": "échéance",
+    "overridden": "statut forcé",
+    "noWork": "Rien n'y travaille.",
+    "alignment": "Alignement",
+    "unlinkedObjectives": "Objectifs sans travaux rattachés",
+    "unlinkedItems": "Travaux ne servant aucun objectif",
+    "allLinked": "Chaque objectif a des travaux derrière lui.",
+    "allServed": "Chaque élément sert un objectif.",
+    "link": "Rattacher",
+    "unlink": "Détacher",
+    "contributions": "Travaux rattachés",
+    "keyResults": "Résultats clés",
+    "reading": "Où en est-on ?",
+    "record": "Enregistrer",
+    "overrideStatus": "Statut",
+    "derived": "Le déduire des chiffres",
+    "titleField": "Que cherchons-nous à faire ?",
+    "descriptionField": "Détails",
+    "metricField": "Comment est-ce mesuré ?",
+    "baselineField": "Point de départ",
+    "targetField": "Cible",
+    "unitField": "Unité",
+    "dueField": "Échéance",
+    "weightField": "Poids",
+    "status": {
+      "draft": "Brouillon",
+      "active": "En cours",
+      "closed": "Clôturée"
+    },
+    "objectiveStatus": {
+      "on-track": "Dans les temps",
+      "at-risk": "À risque",
+      "off-track": "En retard",
+      "done": "Atteint"
+    },
+    "metric": {
+      "number": "Un nombre",
+      "percent": "Un pourcentage",
+      "currency": "Un montant",
+      "milestone": "Un jalon",
+      "qualitative": "Une appréciation"
+    }
+  },
+  "admin": {
+    "title": "Structure de l'organisation",
+    "page": {
+      "purpose": "Les niveaux, l'arbre des branches, et la trace de ce qui y a été fait."
+    },
+    "tree": "Arbre",
+    "levels": "Niveaux",
+    "audit": "Journal",
+    "noNodes": "Aucune branche visible.",
+    "noAudit": "Rien de récent.",
+    "inactive": "Inactive",
+    "noPeople": "Sans personnes",
+    "optional": "Optionnel",
+    "edit": "Modifier",
+    "levelCode": "Code",
+    "levelLabel": "Libellé",
+    "headLabel": "Titre du responsable",
+    "peopleAllowed": "Des personnes peuvent y être rattachées",
+    "isOptional": "Niveau optionnel",
+    "name": "Nom",
+    "rename": "Renommer",
+    "parent": "Rattachée à",
+    "atTheTop": "Au sommet",
+    "move": "Déplacer",
+    "head": "Responsable",
+    "addChild": "Créer une sous-branche",
+    "create": "Créer",
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "reparentHint": "Déplacer une branche déplace tout ce qui est en dessous, et recalcule aussitôt qui voit quoi.",
+    "deactivateHint": "Une branche désactivée garde son histoire ; elle n'accueille plus personne.",
+    "forbidden": "Vous pouvez voir cette branche mais pas la modifier.",
+    "failed": "L'opération a échoué.",
+    "action": {
+      "node-created": "Branche créée",
+      "node-renamed": "Renommée",
+      "node-reparented": "Rattachée",
+      "node-deactivated": "Désactivée",
+      "node-reactivated": "Réactivée",
+      "node-head-set": "Responsable",
+      "level-saved": "Niveau",
+      "role-granted": "Rôle accordé",
+      "role-revoked": "Rôle retiré",
+      "member-moved": "Personne déplacée"
+    },
+    "members": "Membres",
+    "noMembers": "Personne n’est rattaché à cette branche.",
+    "moveTo": "Déplacer vers…",
+    "moved": "Déplacé"
+  },
+  "guidance": {
+    "action": {
+      "closeIteration": "L’itération {{iteration}} de {{item}} se termine le {{date}}.",
+      "closeIteration.cta": "Ouvrir la fiche",
+      "fillWeek": "Il vous reste {{hours}} h à saisir cette semaine.",
+      "fillWeek.cta": "Saisir",
+      "overdueActions": "{{count}} action(s) de CR sont en retard.",
+      "overdueActions.cta": "Ouvrir les CR",
+      "reviewItems": "Rien ne vous attend : passez en revue vos projets.",
+      "reviewItems.cta": "Ouvrir le catalogue",
+      "reviewNode": "Rien ne vous attend : passez en revue votre périmètre.",
+      "reviewNode.cta": "Ouvrir le plan",
+      "reviewObjectives": "Rien ne vous attend : passez en revue les objectifs.",
+      "reviewObjectives.cta": "Ouvrir la stratégie",
+      "reviewOrg": "Rien ne vous attend : vérifiez l’organisation.",
+      "reviewOrg.cta": "Ouvrir l’administration",
+      "triageProblems": "{{count}} problème(s) attendent votre tri.",
+      "triageProblems.cta": "Trier",
+      "weekComplete": "Votre semaine est complète — rien à faire.",
+      "weekComplete.cta": "Voir ma semaine"
+    }
+  },
+  "coach": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "done": "Terminé",
+    "replay": "Revoir la visite",
+    "member": {
+      "week": {
+        "title": "Votre semaine",
+        "body": "Saisissez vos heures ici ; le compteur suit votre objectif."
+      },
+      "problems": {
+        "title": "Ce qui vous fait perdre du temps",
+        "body": "Signalez un irritant : aucun rôle n’est requis."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que la tâche du moment. Toujours réversible, en haut à droite."
+      }
+    },
+    "head": {
+      "node": {
+        "title": "Votre périmètre",
+        "body": "Les branches sous vous, ou les personnes s’il n’y en a pas."
+      },
+      "brief": {
+        "title": "La synthèse",
+        "body": "Un bloc par branche, prêt pour un COPIL."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que la comparaison et l’action du jour."
+      }
+    },
+    "po": {
+      "items": {
+        "title": "Vos projets",
+        "body": "Le catalogue montre ce qui existe déjà avant d’en créer un."
+      },
+      "progress": {
+        "title": "L’avancement",
+        "body": "Les itérations et les épopées de votre projet."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que l’avancement et le COPIL."
+      }
+    },
+    "pmo": {
+      "catalog": {
+        "title": "Le portefeuille",
+        "body": "Tout ce que l’organisation porte, en fiches d’identité."
+      },
+      "objectives": {
+        "title": "Les objectifs",
+        "body": "Ce que les projets servent, et l’écart qui reste."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que le portefeuille et la revue."
+      }
+    },
+    "admin": {
+      "org": {
+        "title": "L’organisation",
+        "body": "Niveaux, branches et rattachements se modifient ici, sans déploiement."
+      },
+      "access": {
+        "title": "Les droits",
+        "body": "Rôles et dérogations, avec leur trace."
+      },
+      "focus": {
+        "title": "Mode focus",
+        "body": "Ne garde que l’écran d’administration."
+      }
+    }
   }
 }

@@ -24,7 +24,9 @@ public sealed record MeetingSeriesRequest(
     Guid? OwnerPersonId,
     string? Location,
     string? VideoLink,
-    bool Active);
+    bool Active,
+    string? Level,
+    IReadOnlyList<Guid>? ScopeIds);
 
 /// <summary>
 /// The recurring half of S7.
@@ -108,6 +110,8 @@ internal sealed class MeetingSeriesService(
             ScopeType = scope.ScopeType,
             ScopeId = scope.ScopeId,
             DepartmentId = scope.DepartmentId,
+            Level = Level(request, scope),
+            ScopeIds = Targets(request, scope),
             // Stored canonical, not verbatim. Two people writing the same rule two ways should produce one string,
             // and anything the parser did not understand was already refused rather than silently dropped.
             RecurrenceRule = rule.ToString(),
@@ -157,6 +161,8 @@ internal sealed class MeetingSeriesService(
         series.ScopeType = scope.ScopeType;
         series.ScopeId = scope.ScopeId;
         series.DepartmentId = scope.DepartmentId;
+        series.Level = Level(request, scope);
+        series.ScopeIds = Targets(request, scope);
         series.RecurrenceRule = rule.ToString();
         series.StartsOn = request.StartsOn;
         series.StartTime = request.StartTime;
@@ -238,8 +244,51 @@ internal sealed class MeetingSeriesService(
                 names.GetValueOrDefault(candidate.OwnerPersonId),
                 candidate.Location,
                 candidate.VideoLink,
-                candidate.Active)),
+                candidate.Active,
+                candidate.Level,
+                candidate.ScopeIds)),
         ];
+    }
+
+    private static string Level(MeetingSeriesRequest request, ResolvedScope scope)
+    {
+        if (string.IsNullOrWhiteSpace(request.Level))
+        {
+            return scope.ScopeType switch
+            {
+                MeetingScopeTypes.Project => MeetingLevels.Project,
+                MeetingScopeTypes.Unit => MeetingLevels.Unit,
+                _ => MeetingLevels.Node,
+            };
+        }
+
+        var wanted = request.Level.Trim().ToLowerInvariant();
+
+        if (!MeetingLevels.All.Contains(wanted, StringComparer.Ordinal))
+        {
+            throw new DomainRuleViolationException(
+                $"'{request.Level}' is not a level. Use one of: {string.Join(", ", MeetingLevels.All)}.");
+        }
+
+        return wanted;
+    }
+
+    private static Guid[] Targets(MeetingSeriesRequest request, ResolvedScope scope)
+    {
+        if (!MeetingLevels.IsMultiScope(Level(request, scope)))
+        {
+            return [];
+        }
+
+        var targets = (request.ScopeIds ?? []).Where(id => id != Guid.Empty).Distinct().ToArray();
+
+        if (targets.Length == 0)
+        {
+            throw new DomainRuleViolationException(
+                "A cross-node meeting has to say which nodes it brings together.");
+        }
+
+        return targets;
     }
 
     private static RecurrenceRule Validate(MeetingSeriesRequest request)

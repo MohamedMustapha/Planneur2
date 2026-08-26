@@ -113,8 +113,7 @@ internal sealed class GenerateSummaryHandler(
     internal static string Audience(IUserContext user) => user switch
     {
         _ when user.Has(ContextualRole.Pmo) => ContextualRole.Pmo,
-        _ when user.Has(ContextualRole.DepartmentHead) => ContextualRole.DepartmentHead,
-        _ when user.Has(ContextualRole.UnitHead) => ContextualRole.UnitHead,
+        _ when user.Has(ContextualRole.NodeHead) => ContextualRole.NodeHead,
         _ when user.HasAnyRole(ContextualRole.ProjectLead, ContextualRole.ProductOwner) => ContextualRole.ProjectLead,
         _ => ContextualRole.Member,
     };

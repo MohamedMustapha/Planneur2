@@ -80,11 +80,11 @@ public sealed class ReportIdentityTests
     public void An_id_round_trips_through_its_encoding()
     {
         var descriptor = new ReportDescriptor(
-            ReportScopes.Unit, null, ReportPeriod.Week(Wednesday), "fr");
+            ReportScopes.Node, null, ReportPeriod.Week(Wednesday), "fr");
 
         var decoded = ReportIdentity.Decode(ReportIdentity.Encode(descriptor));
 
-        decoded.Scope.ShouldBe(ReportScopes.Unit);
+        decoded.Scope.ShouldBe(ReportScopes.Node);
         decoded.Language.ShouldBe("fr");
         decoded.Period.From.ShouldBe(descriptor.Period.From);
 
@@ -95,14 +95,14 @@ public sealed class ReportIdentityTests
     }
 
     [Fact]
-    public void A_project_id_survives_the_round_trip()
+    public void An_item_id_survives_the_round_trip()
     {
-        var projectId = Guid.CreateVersion7();
+        var itemId = Guid.CreateVersion7();
 
         var decoded = ReportIdentity.Decode(ReportIdentity.Encode(
-            new ReportDescriptor(ReportScopes.Project, projectId, ReportPeriod.Month(Wednesday), "en")));
+            new ReportDescriptor(ReportScopes.Item, itemId, ReportPeriod.Month(Wednesday), "en")));
 
-        decoded.ScopeId.ShouldBe(projectId);
+        decoded.ScopeId.ShouldBe(itemId);
         decoded.Period.Kind.ShouldBe(ReportPeriods.Month);
     }
 
@@ -110,9 +110,9 @@ public sealed class ReportIdentityTests
     public void The_same_request_always_produces_the_same_id()
     {
         // Which is what lets a client cache an export link and a test assert on one.
-        ReportIdentity.Encode(new ReportDescriptor(ReportScopes.My, null, ReportPeriod.Week(Wednesday), "fr"))
+        ReportIdentity.Encode(new ReportDescriptor(ReportScopes.Me, null, ReportPeriod.Week(Wednesday), "fr"))
             .ShouldBe(ReportIdentity.Encode(
-                new ReportDescriptor(ReportScopes.My, null, ReportPeriod.Week(Wednesday.AddDays(1)), "fr")));
+                new ReportDescriptor(ReportScopes.Me, null, ReportPeriod.Week(Wednesday.AddDays(1)), "fr")));
     }
 
     [Theory]
@@ -142,7 +142,7 @@ public sealed class ReportIdentityTests
     [Fact]
     public void The_prompt_hash_changes_when_the_figures_do()
     {
-        var descriptor = new ReportDescriptor(ReportScopes.My, null, ReportPeriod.Week(Wednesday), "fr");
+        var descriptor = new ReportDescriptor(ReportScopes.Me, null, ReportPeriod.Week(Wednesday), "fr");
 
         var before = ReportIdentity.PromptHash(descriptor, "local-model", "hours: 35");
         var after = ReportIdentity.PromptHash(descriptor, "local-model", "hours: 39");
@@ -153,7 +153,7 @@ public sealed class ReportIdentityTests
     [Fact]
     public void The_prompt_hash_changes_when_the_model_does()
     {
-        var descriptor = new ReportDescriptor(ReportScopes.My, null, ReportPeriod.Week(Wednesday), "fr");
+        var descriptor = new ReportDescriptor(ReportScopes.Me, null, ReportPeriod.Week(Wednesday), "fr");
 
         // A different model writes a different narrative from the same figures, so serving the old one under the
         // new model's name would misattribute it.
@@ -166,7 +166,7 @@ public sealed class ReportIdentityTests
     {
         var week = ReportPeriod.Week(Wednesday);
 
-        ReportIdentity.PromptHash(new ReportDescriptor(ReportScopes.My, null, week, "fr"), "m", "x")
-            .ShouldNotBe(ReportIdentity.PromptHash(new ReportDescriptor(ReportScopes.My, null, week, "es"), "m", "x"));
+        ReportIdentity.PromptHash(new ReportDescriptor(ReportScopes.Me, null, week, "fr"), "m", "x")
+            .ShouldNotBe(ReportIdentity.PromptHash(new ReportDescriptor(ReportScopes.Me, null, week, "es"), "m", "x"));
     }
 }

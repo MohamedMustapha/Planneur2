@@ -1,58 +1,48 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
-import { ActivitiesStore } from '../activities/activities.store';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { SessionStore } from '../session/session.store';
 
-/** Severity decides the chip's colour, and nothing else. Three levels because the theme defines three. */
+/** Severity decides the chip's colour, and nothing else. */
 export type ObligationSeverity = 'danger' | 'warning';
 
 export interface Obligation {
   /** Stable across recomputations — it is what a dismissal is recorded against. */
   readonly id: string;
-  /** Transloco key plus params, so the chip re-labels on a language switch like everything else. */
   readonly labelKey: string;
-  readonly params: Record<string, unknown>;
+  readonly params: Readonly<Record<string, string>>;
   readonly severity: ObligationSeverity;
 }
 
+interface ObligationDto {
+  readonly id: string;
+  readonly key: string;
+  readonly params: Readonly<Record<string, string>>;
+  readonly severity: string;
+}
+
 /**
- * The one thing allowed to pierce Focus mode — v2 §02.2.
- *
- * "Focus mode never hides an item the user has an open obligation on." An obligation is not a notification: it is
- * something the viewer owes somebody, which the tool would be lying by omission to conceal behind a mode whose
- * whole purpose is concealment. Everything else Focus mode hides; these it shows, as a dismissible chip.
- *
- * The spec names three sources — an overdue action item (`07`), a problem awaiting triage (`05`), and an over-target
- * week (S5). Only the third exists in this build, so only the third is wired. The other two are deliberately
- * absent rather than faked: a chip that always says "0 problems await triage" trains people to ignore the chip,
- * which costs more than the missing feature does. When those slices land they add a computed to this class and
- * nothing else changes — which is why this is a store rather than three inline conditions in the top bar.
+ * The one thing allowed to pierce Focus mode — v2 §02.2. All three sources (overdue action, problem awaiting
+ * triage, over-target week) are computed server-side and arrive together.
  */
 @Injectable({ providedIn: 'root' })
 export class ObligationsStore {
-  private readonly activities = inject(ActivitiesStore);
+  private readonly http = inject(HttpClient);
+  private readonly session = inject(SessionStore);
 
-  /**
-   * Ids the viewer has waved away this session.
-   *
-   * Session-scoped on purpose: an obligation is a live fact, not a message, so dismissing it hides the chip until
-   * the next load rather than settling the thing it is about. Persisting a dismissal would let somebody silence a
-   * genuine overrun permanently, which is the opposite of what an obligation is for.
-   */
+  private readonly fetched = signal<readonly ObligationDto[]>([]);
+
+  /** Session-scoped on purpose: dismissing hides the chip, it does not settle the thing behind it. */
   private readonly dismissed = signal<readonly string[]>([]);
 
-  private readonly all = computed<readonly Obligation[]>(() => {
-    const obligations: Obligation[] = [];
-
-    if (this.activities.isOverTarget()) {
-      obligations.push({
-        id: 'week-over-target',
-        labelKey: 'obligations.weekOverTarget',
-        params: { hours: this.activities.overtime() },
-        severity: 'warning',
-      });
-    }
-
-    return obligations;
-  });
+  private readonly all = computed<readonly Obligation[]>(() =>
+    this.fetched().map((row) => ({
+      id: row.id,
+      labelKey: row.key,
+      params: row.params,
+      severity: row.severity === 'danger' ? 'danger' : 'warning',
+    })),
+  );
 
   readonly obligations = computed(() =>
     this.all().filter((obligation) => !this.dismissed().includes(obligation.id)),
@@ -68,7 +58,27 @@ export class ObligationsStore {
       null,
   );
 
+  constructor() {
+    effect(() => {
+      if (this.session.isAuthenticated()) {
+        void this.reload();
+      }
+    });
+  }
+
   dismiss(id: string): void {
     this.dismissed.update((ids) => (ids.includes(id) ? ids : [...ids, id]));
+  }
+
+  async reload(): Promise<void> {
+    // A failure leaves the last answer standing: a chip that vanishes on a timeout is the concealment this
+    // store exists to prevent.
+    try {
+      this.fetched.set(
+        await firstValueFrom(this.http.get<readonly ObligationDto[]>('/api/guidance/obligations')),
+      );
+    } catch {
+      // Left alone deliberately.
+    }
   }
 }

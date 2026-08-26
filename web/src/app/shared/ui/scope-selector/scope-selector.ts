@@ -18,8 +18,8 @@ interface ScopeOption {
 const SCOPES: readonly ScopeOption[] = [
   { id: 'my-work', labelKey: 'scope.myWork', roles: null },
   { id: 'my-project', labelKey: 'scope.myProject', roles: ['project-lead', 'po'] },
-  { id: 'my-unit', labelKey: 'scope.myUnit', roles: ['unit-head'] },
-  { id: 'my-department', labelKey: 'scope.myDepartment', roles: ['dept-head'] },
+  { id: 'my-unit', labelKey: 'scope.myUnit', roles: ['node-head'] },
+  { id: 'my-department', labelKey: 'scope.myDepartment', roles: ['node-head'] },
   { id: 'portfolio', labelKey: 'scope.portfolio', roles: ['pmo'] },
 ];
 

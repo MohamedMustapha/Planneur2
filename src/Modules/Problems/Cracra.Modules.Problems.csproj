@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Problems.Contracts/Cracra.Modules.Problems.Contracts.csproj" />
+    <!-- Contracts only. Problems needs to know where a person sits and, when one is converted, to ask Portfolio
+         for an item; it never references either implementation. -->
+    <ProjectReference Include="../Directory.Contracts/Cracra.Modules.Directory.Contracts.csproj" />
+    <ProjectReference Include="../Portfolio.Contracts/Cracra.Modules.Portfolio.Contracts.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
+    <ProjectReference Include="../../BuildingBlocks/Observability/Cracra.BuildingBlocks.Observability.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Cracra.Tests.Unit" />
+    <InternalsVisibleTo Include="Cracra.Tests.Integration" />
+  </ItemGroup>
+</Project>

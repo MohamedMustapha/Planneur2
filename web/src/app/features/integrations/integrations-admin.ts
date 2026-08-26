@@ -79,9 +79,11 @@ export class IntegrationsAdmin {
   );
 
   protected async submit(): Promise<void> {
-    const departmentId = this.departments.selected()?.id;
+    // The branch a connection is wired at. Still read from the department picker during the shim, because the
+    // projection reuses those ids as node ids — the picker itself is the legacy decommission's to replace.
+    const nodeId = this.departments.selected()?.id;
 
-    if (!departmentId || this.isBusy()) {
+    if (!nodeId || this.isBusy()) {
       return;
     }
 
@@ -90,7 +92,7 @@ export class IntegrationsAdmin {
 
     try {
       await this.integrations.create({
-        departmentId,
+        nodeId,
         provider: this.formProvider(),
         name: this.formName(),
         baseUrl: this.formBaseUrl(),
@@ -116,7 +118,7 @@ export class IntegrationsAdmin {
   protected async toggleActive(connection: ConnectionView): Promise<void> {
     await this.guard(() =>
       this.integrations.update(connection.id, {
-        departmentId: connection.departmentId,
+        nodeId: connection.nodeId,
         provider: connection.provider,
         name: connection.name,
         baseUrl: connection.baseUrl,

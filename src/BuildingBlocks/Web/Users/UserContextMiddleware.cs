@@ -15,6 +15,7 @@ public static class CracraClaims
     public const string PreferredUsername = "preferred_username";
     public const string UnitId = "unit_id";
     public const string DepartmentIds = "dept_ids";
+    public const string HeadedNodes = "headed_nodes";
     public const string ContextualRoles = "contextual_roles";
     public const string FunctionalRole = "functional_role";
     public const string Locale = "locale";
@@ -69,6 +70,7 @@ public sealed class UserContextMiddleware(RequestDelegate next, ILogger<UserCont
                        ?? userId.ToString(),
             UnitId = unitId,
             DepartmentIds = ReadGuidList(principal, CracraClaims.DepartmentIds),
+            HeadedNodes = ReadGuidList(principal, CracraClaims.HeadedNodes),
             Roles = ReadRoles(principal),
             Language = SupportedLanguages.Normalize(
                 principal.FindFirstValue(CracraClaims.Locale) ?? CultureInfo.CurrentUICulture.Name),

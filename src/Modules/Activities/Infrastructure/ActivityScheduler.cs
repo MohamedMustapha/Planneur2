@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Abstractions;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Application;
 using Cracra.Modules.Activities.Contracts;
@@ -44,7 +44,7 @@ internal sealed class ActivityScheduler(
         var placement = await directory.GetPlacementAsync(personId, ct)
             ?? throw new DomainRuleViolationException("That person is not in the directory.");
 
-        var policy = await directory.GetPolicyAsync(placement.DepartmentId, ct);
+        var policy = await directory.GetPolicyAsync(placement.DepartmentId, placement.UnitId, ct);
 
         SourceCodes.TryParse(source, out var parsedSource);
 
@@ -101,7 +101,7 @@ internal sealed class ActivityScheduler(
             throw new DomainRuleViolationException("Only a planned slot can be rescheduled from a board.");
         }
 
-        var policy = await directory.GetPolicyAsync(entry.DepartmentId, ct);
+        var policy = await directory.GetPolicyAsync(entry.DepartmentId, entry.UnitId, ct);
 
         entry.Amend(
             policy.Taxonomy,
@@ -156,6 +156,77 @@ internal sealed class ActivityScheduler(
         CancellationToken ct) =>
         await ProjectAsync(context.Entries.Where(entry => entry.ProjectId == projectId), from, to, ct);
 
+    public async Task<IReadOnlyList<NodeHoursSlice>> GetHoursByNodeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
+    {
+        var start = from.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var end = to.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        var slices = await context.Entries
+            .Where(entry => entry.NodeAncestorIds.Contains(rootNodeId))
+            .Where(entry => entry.SlotStart < end && entry.SlotEnd > start)
+            .GroupBy(entry => entry.NodeId)
+            .Select(group => new
+            {
+                NodeId = group.Key,
+                ActualHours = group
+                    .Where(entry => entry.Kind == ActivityKind.Actual)
+                    .Sum(entry => (decimal?)entry.Hours) ?? 0m,
+                PlannedHours = group
+                    .Where(entry => entry.Kind == ActivityKind.Planned)
+                    .Sum(entry => (decimal?)entry.Hours) ?? 0m,
+                EntryCount = group.Count(),
+                PeopleCount = group.Select(entry => entry.PersonId).Distinct().Count(),
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. slices.Select(slice => new NodeHoursSlice(
+                slice.NodeId,
+                slice.ActualHours,
+                slice.PlannedHours,
+                slice.EntryCount,
+                slice.PeopleCount)),
+        ];
+    }
+
+    public async Task<IReadOnlyList<NodeActivitySlice>> GetHoursByNodeAndTypeAsync(
+        Guid rootNodeId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
+    {
+        var start = from.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var end = to.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        // Actual only. A brief that counted planned hours would announce work nobody has done yet, which is the
+        // one thing a rollup somebody presents upward must not do.
+        var slices = await context.Entries
+            .Where(entry => entry.NodeAncestorIds.Contains(rootNodeId))
+            .Where(entry => entry.SlotStart < end && entry.SlotEnd > start)
+            .Where(entry => entry.Kind == ActivityKind.Actual)
+            .GroupBy(entry => new { entry.NodeId, entry.ActivityTypeCode })
+            .Select(group => new
+            {
+                group.Key.NodeId,
+                group.Key.ActivityTypeCode,
+                ActualHours = group.Sum(entry => (decimal?)entry.Hours) ?? 0m,
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. slices.Select(slice => new NodeActivitySlice(
+                slice.NodeId,
+                slice.ActivityTypeCode,
+                slice.ActualHours)),
+        ];
+    }
+
     /// <summary>
     /// Shapes entries for a board.
     /// </summary>
@@ -193,7 +264,7 @@ internal sealed class ActivityScheduler(
 
         foreach (var departmentId in rows.Select(row => row.DepartmentId).Distinct())
         {
-            policies[departmentId] = await directory.GetPolicyAsync(departmentId, ct);
+            policies[departmentId] = await directory.GetPolicyAsync(departmentId, null, ct);
         }
 
         return
@@ -220,7 +291,8 @@ internal sealed class ActivityScheduler(
                 row.SupersedesEntryId,
                 row.Reconciled,
                 row.Note,
-                row.PercentComplete)),
+                row.PercentComplete,
+                row.NodeId)),
         ];
     }
 }

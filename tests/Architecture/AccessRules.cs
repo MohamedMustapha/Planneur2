@@ -62,6 +62,76 @@ public sealed partial class AccessRules
     }
 
     /// <summary>
+    /// Nothing on the administration surface claims the system scope (v2 §08.2).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// §08.2 is explicit: admin actions run under the actor's context, not <c>system</c>, so that RLS and the
+    /// audit trail both apply. Both halves fail together the moment somebody reaches for
+    /// <c>UserContext.SystemJob</c> to get past a policy that was refusing them — the write succeeds, and the
+    /// trail records that nobody did it. That is not a bug anything else would catch: the feature works, the
+    /// tests pass, and the record is quietly false.
+    /// </para>
+    /// <para>
+    /// The surface is identified by what it does rather than by where it sits: a file that writes an admin audit
+    /// line is performing an administrative act, whatever it is called. Background jobs stay free to claim the
+    /// scope — they write no trail, and the exemption is the absence of one rather than a list of names to keep
+    /// up to date.
+    /// </para>
+    /// </remarks>
+    [Fact]
+    public void Administrative_actions_run_under_the_caller_rather_than_the_system_scope()
+    {
+        var offenders = new List<string>();
+
+        foreach (var file in SourceFiles())
+        {
+            var source = File.ReadAllText(file);
+
+            if (!source.Contains("IAdminAudit", StringComparison.Ordinal)
+                && !source.Contains("audit.RecordAsync(", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (source.Contains("UserContext.SystemJob", StringComparison.Ordinal))
+            {
+                offenders.Add(Path.GetFileName(file));
+            }
+        }
+
+        offenders.ShouldBeEmpty(
+            "Administrative actions must run under the caller, never the system scope:"
+            + Environment.NewLine + string.Join(Environment.NewLine, offenders));
+    }
+
+    /// <summary>
+    /// The admin audit records whoever actually performed the act.
+    /// </summary>
+    /// <remarks>
+    /// The companion to the rule above, and the half a source scan cannot infer: a writer that stamped a constant
+    /// would satisfy "does not claim the system scope" while producing a trail with one name in it.
+    /// </remarks>
+    [Fact]
+    public void The_admin_trail_stamps_the_person_who_performed_the_act()
+    {
+        var writer = SourceFiles().SingleOrDefault(
+            path => Path.GetFileName(path).Equals("AdminAuditWriter.cs", StringComparison.Ordinal));
+
+        writer.ShouldNotBeNull("The admin audit writer was not found; this rule would pass vacuously.");
+
+        var source = File.ReadAllText(writer);
+
+        source.ShouldContain(
+            "IUserContext user",
+            customMessage: "The audit writer must take the caller's context rather than deriving an actor.");
+
+        source.ShouldContain(
+            "user.UserId",
+            customMessage: "The audit writer must stamp the caller as the actor.");
+    }
+
+    /// <summary>
     /// Every table a module creates must end up with row-level security enabled.
     /// </summary>
     /// <remarks>
@@ -161,17 +231,8 @@ public sealed partial class AccessRules
     /// </remarks>
     private static IEnumerable<string> MigrationFiles()
     {
-        var directory = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!);
-
-        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "src")))
-        {
-            directory = directory.Parent;
-        }
-
-        directory.ShouldNotBeNull("Could not locate the repository root from the test assembly.");
-
         var files = Directory
-            .EnumerateFiles(Path.Combine(directory.FullName, "src"), "*.cs", SearchOption.AllDirectories)
+            .EnumerateFiles(Path.Combine(RepositoryRoot(), "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => path.Contains("Migrations", StringComparison.Ordinal))
             .Where(path => !path.EndsWith(".Designer.cs", StringComparison.Ordinal))
             .Where(path => !path.EndsWith("ModelSnapshot.cs", StringComparison.Ordinal))
@@ -181,6 +242,35 @@ public sealed partial class AccessRules
         files.ShouldNotBeEmpty("No migration files were found; these rules would pass vacuously.");
 
         return files;
+    }
+
+    /// <summary>Every hand-written source file under <c>src</c> — generated and build output excluded.</summary>
+    private static IEnumerable<string> SourceFiles()
+    {
+        var files = Directory
+            .EnumerateFiles(Path.Combine(RepositoryRoot(), "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => !path.Contains("Migrations", StringComparison.Ordinal))
+            .ToArray();
+
+        files.ShouldNotBeEmpty("No source files were found; these rules would pass vacuously.");
+
+        return files;
+    }
+
+    private static string RepositoryRoot()
+    {
+        var directory = new DirectoryInfo(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!);
+
+        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "src")))
+        {
+            directory = directory.Parent;
+        }
+
+        directory.ShouldNotBeNull("Could not locate the repository root from the test assembly.");
+
+        return directory.FullName;
     }
 
     /// <summary>The one sanctioned way a migration may name a role: claiming the system scope for its own write.</summary>

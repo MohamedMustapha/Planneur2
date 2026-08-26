@@ -1,0 +1,425 @@
+<ng-container *transloco="let t">
+  <app-page-header
+    [title]="t('portfolio.catalog.title')"
+    [subtitle]="t('portfolio.catalog.subtitle', { count: catalog.total() })"
+    [guidance]="true"
+  >
+    <button slot="actions" type="button" class="button button--primary" (click)="openWizard()">
+      {{ t('portfolio.catalog.new') }}
+    </button>
+  </app-page-header>
+
+  <section class="facets" [attr.aria-label]="t('portfolio.catalog.facets')">
+    <label class="facet">
+      <span class="facet__label">{{ t('portfolio.catalog.type') }}</span>
+      <select class="control" (change)="setType($any($event.target).value)">
+        <option value="">{{ t('portfolio.catalog.any') }}</option>
+        @for (type of types; track type) {
+          <option [value]="type" [selected]="catalog.facets().type === type">
+            {{ t('portfolio.type.' + type) }}
+          </option>
+        }
+      </select>
+    </label>
+
+    <label class="facet">
+      <span class="facet__label">{{ t('portfolio.catalog.classification') }}</span>
+      <select class="control" (change)="setClassification($any($event.target).value)">
+        <option value="">{{ t('portfolio.catalog.any') }}</option>
+        @for (axis of classifications; track axis) {
+          <option [value]="axis" [selected]="catalog.facets().classification === axis">
+            {{ t('portfolio.classification.' + axis) }}
+          </option>
+        }
+      </select>
+    </label>
+
+    <label class="facet">
+      <span class="facet__label">{{ t('portfolio.catalog.state') }}</span>
+      <select class="control" (change)="setState($any($event.target).value)">
+        <option value="">{{ t('portfolio.catalog.any') }}</option>
+        @for (state of states; track state) {
+          <option [value]="state" [selected]="catalog.facets().state === state">
+            {{ t('portfolio.state.' + state) }}
+          </option>
+        }
+      </select>
+    </label>
+
+    @if (catalog.categories().length > 0) {
+      <label class="facet">
+        <span class="facet__label">{{ t('portfolio.catalog.category') }}</span>
+        <select class="control" (change)="setCategory($any($event.target).value)">
+          <option value="">{{ t('portfolio.catalog.any') }}</option>
+          @for (category of catalog.categories(); track category) {
+            <option [value]="category" [selected]="catalog.facets().category === category">
+              {{ category }}
+            </option>
+          }
+        </select>
+      </label>
+    }
+
+    <button
+      type="button"
+      class="chip"
+      [class.chip--on]="catalog.facets().sharedOnly"
+      [attr.aria-pressed]="catalog.facets().sharedOnly"
+      (click)="toggleShared()"
+    >
+      {{ t('portfolio.catalog.sharedOnly') }}
+    </button>
+  </section>
+
+  @if (catalog.isLoading()) {
+    <p class="muted">{{ t('common.loading') }}</p>
+  } @else if (catalog.total() === 0) {
+    <p class="muted">{{ t('portfolio.catalog.empty') }}</p>
+  } @else {
+    @for (group of grouped(); track group.type) {
+      <section class="group">
+        <h2 class="group__title">{{ t('portfolio.type.' + group.type) }}</h2>
+
+        <div class="cards">
+          @for (card of group.cards; track card.id) {
+            <button type="button" class="card" (click)="open(card)">
+              <header class="card__head">
+                <span class="card__code">{{ card.code }}</span>
+                <span class="pill" [class]="'pill pill--' + card.state">
+                  {{ t('portfolio.state.' + card.state) }}
+                  @if (card.awaitingVersion) {
+                    <span class="pill__version">{{ card.awaitingVersion }}</span>
+                  }
+                </span>
+              </header>
+
+              <h3 class="card__name">{{ card.name }}</h3>
+
+              @if (card.summary) {
+                <p class="card__summary">{{ card.summary }}</p>
+              }
+
+              <div class="card__chips">
+                <span class="chip chip--type">{{ t('portfolio.type.' + card.type) }}</span>
+                <span class="chip">{{ t('portfolio.classification.' + card.classification) }}</span>
+                @if (card.category) {
+                  <span class="chip">{{ card.category }}</span>
+                }
+                @if (card.confidential) {
+                  <span class="chip chip--muted">{{ t('portfolio.catalog.confidential') }}</span>
+                }
+              </div>
+
+              <dl class="card__facts">
+                <div>
+                  <dt>{{ t('portfolio.catalog.team') }}</dt>
+                  <dd>{{ card.teamHeadcount }}</dd>
+                </div>
+                <div>
+                  <dt>{{ t('portfolio.catalog.consumes') }}</dt>
+                  <dd>{{ card.dependencyCount }}</dd>
+                </div>
+                <div>
+                  <dt>{{ t('portfolio.catalog.consumedBy') }}</dt>
+                  <dd>{{ card.consumedByCount }}</dd>
+                </div>
+                @if (card.estimateAmount !== null) {
+                  <div>
+                    <dt>{{ t('portfolio.catalog.estimate') }}</dt>
+                    <dd>{{ card.estimateAmount | localizedNumber: '1.0-0' }} {{ card.currency }}</dd>
+                  </div>
+                }
+              </dl>
+
+              @if (card.currentIterationName) {
+                <p class="card__iteration">{{ card.currentIterationName }}</p>
+              }
+            </button>
+          }
+        </div>
+      </section>
+    }
+  }
+
+  @if (selected(); as detail) {
+    <aside class="drawer" role="dialog" [attr.aria-label]="detail.card.name">
+      <header class="drawer__head">
+        <div>
+          <span class="card__code">{{ detail.card.code }}</span>
+          <h2>{{ detail.card.name }}</h2>
+        </div>
+        <button type="button" class="button" (click)="close()">{{ t('common.close') }}</button>
+      </header>
+
+      @if (detail.card.awaitingVersion) {
+        <p class="drawer__banner">
+          {{ t('portfolio.catalog.awaitingBanner', { version: detail.card.awaitingVersion }) }}
+        </p>
+
+        <ul class="list">
+          @for (epic of queuedEpics(detail); track epic.name) {
+            <li>{{ epic.name }} — {{ t('portfolio.epic.' + epic.status) }}</li>
+          }
+        </ul>
+      }
+
+      <h3>{{ t('portfolio.catalog.team') }}</h3>
+      @if (detail.team.length === 0) {
+        <p class="muted">{{ t('portfolio.catalog.noTeam') }}</p>
+      } @else {
+        @for (group of teamByNode(detail); track group.nodeId) {
+          <section class="team-group">
+            <h4>{{ group.nodeName ?? t('portfolio.catalog.node') }}</h4>
+            <ul class="list">
+              @for (member of group.members; track member.personId) {
+                <li>
+                  {{ member.displayName ?? t('common.hidden') }}
+                  @if (member.allocationPercent !== null) {
+                    <span class="muted">· {{ member.allocationPercent }}%</span>
+                  }
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      }
+
+      <h3>{{ t('portfolio.catalog.iterations') }}</h3>
+      @if (detail.iterations.length === 0) {
+        <p class="muted">{{ t('portfolio.catalog.noIterations') }}</p>
+      } @else {
+        <ul class="list">
+          @for (iteration of detail.iterations; track iteration.id) {
+            <li>
+              {{ iteration.name }}
+              <span class="muted">
+                — {{ iteration.startsOn }} → {{ iteration.endsOn }} ({{ iteration.state }})
+              </span>
+              @if (iteration.state === 'active' || iteration.state === 'planned') {
+                <button type="button" class="link" (click)="closeIteration(iteration.id)">
+                  {{ t('portfolio.closeIteration') }}
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="editor">
+        <input
+          class="control"
+          [ngModel]="iterationName()"
+          (ngModelChange)="iterationName.set($event)"
+          [placeholder]="t('portfolio.iterationName')"
+        />
+        <select class="control" [ngModel]="iterationLength()" (ngModelChange)="iterationLength.set($event)">
+          @for (length of lengths; track length) {
+            <option [value]="length">{{ t('portfolio.lengthOption.' + length) }}</option>
+          }
+        </select>
+        <input
+          class="control control--narrow"
+          type="date"
+          [ngModel]="iterationStart()"
+          (ngModelChange)="iterationStart.set($event)"
+        />
+        <button type="button" class="button" [disabled]="busy()" (click)="addIteration()">
+          {{ t('portfolio.addIteration') }}
+        </button>
+      </div>
+
+      <h3>{{ t('portfolio.catalog.epics') }}</h3>
+      @if (detail.epics.length === 0) {
+        <p class="muted">{{ t('portfolio.catalog.noEpics') }}</p>
+      } @else {
+        <ul class="list">
+          @for (epic of detail.epics; track epic.id) {
+            <li>
+              {{ epic.name }}
+              <span class="muted">— {{ t('portfolio.epic.' + epic.status) }}</span>
+              @if (epic.targetVersion) {
+                <span class="chip">{{ epic.targetVersion }}</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="editor">
+        <input
+          class="control"
+          [ngModel]="epicName()"
+          (ngModelChange)="epicName.set($event)"
+          [placeholder]="t('portfolio.catalog.epicName')"
+        />
+        <select class="control" [ngModel]="epicStatus()" (ngModelChange)="epicStatus.set($event)">
+          @for (status of epicStatuses; track status) {
+            <option [value]="status">{{ t('portfolio.epic.' + status) }}</option>
+          }
+        </select>
+        <input
+          class="control control--narrow"
+          [ngModel]="epicVersion()"
+          (ngModelChange)="epicVersion.set($event)"
+          [placeholder]="t('portfolio.catalog.version')"
+        />
+        <button type="button" class="button" [disabled]="busy()" (click)="addEpic()">
+          {{ t('common.save') }}
+        </button>
+      </div>
+
+      @if (canDeclareNext(detail)) {
+        <div class="editor">
+          <input
+            class="control"
+            [ngModel]="nextVersion()"
+            (ngModelChange)="nextVersion.set($event)"
+            [placeholder]="t('portfolio.catalog.version')"
+          />
+          <button type="button" class="button button--primary" [disabled]="busy()" (click)="declareNextVersion()">
+            {{ t('portfolio.catalog.declareNext') }}
+          </button>
+        </div>
+      }
+
+      <h3>{{ t('portfolio.catalog.consumes') }}</h3>
+      @if (consumes(detail).length === 0) {
+        <p class="muted">{{ t('portfolio.catalog.noDependencies') }}</p>
+      } @else {
+        <ul class="list">
+          @for (edge of consumes(detail); track edge.id) {
+            <li>
+              {{ edge.itemCode }} — {{ edge.itemName }}
+              <span class="muted">({{ edge.kind }})</span>
+              <button type="button" class="link" (click)="removeDependency(edge.id)">
+                {{ t('common.delete') }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="editor">
+        <input
+          class="control"
+          [ngModel]="dependencyQuery()"
+          (ngModelChange)="searchDependency($event)"
+          [placeholder]="t('portfolio.catalog.findDependency')"
+        />
+      </div>
+
+      @if (dependencyMatches().length > 0) {
+        <ul class="list">
+          @for (match of dependencyMatches(); track match.id) {
+            <li>
+              <button type="button" class="link" (click)="addDependency(match)">
+                {{ match.code }} — {{ match.name }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      @if (error(); as message) {
+        <p class="error">{{ t(message) }}</p>
+      }
+
+      <h3>{{ t('portfolio.catalog.consumedBy') }}</h3>
+      @if (consumedBy(detail).length === 0) {
+        <p class="muted">{{ t('portfolio.catalog.notConsumed') }}</p>
+      } @else {
+        <ul class="list">
+          @for (edge of consumedBy(detail); track edge.id) {
+            <li>{{ edge.itemCode }} — {{ edge.itemName }}</li>
+          }
+        </ul>
+      }
+    </aside>
+  }
+
+  @if (wizardOpen()) {
+    <aside class="drawer drawer--wizard" role="dialog" [attr.aria-label]="t('portfolio.catalog.new')">
+      <header class="drawer__head">
+        <h2>{{ t('portfolio.catalog.new') }}</h2>
+        <button type="button" class="button" (click)="closeWizard()">{{ t('common.close') }}</button>
+      </header>
+
+      <ol class="steps">
+        <li [class.steps__on]="step() === 1">{{ t('portfolio.wizard.step1') }}</li>
+        <li [class.steps__on]="step() === 2">{{ t('portfolio.wizard.step2') }}</li>
+      </ol>
+
+      @if (step() === 1) {
+        <label class="field">
+          <span>{{ t('portfolio.catalog.type') }}</span>
+          <select class="control control--big" [ngModel]="draftType()" (ngModelChange)="draftType.set($event)">
+            @for (type of types; track type) {
+              <option [value]="type">{{ t('portfolio.type.' + type) }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>{{ t('portfolio.catalog.category') }}</span>
+          <input
+            class="control control--big"
+            [ngModel]="draftCategory()"
+            (ngModelChange)="draftCategory.set($event)"
+            [placeholder]="t('portfolio.wizard.categoryHint')"
+          />
+        </label>
+
+        <button type="button" class="button button--primary" (click)="step.set(2)">
+          {{ t('common.next') }}
+        </button>
+      } @else {
+        <label class="field">
+          <span>{{ t('portfolio.wizard.name') }}</span>
+          <input
+            class="control control--big"
+            [ngModel]="draftName()"
+            (ngModelChange)="onNameChanged($event)"
+            [attr.aria-describedby]="similar().length ? 'similar' : null"
+          />
+        </label>
+
+        @if (similar().length > 0) {
+          <div class="similar" id="similar">
+            <p>{{ t('portfolio.wizard.similar') }}</p>
+            <ul class="list">
+              @for (card of similar(); track card.id) {
+                <li>{{ card.code }} — {{ card.name }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <label class="field">
+          <span>{{ t('portfolio.wizard.summary') }}</span>
+          <textarea
+            class="control control--big"
+            rows="3"
+            [ngModel]="draftSummary()"
+            (ngModelChange)="draftSummary.set($event)"
+          ></textarea>
+        </label>
+
+        @if (error(); as message) {
+          <p class="error">{{ t(message) }}</p>
+        }
+
+        <div class="drawer__actions">
+          <button type="button" class="button" (click)="step.set(1)">{{ t('common.back') }}</button>
+          <button
+            type="button"
+            class="button button--primary"
+            [disabled]="!canAdvance() || busy()"
+            (click)="create()"
+          >
+            {{ t('portfolio.wizard.create') }}
+          </button>
+        </div>
+      }
+    </aside>
+  }
+</ng-container>

@@ -6,13 +6,21 @@
     [routerLinkActiveOptions]="{ exact: true }"
     >{{ t('settings.tabDepartment') }}</a
   >
+  <a class="tab" routerLink="/settings/org" routerLinkActive="is-active">{{
+    t('settings.tabOrg')
+  }}</a>
   <a class="tab" routerLink="/settings/access" routerLinkActive="is-active">{{
     t('settings.tabAccess')
   }}</a>
   <a class="tab" routerLink="/settings/meetings" routerLinkActive="is-active">{{
     t('settings.tabMeetings')
   }}</a>
-  <a class="tab" routerLink="/settings/integrations" routerLinkActive="is-active">{{
-    t('settings.tabIntegrations')
+  @if (integrations()) {
+    <a class="tab" routerLink="/settings/integrations" routerLinkActive="is-active">{{
+      t('settings.tabIntegrations')
+    }}</a>
+  }
+  <a class="tab" routerLink="/settings/profiles" routerLinkActive="is-active">{{
+    t('settings.tabProfiles')
   }}</a>
 </nav>

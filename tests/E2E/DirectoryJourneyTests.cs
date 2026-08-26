@@ -26,7 +26,7 @@ public sealed class DirectoryJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
-        await page.GotoAsync("/unit");
+        await page.GotoAsync("/directory");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Annuaire", new() { Timeout = DirectoryTimeoutMs });
@@ -42,7 +42,7 @@ public sealed class DirectoryJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
-        await page.GotoAsync("/unit");
+        await page.GotoAsync("/directory");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Annuaire", new() { Timeout = DirectoryTimeoutMs });
@@ -82,7 +82,11 @@ public sealed class DirectoryJourneyTests(AspireStackFixture stack)
 
         var rail = page.GetByRole(AriaRole.Navigation);
 
-        await Expect(rail.GetByRole(AriaRole.Link, new() { Name = "Mon unité" })).ToBeVisibleAsync();
+        // The org chart is a member's to read, but it is not what their day is about — so it sits under "Plus"
+        // rather than in the primary group (§02.1). Settings is not offered at all.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Plus" }).ClickAsync();
+
+        await Expect(rail.GetByRole(AriaRole.Link, new() { Name = "Organigramme" })).ToBeVisibleAsync();
         await Expect(rail.GetByRole(AriaRole.Link, new() { Name = "Paramètres" })).ToHaveCountAsync(0);
     }
 

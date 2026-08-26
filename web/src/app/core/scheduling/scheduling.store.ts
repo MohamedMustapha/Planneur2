@@ -6,14 +6,14 @@ import { startOfWeek } from '../time/week';
 
 /** Mirrors `Cracra.Modules.Scheduling.Contracts`. */
 
-export type BoardType = 'my' | 'team' | 'unit' | 'project' | 'department';
+export type BoardType = 'my' | 'node' | 'project';
 
 export type BoardArchetype = 'work-orders' | 'shifts' | 'task-progress';
 
 export interface BoardResource {
   readonly id: string;
   readonly name: string;
-  /** person | project-line | unit | department | lane. Drives which row template renders. */
+  /** person | project-line | node | lane. Drives which row template renders. */
   readonly kind: string;
   readonly parentId: string | null;
   readonly color: string | null;
@@ -114,8 +114,8 @@ export interface ShiftTemplate {
 /**
  * The boards, as signals.
  *
- * One store for all five, because they are one endpoint: which board is showing is a parameter, not a different
- * screen. Keeping them apart would mean five stores each re-deriving the same week arithmetic.
+ * One store for all of them, because they are one endpoint: which board is showing is a parameter, not a
+ * different screen.
  */
 @Injectable({ providedIn: 'root' })
 export class SchedulingStore {
@@ -124,6 +124,7 @@ export class SchedulingStore {
 
   readonly boardType = signal<BoardType>('my');
   readonly scopeId = signal<string | null>(null);
+  readonly expandPeople = signal(false);
   readonly weekOffset = signal(0);
 
   readonly week = computed(() => {
@@ -154,6 +155,10 @@ export class SchedulingStore {
       from: asDate(monday),
       to: asDate(sunday),
     });
+
+    if (this.expandPeople()) {
+      params.set('expandPeople', 'true');
+    }
 
     const scope = this.scopeId();
 

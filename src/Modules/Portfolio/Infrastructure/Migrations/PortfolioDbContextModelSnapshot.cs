@@ -68,6 +68,230 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
                     b.ToTable("outbox_message", "portfolio");
                 });
 
+            modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.Epic", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("description");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<Guid?>("IterationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("iteration_id");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("name");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("integer")
+                        .HasColumnName("sequence");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TargetVersion")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("target_version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_epic");
+
+                    b.HasIndex("IterationId")
+                        .HasDatabaseName("ix_epic_iteration_id");
+
+                    b.HasIndex("ItemId", "Sequence")
+                        .HasDatabaseName("ix_epic_item_id_sequence");
+
+                    b.ToTable("epic", "portfolio");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.ItemDependency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("DependsOnItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("depends_on_item_id");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("note");
+
+                    b.HasKey("Id")
+                        .HasName("pk_item_dependency");
+
+                    b.HasIndex("DependsOnItemId")
+                        .HasDatabaseName("ix_item_dependency_depends_on_item_id");
+
+                    b.HasIndex("ItemId", "DependsOnItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_item_dependency_item_id_depends_on_item_id");
+
+                    b.ToTable("item_dependency", "portfolio");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.ItemDiscovery", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("category");
+
+                    b.Property<string>("Classification")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("classification");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<bool>("Confidential")
+                        .HasColumnType("boolean")
+                        .HasColumnName("confidential");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("OwnerNodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_node_id");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("state");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("summary");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("ItemId")
+                        .HasName("pk_item_discovery");
+
+                    b.HasIndex("OwnerNodeId")
+                        .HasDatabaseName("ix_item_discovery_owner_node_id");
+
+                    b.HasIndex("State")
+                        .HasDatabaseName("ix_item_discovery_state");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("ix_item_discovery_type");
+
+                    b.ToTable("item_discovery", "portfolio");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.ItemMember", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("AllocationPercent")
+                        .HasColumnType("integer")
+                        .HasColumnName("allocation_percent");
+
+                    b.Property<DateOnly>("From")
+                        .HasColumnType("date")
+                        .HasColumnName("from");
+
+                    b.Property<Guid?>("FunctionalRoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("functional_role_id");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<Guid>("NodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateOnly?>("To")
+                        .HasColumnType("date")
+                        .HasColumnName("to");
+
+                    b.HasKey("Id")
+                        .HasName("pk_item_member");
+
+                    b.HasIndex("NodeId")
+                        .HasDatabaseName("ix_item_member_node_id");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_item_member_person_id");
+
+                    b.HasIndex("ItemId", "PersonId")
+                        .HasDatabaseName("ix_item_member_item_id_person_id");
+
+                    b.ToTable("item_member", "portfolio");
+                });
+
             modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.Iteration", b =>
                 {
                     b.Property<Guid>("Id")
@@ -140,9 +364,35 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("archived_at");
 
+                    b.Property<string>("AwaitingVersion")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("awaiting_version");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("category");
+
+                    b.Property<string>("Classification")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("classification");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
                     b.Property<DateTimeOffset?>("CommittedAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("committed_at");
+
+                    b.Property<bool>("Confidential")
+                        .HasColumnType("boolean")
+                        .HasColumnName("confidential");
 
                     b.Property<DateTimeOffset>("ConsideredAt")
                         .HasColumnType("timestamptz")
@@ -152,6 +402,12 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("character varying(3)")
+                        .HasColumnName("currency");
+
                     b.Property<string>("DecisionNotes")
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)")
@@ -160,6 +416,15 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
                     b.Property<Guid>("DepartmentId")
                         .HasColumnType("uuid")
                         .HasColumnName("department_id");
+
+                    b.Property<decimal?>("EstimateAmount")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("numeric(14,2)")
+                        .HasColumnName("estimate_amount");
+
+                    b.Property<Guid?>("LeadPersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lead_person_id");
 
                     b.Property<DateTimeOffset>("ModifiedAt")
                         .HasColumnType("timestamptz")
@@ -175,6 +440,20 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("name");
 
+                    b.PrimitiveCollection<Guid[]>("NodeAncestorIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("node_ancestor_ids");
+
+                    b.Property<Guid>("OwnerNodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_node_id");
+
+                    b.Property<Guid?>("PoPersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("po_person_id");
+
                     b.Property<int>("Priority")
                         .HasColumnType("integer")
                         .HasColumnName("priority");
@@ -185,15 +464,33 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("state");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("summary");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("type");
 
                     b.HasKey("Id")
                         .HasName("pk_portfolio_item");
 
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_portfolio_item_code");
+
                     b.HasIndex("DepartmentId")
                         .HasDatabaseName("ix_portfolio_item_department_id");
+
+                    b.HasIndex("OwnerNodeId")
+                        .HasDatabaseName("ix_portfolio_item_owner_node_id");
 
                     b.HasIndex("ProjectId")
                         .IsUnique()
@@ -202,6 +499,9 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
 
                     b.HasIndex("State", "Priority")
                         .HasDatabaseName("ix_portfolio_item_state_priority");
+
+                    b.HasIndex("Type", "Category")
+                        .HasDatabaseName("ix_portfolio_item_type_category");
 
                     b.ToTable("portfolio_item", "portfolio");
                 });
@@ -261,6 +561,36 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
                     b.ToTable("portfolio_transition", "portfolio");
                 });
 
+            modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.Epic", b =>
+                {
+                    b.HasOne("Cracra.Modules.Portfolio.Domain.PortfolioItem", null)
+                        .WithMany("Epics")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_epic_portfolio_item_item_id");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.ItemDependency", b =>
+                {
+                    b.HasOne("Cracra.Modules.Portfolio.Domain.PortfolioItem", null)
+                        .WithMany("Dependencies")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_item_dependency_portfolio_item_item_id");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.ItemMember", b =>
+                {
+                    b.HasOne("Cracra.Modules.Portfolio.Domain.PortfolioItem", null)
+                        .WithMany("Members")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_item_member_portfolio_item_item_id");
+                });
+
             modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.Iteration", b =>
                 {
                     b.HasOne("Cracra.Modules.Portfolio.Domain.PortfolioItem", null)
@@ -273,7 +603,13 @@ namespace Cracra.Modules.Portfolio.Infrastructure.Migrations
 
             modelBuilder.Entity("Cracra.Modules.Portfolio.Domain.PortfolioItem", b =>
                 {
+                    b.Navigation("Dependencies");
+
+                    b.Navigation("Epics");
+
                     b.Navigation("Iterations");
+
+                    b.Navigation("Members");
                 });
 #pragma warning restore 612, 618
         }

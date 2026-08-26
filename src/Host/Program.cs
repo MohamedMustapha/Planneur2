@@ -8,6 +8,8 @@ using Cracra.Host.DevSeed;
 using Cracra.Modules.Access;
 using Cracra.Modules.Directory;
 using Cracra.Modules.Finance;
+using Cracra.Modules.Guidance;
+using Cracra.Modules.Problems;
 using Cracra.Modules.Integrations;
 using Cracra.Modules.Kudos;
 using Cracra.Modules.Meetings;
@@ -16,6 +18,7 @@ using Cracra.Modules.Portfolio;
 using Cracra.Modules.Projects;
 using Cracra.Modules.Reporting;
 using Cracra.Modules.Scheduling;
+using Cracra.Modules.Strategy;
 using Cracra.ServiceDefaults;
 using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -69,6 +72,9 @@ builder.Services.AddKudosModule();
 builder.Services.AddReportingModule();
 builder.Services.AddIntegrationsModule();
 builder.Services.AddFinanceModule();
+builder.Services.AddProblemsModule();
+builder.Services.AddStrategyModule();
+builder.Services.AddGuidanceModule();
 
 // --- Development data ----------------------------------------------------------------------------------------
 // Two projects and a few weeks of activity, so a fresh dev box opens on populated boards rather than on empty
@@ -81,11 +87,9 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-app.UseCracraWeb();
-
-// After authentication, before anything opens a connection: this replaces the token's roles with the effective
-// ones, and the RLS interceptor stamps whatever the context holds when the connection opens.
-app.UseAccessModule();
+// The access module goes inside the seam, not after it: it replaces the token's roles with the effective ones,
+// and both the authorization gate and the RLS interceptor must see that answer rather than the raw token.
+app.UseCracraWeb(access => access.UseAccessModule());
 
 app.UseFastEndpoints(config =>
 {

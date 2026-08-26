@@ -110,11 +110,7 @@
     </div>
 
     <!-- One sentence, one next step, and whatever obligation is allowed to pierce Focus mode. -->
-    <app-guidance-banner
-      slot="guidance"
-      [message]="t(guidance().key, guidance().params)"
-      [showObligation]="focus.active()"
-    />
+    <app-guidance-banner slot="guidance" [showObligation]="focus.active()" />
 
     <!-- One projectable node per @if: the compiler can only place a block into a named slot when the block has a
          single root, and two of them here would silently land in the default slot. -->
@@ -211,7 +207,7 @@
       </section>
 
       @if (showSecondaryPanels()) {
-        <section class="card">
+        <section class="card board__entries">
           <header class="card__header">
             <span>{{ t('board.entriesTitle') }}</span>
             <span class="board__entry-count num">{{

@@ -115,24 +115,24 @@
             <div class="finance__figure finance__figure--capex">
               <span class="finance__figure-label">{{ t('finance.capex') }}</span>
               <span class="finance__figure-value num">
-                {{ view.totals.capexAmount | number: '1.0-0' }} {{ view.currency }}
+                {{ view.totals.capexAmount | localizedNumber: '1.0-0' }} {{ view.currency }}
               </span>
               <span class="finance__figure-meta">
-                {{ view.totals.capexHours | number: '1.0-1' }} h · {{ t('finance.manual') }}
-                {{ view.totals.manualCapex | number: '1.0-0' }} · {{ t('finance.effort') }}
-                {{ view.totals.effortCapex | number: '1.0-0' }}
+                {{ view.totals.capexHours | localizedNumber: '1.0-1' }} h · {{ t('finance.manual') }}
+                {{ view.totals.manualCapex | localizedNumber: '1.0-0' }} · {{ t('finance.effort') }}
+                {{ view.totals.effortCapex | localizedNumber: '1.0-0' }}
               </span>
             </div>
 
             <div class="finance__figure finance__figure--opex">
               <span class="finance__figure-label">{{ t('finance.opex') }}</span>
               <span class="finance__figure-value num">
-                {{ view.totals.opexAmount | number: '1.0-0' }} {{ view.currency }}
+                {{ view.totals.opexAmount | localizedNumber: '1.0-0' }} {{ view.currency }}
               </span>
               <span class="finance__figure-meta">
-                {{ view.totals.opexHours | number: '1.0-1' }} h · {{ t('finance.manual') }}
-                {{ view.totals.manualOpex | number: '1.0-0' }} · {{ t('finance.effort') }}
-                {{ view.totals.effortOpex | number: '1.0-0' }}
+                {{ view.totals.opexHours | localizedNumber: '1.0-1' }} h · {{ t('finance.manual') }}
+                {{ view.totals.manualOpex | localizedNumber: '1.0-0' }} · {{ t('finance.effort') }}
+                {{ view.totals.effortOpex | localizedNumber: '1.0-0' }}
               </span>
             </div>
           </div>
@@ -147,8 +147,8 @@
             <!-- Money and hours the rules left in neither column. On the page rather than dropped, so somebody
                  reconciling can find them. -->
             <p class="finance__hint">
-              {{ t('finance.unallocated') }}: {{ view.totals.unallocatedAmount | number: '1.0-0' }}
-              {{ view.currency }} · {{ view.totals.unclassifiedHours | number: '1.0-1' }} h
+              {{ t('finance.unallocated') }}: {{ view.totals.unallocatedAmount | localizedNumber: '1.0-0' }}
+              {{ view.currency }} · {{ view.totals.unclassifiedHours | localizedNumber: '1.0-1' }} h
             </p>
           }
 
@@ -170,12 +170,12 @@
                       t('finance.treatments.' + bucket.treatment)
                     }}</span>
                   </td>
-                  <td class="num">{{ bucket.hours | number: '1.0-1' }}</td>
+                  <td class="num">{{ bucket.hours | localizedNumber: '1.0-1' }}</td>
                   <td class="num">
-                    {{ bucket.effortCost | number: '1.0-0' }}
+                    {{ bucket.effortCost | localizedNumber: '1.0-0' }}
                     @if (bucket.unvaluedHours > 0) {
                       <span class="finance__gap" [title]="t('finance.unvalued')">
-                        (+{{ bucket.unvaluedHours | number: '1.0-1' }} h)
+                        (+{{ bucket.unvaluedHours | localizedNumber: '1.0-1' }} h)
                       </span>
                     }
                   </td>
@@ -212,15 +212,15 @@
                     </td>
                     <td>{{ t('projects.classification.' + line.classification) }}</td>
                     <td class="num">
-                      {{ line.manualCost | number: '1.0-0' }} {{ line.costCurrency }}
+                      {{ line.manualCost | localizedNumber: '1.0-0' }} {{ line.costCurrency }}
                       @if (!line.costCounted) {
                         <span class="finance__gap" [title]="t('finance.notCounted')">*</span>
                       }
                     </td>
-                    <td class="num">{{ line.buildHours | number: '1.0-1' }}</td>
-                    <td class="num">{{ line.runHours | number: '1.0-1' }}</td>
-                    <td class="num">{{ line.capexAmount | number: '1.0-0' }}</td>
-                    <td class="num">{{ line.opexAmount | number: '1.0-0' }}</td>
+                    <td class="num">{{ line.buildHours | localizedNumber: '1.0-1' }}</td>
+                    <td class="num">{{ line.runHours | localizedNumber: '1.0-1' }}</td>
+                    <td class="num">{{ line.capexAmount | localizedNumber: '1.0-0' }}</td>
+                    <td class="num">{{ line.opexAmount | localizedNumber: '1.0-0' }}</td>
                   </tr>
                 }
               </tbody>
@@ -250,10 +250,10 @@
               @for (month of view.periods; track month.month) {
                 <tr>
                   <td class="mono">{{ month.month }}</td>
-                  <td class="num">{{ month.capexHours | number: '1.0-1' }}</td>
-                  <td class="num">{{ month.opexHours | number: '1.0-1' }}</td>
-                  <td class="num">{{ month.capexCost | number: '1.0-0' }}</td>
-                  <td class="num">{{ month.opexCost | number: '1.0-0' }}</td>
+                  <td class="num">{{ month.capexHours | localizedNumber: '1.0-1' }}</td>
+                  <td class="num">{{ month.opexHours | localizedNumber: '1.0-1' }}</td>
+                  <td class="num">{{ month.capexCost | localizedNumber: '1.0-0' }}</td>
+                  <td class="num">{{ month.opexCost | localizedNumber: '1.0-0' }}</td>
                 </tr>
               }
             </tbody>
@@ -313,7 +313,7 @@
                     <tr>
                       <td>{{ card.functionalRoleCode ?? '—' }}</td>
                       <td class="num">
-                        {{ card.hourlyRate | number: '1.2-2' }} {{ card.currency }}
+                        {{ card.hourlyRate | localizedNumber: '1.2-2' }} {{ card.currency }}
                       </td>
                       <td class="mono">{{ card.effectiveFrom }}</td>
                       <td class="mono">{{ card.effectiveTo ?? t('finance.current') }}</td>

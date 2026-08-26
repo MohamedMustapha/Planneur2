@@ -68,6 +68,61 @@ namespace Cracra.Modules.Access.Data.Migrations
                     b.ToTable("outbox_message", "access");
                 });
 
+            modelBuilder.Entity("Cracra.Modules.Access.Domain.AdminAuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("action");
+
+                    b.Property<Guid>("ActorPersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_person_id");
+
+                    b.Property<string>("Detail")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("detail");
+
+                    b.Property<Guid?>("NodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("node_id");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.Property<string>("TargetType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("target_type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_admin_audit");
+
+                    b.HasIndex("ActorPersonId")
+                        .HasDatabaseName("ix_admin_audit_actor_person_id");
+
+                    b.HasIndex("OccurredAt")
+                        .HasDatabaseName("ix_admin_audit_occurred_at");
+
+                    b.HasIndex("NodeId", "OccurredAt")
+                        .HasDatabaseName("ix_admin_audit_node_id_occurred_at");
+
+                    b.ToTable("admin_audit", "access");
+                });
+
             modelBuilder.Entity("Cracra.Modules.Access.Domain.ContextualRoleAssignment", b =>
                 {
                     b.Property<Guid>("Id")

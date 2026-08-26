@@ -23,9 +23,12 @@ namespace Cracra.Modules.Integrations.Endpoints;
 
 public sealed class ListConnectionsRequest
 {
-    /// <summary>Narrow to one department. Omitted returns every connection the caller may see.</summary>
+    /// <summary>
+    /// A branch, whose effective connections come back: wired at it, or inherited from above it. Omitted returns
+    /// every connection the caller may see.
+    /// </summary>
     [QueryParam]
-    public Guid? DepartmentId { get; set; }
+    public Guid? NodeId { get; set; }
 }
 
 public sealed class ListConnectionsEndpoint(IConnectionService connections)
@@ -40,7 +43,7 @@ public sealed class ListConnectionsEndpoint(IConnectionService connections)
     }
 
     public override async Task HandleAsync(ListConnectionsRequest request, CancellationToken ct) =>
-        await Send.OkAsync(await connections.ListAsync(request.DepartmentId, ct), ct);
+        await Send.OkAsync(await connections.ListAsync(request.NodeId, ct), ct);
 }
 
 public sealed class ConnectionByIdRequest
@@ -65,7 +68,8 @@ public sealed class GetConnectionEndpoint(IConnectionService connections)
 /// <summary>The body of a create or an update. Identical both ways — a connection has nothing worth patching.</summary>
 public class ConnectionBody
 {
-    public Guid DepartmentId { get; set; }
+    /// <summary>The branch this connection is wired at. Inherited by everything beneath it.</summary>
+    public Guid NodeId { get; set; }
 
     public string Provider { get; set; } = ExternalProviders.AzureDevOps;
 
@@ -87,7 +91,7 @@ public class ConnectionBody
     public bool Active { get; set; } = true;
 
     internal ConnectionRequest ToRequest() => new(
-        DepartmentId,
+        NodeId,
         Provider,
         Name,
         BaseUrl,

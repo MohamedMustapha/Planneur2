@@ -73,7 +73,7 @@ public sealed class PingChainTests(PostgresFixture postgres)
         // Application side.
         ping.Identity.UserId.ShouldBe(SeedOrganisation.Thomas.UserId);
         ping.Identity.UnitId.ShouldBe(SeedOrganisation.Units.Infrastructure);
-        ping.Identity.Roles.ShouldContain(ContextualRole.UnitHead);
+        ping.Identity.Roles.ShouldContain(ContextualRole.NodeHead);
 
         // Database side, read back through the same access.* helpers the RLS policies call.
         ping.DatabaseSession.IsScoped.ShouldBeTrue();

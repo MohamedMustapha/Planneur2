@@ -92,7 +92,7 @@ public sealed class IntegrationsTests(PostgresFixture postgres)
         await CreateConnectionAsync(
             factory,
             SeedOrganisation.Laurent,
-            departmentId: SeedOrganisation.Departments.Finance,
+            nodeId: SeedOrganisation.Departments.Finance,
             name: "DAF — ServiceNow",
             provider: ExternalProviders.ServiceNow);
 
@@ -103,6 +103,105 @@ public sealed class IntegrationsTests(PostgresFixture postgres)
             TestContext.Current.CancellationToken);
 
         all!.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task A_branch_inherits_the_connection_wired_above_it()
+    {
+        await using var factory = await SeededAsync();
+
+        // Wired at the department, which is an ancestor of both its units.
+        await CreateConnectionAsync(
+            factory, SeedOrganisation.Olivier, SeedOrganisation.Departments.InformationSystems);
+
+        var effective = await ConnectionsAsync(
+            factory, SeedOrganisation.Olivier, SeedOrganisation.Units.Infrastructure);
+
+        // Inherited down like a profile (v2 §00 §3): a source wired once at the top serves every branch beneath
+        // it, and asking for exact matches instead would make it invisible to the branches that actually use it.
+        effective.Count.ShouldBe(1);
+        effective[0].NodeId.ShouldBe(SeedOrganisation.Departments.InformationSystems);
+    }
+
+    [Fact]
+    public async Task A_branch_does_not_inherit_a_sibling_branch_connection()
+    {
+        await using var factory = await SeededAsync();
+
+        await CreateConnectionAsync(factory, SeedOrganisation.Olivier, SeedOrganisation.Units.Development);
+
+        var effective = await ConnectionsAsync(
+            factory, SeedOrganisation.Olivier, SeedOrganisation.Units.Infrastructure);
+
+        // Inheritance runs down, never across. A branch wiring its own source must not touch another's, which is
+        // the whole reason the connection moved off the department in the first place.
+        effective.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_connection_cannot_be_moved_to_another_branch()
+    {
+        await using var factory = await SeededAsync();
+
+        var connection = await CreateConnectionAsync(factory, SeedOrganisation.Olivier);
+
+        factory.AsUser(SeedOrganisation.Olivier);
+
+        var response = await factory.CreateClient().PutAsJsonAsync(
+            $"/api/integrations/connections/{connection.Id}",
+            ConnectionPayload(SeedOrganisation.Units.Development),
+            TestContext.Current.CancellationToken);
+
+        // Moving it would move every mirror row it owns into another branch's scope, silently, for rows an
+        // activity somewhere already references.
+        response.StatusCode.ShouldBe(HttpStatusCode.UnprocessableEntity);
+    }
+
+    [Fact]
+    public async Task A_branch_that_does_no_integrations_has_no_endpoints_at_all()
+    {
+        await using var factory = await SeededAsync();
+
+        await CreateConnectionAsync(factory, SeedOrganisation.Olivier);
+
+        await AttachAdvisoryProfileAsync(factory, SeedOrganisation.Units.Development);
+
+        try
+        {
+            factory.AsUser(SeedOrganisation.Olivier);
+
+            var response = await factory.CreateClient()
+                .GetAsync("/api/integrations/connections", TestContext.Current.CancellationToken);
+
+            // §10.3: a capability that is off means the control is *absent*, and that has to be the server's
+            // answer rather than the nav's. A 404 rather than a 403 — no permission would reach these.
+            response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        }
+        finally
+        {
+            await DetachProfileAsync(factory, SeedOrganisation.Units.Development);
+        }
+    }
+
+    [Fact]
+    public async Task A_branch_that_does_integrations_is_unaffected_by_a_sibling_that_does_not()
+    {
+        await using var factory = await SeededAsync();
+
+        await AttachAdvisoryProfileAsync(factory, SeedOrganisation.Units.Infrastructure);
+
+        try
+        {
+            // Olivier hangs off Development, whose profile says nothing. A sibling switching integrations off
+            // must not take his away — the capability resolves up his own path, not across the tree.
+            var connection = await CreateConnectionAsync(factory, SeedOrganisation.Olivier);
+
+            connection.Provider.ShouldBe(ExternalProviders.AzureDevOps);
+        }
+        finally
+        {
+            await DetachProfileAsync(factory, SeedOrganisation.Units.Infrastructure);
+        }
     }
 
     [Fact]
@@ -715,8 +814,74 @@ public sealed class IntegrationsTests(PostgresFixture postgres)
 
     // --- Fixture -----------------------------------------------------------------------------------------------
 
+    private static async Task<IReadOnlyList<ConnectionView>> ConnectionsAsync(
+        CracraApplicationFactory factory,
+        UserContext person,
+        Guid? nodeId = null)
+    {
+        factory.AsUser(person);
+
+        var query = nodeId is { } id ? $"?nodeId={id}" : string.Empty;
+
+        return (await factory.CreateClient().GetFromJsonAsync<List<ConnectionView>>(
+            $"/api/integrations/connections{query}",
+            TestContext.Current.CancellationToken))!;
+    }
+
+    /// <summary>Attaches a profile that switches integrations off, the way an administrator would.</summary>
+    private static async Task AttachAdvisoryProfileAsync(CracraApplicationFactory factory, Guid unitId)
+    {
+        factory.AsUser(SeedOrganisation.Nadia);
+
+        var client = factory.CreateClient();
+        var ct = TestContext.Current.CancellationToken;
+
+        var created = await client.PostAsJsonAsync(
+            "/api/directory/profiles",
+            new
+            {
+                code = $"NO-INTEGRATIONS-{Guid.CreateVersion7().ToString("N")[^6..]}",
+                labelKey = "profile.advisory",
+                capabilitiesJson = """{"integrations":false}""",
+            },
+            ct);
+
+        created.StatusCode.ShouldBe(HttpStatusCode.Created);
+
+        var profileId = (await created.Content.ReadFromJsonAsync<ProfileCreated>(ct))!.Id;
+
+        var attached = await client.PutAsJsonAsync(
+            $"/api/directory/units/{unitId}/profile",
+            new { profileId },
+            ct);
+
+        attached.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
+
+    /// <summary>
+    /// Puts the branch back as it was found.
+    /// </summary>
+    /// <remarks>
+    /// The database outlives the test class and a profile attachment is durable, so a branch left switched off
+    /// here decides whether somebody else's tests pass. Cleanup as part of the test rather than as politeness —
+    /// the same reason the profile journey restores its own attachment.
+    /// </remarks>
+    private static async Task DetachProfileAsync(CracraApplicationFactory factory, Guid unitId)
+    {
+        factory.AsUser(SeedOrganisation.Nadia);
+
+        var response = await factory.CreateClient().PutAsJsonAsync(
+            $"/api/directory/units/{unitId}/profile",
+            new { profileId = (Guid?)null },
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
+
+    private sealed record ProfileCreated(Guid Id);
+
     private static object ConnectionPayload(
-        Guid? departmentId = null,
+        Guid? nodeId = null,
         string provider = ExternalProviders.AzureDevOps,
         string name = "SI — Azure DevOps",
         string baseUrl = "https://devops.intranet",
@@ -725,7 +890,7 @@ public sealed class IntegrationsTests(PostgresFixture postgres)
         string? currentSprint = "Sprint 42",
         string pollInterval = "00:15:00") => new
         {
-            departmentId = departmentId ?? SeedOrganisation.Departments.InformationSystems,
+            nodeId = nodeId ?? SeedOrganisation.Departments.InformationSystems,
             provider,
             name,
             baseUrl,
@@ -739,7 +904,7 @@ public sealed class IntegrationsTests(PostgresFixture postgres)
     private static async Task<ConnectionView> CreateConnectionAsync(
         CracraApplicationFactory factory,
         UserContext person,
-        Guid? departmentId = null,
+        Guid? nodeId = null,
         string provider = ExternalProviders.AzureDevOps,
         string name = "SI — Azure DevOps",
         string authRef = "is-devops",
@@ -749,7 +914,7 @@ public sealed class IntegrationsTests(PostgresFixture postgres)
 
         var response = await factory.CreateClient().PostAsJsonAsync(
             "/api/integrations/connections",
-            ConnectionPayload(departmentId, provider, name, authRef: authRef, projectOrQueue: projectOrQueue),
+            ConnectionPayload(nodeId, provider, name, authRef: authRef, projectOrQueue: projectOrQueue),
             TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created);

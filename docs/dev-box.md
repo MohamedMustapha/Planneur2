@@ -189,6 +189,29 @@ have written. To turn the seeder off, or to change how much history it writes:
 
 It only ever runs in the Development environment; the check is in `Program.cs`, not only in configuration.
 
+### Seeded node profiles
+
+The Directory migration ships three example profiles as data — `DELIVERY`, `DISPATCH` and `ADVISORY` — and the dev
+seeder points three DSI units at them:
+
+| Unit | Profile | What that gets you |
+|---|---|---|
+| Études & Développement | `DELIVERY` | task-progress board; dev / architecture / testing / deployment subtypes; budget on |
+| Support & Assistance | `DISPATCH` | work-order board with the unassigned pool; triage / intervention subtypes; budget off |
+| Transformation Digitale | `ADVISORY` | plain week grid; research / analysis / watch subtypes; **integrations hidden** |
+
+The first two are the point: they are siblings under DSI, so anything that differs between them is coming from
+their profile and from nothing else. Sign in as `julie.ondracek` and then as `fatou.diallo` and open the quick-add
+dialog on each — the list of activity types is different, and the four universal buckets are in both.
+
+`nadia.kessler` sits in the ADVISORY branch and holds PMO, which makes her the account to look at for capability
+hiding: she may open every administration screen there is, and the Intégrations tab is still not rendered for her,
+because her branch's profile says integrations are not part of its work. The same account authors profiles at
+**Paramètres → Profils**, where a new one can be cloned, edited and attached to a unit without a deployment.
+
+The profile rows are seeded; the attachments are not. Which branch does which kind of work is a deployment's own
+answer, so a real installation attaches its own and a fresh dev box gets these three as a demonstration.
+
 ### Connecting Azure DevOps and ServiceNow
 
 Nothing is connected out of the box, deliberately: S10 mirrors external work items and a mirror with invented

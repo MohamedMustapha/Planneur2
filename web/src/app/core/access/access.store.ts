@@ -74,7 +74,7 @@ export class AccessStore {
   readonly scopedRoles = computed<readonly EffectiveRole[]>(() => this.whoami()?.scopedRoles ?? []);
 
   readonly isHead = computed(() =>
-    this.roles().some((role) => role === 'unit-head' || role === 'dept-head' || role === 'pmo'),
+    this.roles().some((role) => role === 'node-head' || role === 'pmo'),
   );
 
   has(role: string): boolean {

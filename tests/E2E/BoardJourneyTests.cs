@@ -25,14 +25,14 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
-        await page.GotoAsync("/team");
+        await page.GotoAsync("/node");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Plannings", new() { Timeout = TimeoutMs });
 
-        // All five to everybody. Which rows land inside is RLS's answer, and hiding a tab because someone probably
-        // has nothing in it would be the client guessing at a decision the server already makes correctly.
-        foreach (var board in new[] { "Mon tableau", "Mon équipe", "Mon unité", "Projet", "Département" })
+        // Three, and all three to everybody. Which rows land inside is RLS's answer, and hiding a tab because
+        // someone probably has nothing in it would be the client guessing at a decision the server already makes.
+        foreach (var board in new[] { "Mon tableau", "Mon périmètre", "Projet" })
         {
             await Expect(page.GetByRole(AriaRole.Button, new() { Name = board, Exact = true }))
                 .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
@@ -44,7 +44,7 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
-        await page.GotoAsync("/team");
+        await page.GotoAsync("/node");
 
         // The licensed Mobiscroll canvas, not a placeholder. One wrapper serves all three archetypes, so proving
         // it mounts here proves it for the other two.
@@ -57,7 +57,7 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("camille.villeneuve");
 
-        await page.GotoAsync("/team");
+        await page.GotoAsync("/node");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Plannings", new() { Timeout = TimeoutMs });
@@ -78,7 +78,7 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("thomas.berthier");
 
-        await page.GotoAsync("/team");
+        await page.GotoAsync("/node");
 
         var card = page.GetByRole(AriaRole.Button, new() { Name = reference, Exact = false });
 
@@ -108,7 +108,7 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
 
         var lead = await stack.SignInAsync("thomas.berthier");
 
-        await lead.GotoAsync("/team");
+        await lead.GotoAsync("/node");
         await lead.GetByRole(AriaRole.Button, new() { Name = reference, Exact = false })
             .ClickAsync(new() { Timeout = TimeoutMs });
         await lead.Locator(".pool__drop").GetByRole(AriaRole.Button, new() { Name = "Camille Villeneuve" })
@@ -120,7 +120,20 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
 
         await agent.GotoAsync("/board");
 
-        await Expect(agent.GetByText(reference, new() { Exact = false }).First)
+        // Read from the week's list rather than off the canvas. The note is rendered inside a Mobiscroll event
+        // bubble, which hides its text outright when the event is too narrow to carry it — so on the canvas this
+        // reference is present, laid out, and `visibility: hidden`, which is not something the test can assert
+        // around and not something a person could read either.
+        //
+        // The list is one of the panels Focus mode folds away and agents are members, so this leaves Focus mode
+        // to reach it. What the journey claims — that what the lead scheduled reached the agent's own week — is
+        // as true of the list as of the bubble, and the list is where a person would actually go to check.
+        await AspireStackFixture.LeaveFocusModeAsync(agent);
+
+        // Scoped to the list rather than taking the first match on the page: the canvas bubble carries the same
+        // reference and comes first in the DOM, so `.First` reads the very element the comment above explains is
+        // deliberately unreadable.
+        await Expect(agent.Locator(".board__entries").GetByText(reference, new() { Exact = false }).First)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 
@@ -139,7 +152,7 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
         // the arrangement obeys the same policies a lead would.
         await ClearShiftsAsync(page);
 
-        await page.GotoAsync("/team");
+        await page.GotoAsync("/node");
 
         await Expect(page.GetByText("Planifier un créneau")).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
 
@@ -167,7 +180,7 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/team");
+        await page.GotoAsync("/node");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Projet", Exact = true })
             .ClickAsync(new() { Timeout = TimeoutMs });
@@ -193,7 +206,7 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/team");
+        await page.GotoAsync("/node");
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Projet", Exact = true })
             .ClickAsync(new() { Timeout = TimeoutMs });
@@ -205,21 +218,27 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
     }
 
     [Fact]
-    public async Task The_department_board_shows_a_row_per_unit()
+    public async Task The_node_board_shows_a_row_per_child()
     {
         await ConfigureDepartmentAsync("week");
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/department");
+        await page.GotoAsync("/node");
 
-        await page.GetByRole(AriaRole.Button, new() { Name = "Département", Exact = true })
+        await page.GetByRole(AriaRole.Button, new() { Name = "Mon périmètre", Exact = true })
             .ClickAsync(new() { Timeout = TimeoutMs });
 
-        // Rows are units here, not people: a head reading this wants to know where the department's effort is
-        // going. Who individually is doing what is the unit board, one level down.
+        // Rows are the child nodes, not people: a head reading this wants to know where the branch's effort is
+        // going. Who individually is doing what is one drill-down away.
         await Expect(page.Locator(".mbsc-timeline").First).ToBeVisibleAsync(new() { Timeout = TimeoutMs });
-        await Expect(page.GetByText("Infrastructure", new() { Exact = false }).First)
+        // The unit's display name, not the constant above: the realm renamed `infra` to `ops` and kept the id, so
+        // the id this class holds still resolves while the label a reader sees has changed.
+        // Scoped to the timeline: the node picker lists the same names in a select, and its options are in the
+        // DOM but hidden — so an unscoped match waits its full minute on an element nobody can read.
+        await Expect(page.Locator(".mbsc-timeline")
+                .GetByText("Exploitation & Production", new() { Exact = false })
+                .First)
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
     }
 
@@ -331,7 +350,7 @@ public sealed class BoardJourneyTests(AspireStackFixture stack)
     private static async Task ClearShiftsAsync(IPage page)
     {
         var board = await page.APIRequest.GetAsync(
-            "/api/scheduling/board?type=team",
+            "/api/scheduling/board?type=node",
             new APIRequestContextOptions { Headers = AntiForgery });
 
         board.Status.ShouldBe(200);

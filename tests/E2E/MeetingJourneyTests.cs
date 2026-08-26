@@ -34,7 +34,9 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
 
         await page.GetByLabel("Type").First.SelectOptionAsync("copil");
         await page.GetByPlaceholder("Point hebdomadaire Infrastructure").FillAsync(copil);
-        await page.GetByLabel("Périmètre").First.SelectOptionAsync("department");
+        // Scoped to the form: the rail's "Mon périmètre" entry carries the same word in its accessible name, and
+        // an unscoped label match resolves to the link rather than to the select.
+        await page.Locator("main").GetByLabel("Périmètre").First.SelectOptionAsync("department");
         await page.GetByLabel("Cible").First.SelectOptionAsync(new SelectOptionValue { Value = InformationSystems });
 
         // The composed rule is shown as the picker builds it, so somebody who reads RRULE can check the form
@@ -50,11 +52,12 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
     [Fact]
     public async Task A_patch_party_shows_on_the_department_board_with_its_severity()
     {
-        var name = await DeclarePatchPartyAsync();
+        // On the canvas, so it has to be a day the canvas is showing.
+        var name = await DeclarePatchPartyAsync(TuesdayOfThisWeek());
 
         var page = await stack.SignInAsync("olivier.marchand");
 
-        await page.GotoAsync("/department");
+        await page.GotoAsync("/node");
 
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToContainTextAsync("Plannings", new() { Timeout = TimeoutMs });
@@ -70,13 +73,19 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
     [Fact]
     public async Task A_member_of_the_department_sees_it_in_the_coming_up_strip()
     {
-        var name = await DeclarePatchPartyAsync();
+        // In the strip, so it has to be ahead of now.
+        var name = await DeclarePatchPartyAsync(Tomorrow());
 
         // Camille is a plain member of IS. The special day targets her department, so she sees it — which is the
         // whole point of the department scope, and the thing a head-only rule would have broken.
         var page = await stack.SignInAsync("camille.villeneuve");
 
         await page.GotoAsync("/board");
+
+        // The strip is one of the secondary panels Focus mode folds away, and members start in Focus mode
+        // (v2 §02). What this test is about is whether the department's special day reaches her at all, so it
+        // leaves Focus mode rather than asserting against a shell that is deliberately hiding context.
+        await AspireStackFixture.LeaveFocusModeAsync(page);
 
         await Expect(page.Locator(".upcoming__name", new() { HasTextString = name }))
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
@@ -85,16 +94,20 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
     [Fact]
     public async Task Somebody_in_another_department_sees_neither()
     {
-        var name = await DeclarePatchPartyAsync();
+        var name = await DeclarePatchPartyAsync(Tomorrow());
 
         var page = await stack.SignInAsync("sofia.navarro");
 
         await page.GotoAsync("/board");
 
         // Wait for the dashboard itself before asserting an absence, or the assertion passes simply because the
-        // page has not rendered yet.
+        // page has not rendered yet. Leaving Focus mode is the same guard one step further in: Sofia is a member,
+        // members start in Focus mode, and Focus mode removes the strip — so without this the absence below is
+        // satisfied by a strip that was never drawn rather than by a day she may not see.
         await Expect(page.GetByRole(AriaRole.Heading, new() { Level = 1 }))
             .ToBeVisibleAsync(new() { Timeout = TimeoutMs });
+
+        await AspireStackFixture.LeaveFocusModeAsync(page);
 
         await Expect(page.Locator(".upcoming__name", new() { HasTextString = name }))
             .ToHaveCountAsync(0, new() { Timeout = TimeoutMs });
@@ -123,7 +136,24 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
     /// Named uniquely per run because the Aspire stack persists between runs, and an earlier run's day would make
     /// the "sees it" assertions pass without this one ever being written.
     /// </remarks>
-    private async Task<string> DeclarePatchPartyAsync()
+    /// <summary>The Tuesday of the current ISO week, which every board's default window includes.</summary>
+    /// <remarks>
+    /// The boards open on the working week containing today, Monday to Friday. "Tomorrow" is inside that window
+    /// on most days and outside it on Friday, Saturday and Sunday — so a test that used it passed all week and
+    /// failed at the weekend, for a reason that looks nothing like its cause. A fixed weekday of the current week
+    /// is in the window whatever day the suite runs.
+    /// </remarks>
+    private static DateOnly TuesdayOfThisWeek()
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        return today.AddDays(-(((int)today.DayOfWeek + 6) % 7)).AddDays(1);
+    }
+
+    /// <summary>Tomorrow, for the screens that show what is coming rather than what is on this week's canvas.</summary>
+    private static DateOnly Tomorrow() => DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1);
+
+    private async Task<string> DeclarePatchPartyAsync(DateOnly on)
     {
         var page = await stack.SignInAsync("olivier.marchand");
 
@@ -144,8 +174,9 @@ public sealed class MeetingJourneyTests(AspireStackFixture stack)
                 ["nameKey"] = name,
                 ["scopeType"] = "department",
                 ["scopeId"] = InformationSystems,
-                // Inside the week the boards open on, so the overlay lands in the visible window.
-                ["date"] = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(1).ToString("yyyy-MM-dd"),
+                // Chosen by the caller, because the two screens under test want different things: the board can
+                // only paint a day inside the week it opened on, and the "à venir" strip only lists days ahead.
+                ["date"] = on.ToString("yyyy-MM-dd"),
                 ["allDay"] = true,
                 ["severity"] = "warning",
                 ["description"] = "Fenêtre de patch mensuelle.",

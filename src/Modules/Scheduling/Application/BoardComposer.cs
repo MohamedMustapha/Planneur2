@@ -1,6 +1,7 @@
-﻿using Cracra.BuildingBlocks.Abstractions;
+using Cracra.BuildingBlocks.Abstractions;
 using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Activities.Contracts;
+using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Scheduling.Contracts;
 using Cracra.Modules.Scheduling.Domain;
 
@@ -44,15 +45,14 @@ internal sealed class BoardComposer(
     public async Task<BoardPayload> ComposeAsync(
         string boardType,
         Guid? scopeId,
+        bool expandPeople,
         DateOnly from,
         DateOnly to,
         CancellationToken ct) =>
         (boardType ?? BoardTypes.My).Trim().ToLowerInvariant() switch
         {
-            BoardTypes.Team => await TeamAsync(scopeId, from, to, ct),
-            BoardTypes.Unit => await UnitAsync(scopeId, from, to, ct),
+            BoardTypes.Node => await NodeAsync(scopeId, expandPeople, from, to, ct),
             BoardTypes.Project => await ProjectAsync(scopeId, from, to, ct),
-            BoardTypes.Department => await DepartmentAsync(scopeId, from, to, ct),
             _ => await MyAsync(from, to, ct),
         };
 
@@ -94,121 +94,6 @@ internal sealed class BoardComposer(
             // Your own board is yours to arrange. Which individual blocks may move is still CanEdit's answer —
             // an actual you recorded is not draggable even on your own board.
             CanAssign: true);
-    }
-
-    /// <summary>
-    /// Team board: my unit's members, their activity.
-    /// </summary>
-    /// <remarks>
-    /// The archetype follows the department's configured layout: a helpdesk unit gets the work-order board, a
-    /// delivery unit gets task progress. That is what <c>default_board_layout</c> is for, and it is why a helpdesk
-    /// and a dev team can share one platform without either being handed the other's tool.
-    /// </remarks>
-    private async Task<BoardPayload> TeamAsync(Guid? unitId, DateOnly from, DateOnly to, CancellationToken ct)
-    {
-        var scope = unitId ?? user.UnitId
-            ?? throw new DomainRuleViolationException("You are not in a unit, so there is no team board to show.");
-
-        var people = await directory.GetPeopleAsync(scope, null, ct);
-        var entries = await activities.GetForPeopleAsync([.. people.Select(person => person.Id)], from, to, ct);
-
-        var departmentId = people.Select(person => person.DepartmentId).FirstOrDefault(id => id is not null);
-
-        var archetype = departmentId is { } department
-            ? await ArchetypeForAsync(department, ct)
-            : BoardArchetypes.TaskProgress;
-
-        var pool = archetype == BoardArchetypes.WorkOrders
-            ? await PoolForAsync(scope, ct)
-            : [];
-
-        var unitShifts = archetype == BoardArchetypes.Shifts
-            ? await shifts.GetForUnitAsync(scope, from, to, ct)
-            : [];
-
-        var coverage = await CoverageForAsync(departmentId, unitShifts, from, to, ct);
-
-        return new BoardPayload(
-            BoardTypes.Team,
-            archetype,
-            "board.team",
-            from,
-            to,
-            [.. people.Select(PersonRow)],
-            [
-                .. entries.Select(entry => EventFor(entry, entry.PersonId.ToString(), editable: CanEdit(entry))),
-                .. unitShifts.Select(ShiftEvent),
-            ],
-            [.. await overlays.GetOverlaysAsync(scope, null, from, to, ct)],
-            pool,
-            coverage,
-            // A lead may drag; a member looking at their team's board may not. RLS refuses the write either way,
-            // but a board that offers a gesture the server will reject is a board that feels broken.
-            CanAssign: user.HasAnyRole(ContextualRole.UnitHead, ContextualRole.DepartmentHead, ContextualRole.Pmo));
-    }
-
-    /// <summary>Unit board: the unit's people, their activity broken out by the project it was against.</summary>
-    private async Task<BoardPayload> UnitAsync(Guid? unitId, DateOnly from, DateOnly to, CancellationToken ct)
-    {
-        var scope = unitId ?? user.UnitId
-            ?? throw new DomainRuleViolationException("You are not in a unit, so there is no unit board to show.");
-
-        var people = await directory.GetPeopleAsync(scope, null, ct);
-        var entries = await activities.GetForPeopleAsync([.. people.Select(person => person.Id)], from, to, ct);
-
-        var codes = await projects.GetProjectCodesAsync(
-            [.. entries.Where(entry => entry.ProjectId is not null).Select(entry => entry.ProjectId!.Value).Distinct()],
-            ct);
-
-        // A person row, with a child row per project they worked on. Nesting rather than one row per pair, so
-        // somebody on four projects still reads as one person rather than as four unrelated rows.
-        var resources = new List<BoardResource>();
-        var events = new List<BoardEvent>();
-
-        foreach (var person in people)
-        {
-            resources.Add(PersonRow(person));
-
-            var theirs = entries.Where(entry => entry.PersonId == person.Id).ToList();
-
-            foreach (var projectId in theirs
-                         .Where(entry => entry.ProjectId is not null)
-                         .Select(entry => entry.ProjectId!.Value)
-                         .Distinct())
-            {
-                var rowId = $"{person.Id}:{projectId}";
-
-                resources.Add(new BoardResource(
-                    rowId,
-                    codes.GetValueOrDefault(projectId, "—"),
-                    Kind: "project-line",
-                    ParentId: person.Id.ToString(),
-                    Color: null,
-                    SubtitleKey: null));
-
-                events.AddRange(theirs
-                    .Where(entry => entry.ProjectId == projectId)
-                    .Select(entry => EventFor(entry, rowId, CanEdit(entry))));
-            }
-
-            // Non-project work stays on the person's own row: it belongs to them, not to a project line.
-            events.AddRange(theirs
-                .Where(entry => entry.ProjectId is null)
-                .Select(entry => EventFor(entry, person.Id.ToString(), CanEdit(entry))));
-        }
-
-        return new BoardPayload(
-            BoardTypes.Unit,
-            BoardArchetypes.TaskProgress,
-            "board.unit",
-            from,
-            to,
-            resources,
-            events,
-            [.. await overlays.GetOverlaysAsync(scope, null, from, to, ct)],
-            Pool: [],
-            Coverage: [],
-            CanAssign: user.HasAnyRole(ContextualRole.UnitHead, ContextualRole.DepartmentHead, ContextualRole.Pmo));
     }
 
     /// <summary>
@@ -286,32 +171,51 @@ internal sealed class BoardComposer(
             CanAssign: user.HasAnyRole(
                 ContextualRole.ProjectLead,
                 ContextualRole.ProductOwner,
-                ContextualRole.UnitHead,
-                ContextualRole.DepartmentHead,
+                ContextualRole.NodeHead,
                 ContextualRole.Pmo));
     }
 
     /// <summary>
-    /// Department board: every unit, with each project as a line beneath it.
+    /// The node board: child nodes where there are any, the people attached beneath where there are not.
     /// </summary>
-    /// <remarks>
-    /// The one board whose rows are not people. A head reading it wants to know where the department's effort is
-    /// going, not who individually is doing what — that question is the unit board, one level down.
-    /// </remarks>
-    private async Task<BoardPayload> DepartmentAsync(Guid? departmentId, DateOnly from, DateOnly to, CancellationToken ct)
+    private async Task<BoardPayload> NodeAsync(
+        Guid? nodeId,
+        bool expandPeople,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
     {
-        var scope = departmentId ?? user.DepartmentIds.FirstOrDefault();
+        // A head asking for no node in particular means the node they run, not the one they happen to hang off:
+        // 02.1 lands them on the screen that compares what is beneath them.
+        var scope = nodeId
+            ?? await WidestHeadedAsync(ct)
+            ?? user.NodeId
+            ?? (await directory.GetHomeScopeAsync(user.UserId, ct))?.NodeId
+            ?? throw new DomainRuleViolationException("You are not attached to a node, so there is no node board.");
 
-        if (scope == Guid.Empty)
-        {
-            throw new DomainRuleViolationException("You are not in a department, so there is no department board.");
-        }
+        var subtree = await directory.GetSubtreeAsync(scope, ct);
+        var children = subtree.Where(child => child.ParentId == scope && child.Active).ToList();
+        var people = await directory.GetPeopleInSubtreeAsync(scope, ct);
+        var entries = await activities.GetForPeopleAsync([.. people.Select(person => person.PersonId)], from, to, ct);
+        var profile = await directory.GetProfileForNodeAsync(scope, ct);
 
-        var units = await directory.GetUnitsAsync(scope, ct);
-        var people = await directory.GetPeopleAsync(null, scope, ct);
-        var entries = await activities.GetForPeopleAsync([.. people.Select(person => person.Id)], from, to, ct);
+        return children.Count > 0 && !expandPeople
+            ? await AggregatedAsync(scope, children, people, entries, from, to, ct)
+            : await AttachedAsync(people, entries, profile, from, to, ct);
+    }
 
-        var unitOf = people.ToDictionary(person => person.Id, person => person.UnitId);
+    private async Task<BoardPayload> AggregatedAsync(
+        Guid scope,
+        IReadOnlyList<OrgNodeSummary> children,
+        IReadOnlyList<NodeMember> people,
+        IReadOnlyList<ActivityEntryView> entries,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
+    {
+        var branchOf = people.ToDictionary(
+            person => person.PersonId,
+            person => BranchUnder(scope, person.NodeAncestorIds));
 
         var codes = await projects.GetProjectCodesAsync(
             [.. entries.Where(entry => entry.ProjectId is not null).Select(entry => entry.ProjectId!.Value).Distinct()],
@@ -320,18 +224,18 @@ internal sealed class BoardComposer(
         var resources = new List<BoardResource>();
         var events = new List<BoardEvent>();
 
-        foreach (var unit in units)
+        foreach (var child in children.OrderBy(child => child.Name, StringComparer.Ordinal))
         {
             resources.Add(new BoardResource(
-                unit.Id.ToString(),
-                unit.Name,
-                Kind: "unit",
+                child.Id.ToString(),
+                child.Name,
+                Kind: "node",
                 ParentId: null,
                 Color: null,
                 SubtitleKey: null));
 
             var theirs = entries
-                .Where(entry => unitOf.GetValueOrDefault(entry.PersonId) == unit.Id)
+                .Where(entry => branchOf.GetValueOrDefault(entry.PersonId) == child.Id)
                 .ToList();
 
             foreach (var projectId in theirs
@@ -339,49 +243,253 @@ internal sealed class BoardComposer(
                          .Select(entry => entry.ProjectId!.Value)
                          .Distinct())
             {
-                var rowId = $"{unit.Id}:{projectId}";
+                var rowId = $"{child.Id}:{projectId}";
 
                 resources.Add(new BoardResource(
                     rowId,
-                    codes.GetValueOrDefault(projectId, "—"),
+                    codes.GetValueOrDefault(projectId, "-"),
                     Kind: "project-line",
-                    ParentId: unit.Id.ToString(),
+                    ParentId: child.Id.ToString(),
                     Color: null,
                     SubtitleKey: null));
 
                 events.AddRange(theirs
                     .Where(entry => entry.ProjectId == projectId)
-                    // Read-only from the department board. A head correcting one person's hour does it on the
-                    // unit board where they can see whose hour it is; here the rows are units, and dragging a
-                    // block would be editing a row that does not belong to one person.
                     .Select(entry => EventFor(entry, rowId, editable: false)));
             }
 
             events.AddRange(theirs
                 .Where(entry => entry.ProjectId is null)
-                .Select(entry => EventFor(entry, unit.Id.ToString(), editable: false)));
+                .Select(entry => EventFor(entry, child.Id.ToString(), editable: false)));
+        }
+
+        // People who hang off this node rather than off one of its children. A branch with an optional level
+        // skipped has them, and dropping them would understate the node by exactly the people nobody nested.
+        foreach (var person in people.Where(person => branchOf[person.PersonId] == scope))
+        {
+            var rowId = person.PersonId.ToString();
+
+            resources.Add(new BoardResource(
+                rowId,
+                person.DisplayName,
+                Kind: "person",
+                ParentId: null,
+                Color: null,
+                SubtitleKey: null));
+
+            events.AddRange(entries
+                .Where(entry => entry.PersonId == person.PersonId)
+                .Select(entry => EventFor(entry, rowId, editable: false)));
         }
 
         return new BoardPayload(
-            BoardTypes.Department,
+            BoardTypes.Node,
             BoardArchetypes.TaskProgress,
-            "board.department",
+            "board.node",
             from,
             to,
             resources,
             events,
-            // Special days and deadlines belong here above all — a patch party or an audit is a department-wide
-            // fact, and this is the board where a head plans around them.
-            [.. await overlays.GetOverlaysAsync(null, scope, from, to, ct)],
+            [.. await overlays.GetOverlaysAsync(null, DepartmentOf(people), from, to, ct)],
             Pool: [],
             Coverage: [],
             CanAssign: false);
     }
 
+    private async Task<BoardPayload> AttachedAsync(
+        IReadOnlyList<NodeMember> people,
+        IReadOnlyList<ActivityEntryView> entries,
+        NodeProfileSnapshot? profile,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct)
+    {
+        var unitId = UnitOf(people);
+        var departmentId = DepartmentOf(people);
+
+        var archetype = departmentId is { } department
+            ? await ArchetypeForAsync(profile, department, ct)
+            : BoardArchetypes.TaskProgress;
+
+        var pool = archetype == BoardArchetypes.WorkOrders
+                   && Allows(profile, NodeCapabilities.WorkOrderPool)
+                   && unitId is { } poolUnit
+            ? await PoolForAsync(poolUnit, ct)
+            : [];
+
+        var scheduled = archetype == BoardArchetypes.Shifts
+                        && Allows(profile, NodeCapabilities.ShiftScheduling)
+                        && unitId is { } shiftUnit
+            ? await shifts.GetForUnitAsync(shiftUnit, from, to, ct)
+            : [];
+
+        var codes = await projects.GetProjectCodesAsync(
+            [.. entries.Where(entry => entry.ProjectId is not null).Select(entry => entry.ProjectId!.Value).Distinct()],
+            ct);
+
+        var resources = new List<BoardResource>();
+        var events = new List<BoardEvent>();
+
+        foreach (var person in people)
+        {
+            var personRow = person.PersonId.ToString();
+
+            resources.Add(new BoardResource(
+                personRow,
+                person.DisplayName,
+                Kind: "person",
+                ParentId: null,
+                Color: null,
+                SubtitleKey: null));
+
+            var theirs = entries.Where(entry => entry.PersonId == person.PersonId).ToList();
+
+            foreach (var projectId in theirs
+                         .Where(entry => entry.ProjectId is not null)
+                         .Select(entry => entry.ProjectId!.Value)
+                         .Distinct())
+            {
+                var rowId = $"{person.PersonId}:{projectId}";
+
+                resources.Add(new BoardResource(
+                    rowId,
+                    codes.GetValueOrDefault(projectId, "-"),
+                    Kind: "project-line",
+                    ParentId: personRow,
+                    Color: null,
+                    SubtitleKey: null));
+
+                events.AddRange(theirs
+                    .Where(entry => entry.ProjectId == projectId)
+                    .Select(entry => EventFor(entry, rowId, CanEdit(entry))));
+            }
+
+            events.AddRange(theirs
+                .Where(entry => entry.ProjectId is null)
+                .Select(entry => EventFor(entry, personRow, CanEdit(entry))));
+        }
+
+        events.AddRange(scheduled.Select(ShiftEvent));
+
+        return new BoardPayload(
+            BoardTypes.Node,
+            archetype,
+            "board.node",
+            from,
+            to,
+            resources,
+            events,
+            // The node that asked, not its ancestry: an overlay drawn from a level above would bury the things
+            // this board exists to show under facts about a branch the reader did not open.
+            [.. await overlays.GetOverlaysAsync(unitId, null, from, to, ct)],
+            pool,
+            await CoverageForAsync(departmentId, scheduled, from, to, ct),
+            CanAssign: user.HasAnyRole(ContextualRole.NodeHead, ContextualRole.Pmo));
+    }
+
+    /// <summary>The shallowest node the caller heads, or null where they head none.</summary>
+    private async Task<Guid?> WidestHeadedAsync(CancellationToken ct)
+    {
+        Guid? widest = null;
+        var shallowest = int.MaxValue;
+
+        foreach (var headed in user.HeadedNodes.Take(8))
+        {
+            var subtree = await directory.GetSubtreeAsync(headed, ct);
+            var self = subtree.FirstOrDefault(node => node.Id == headed);
+
+            if (self is not null && self.LevelNo < shallowest)
+            {
+                shallowest = self.LevelNo;
+                widest = headed;
+            }
+        }
+
+        return widest;
+    }
+
+    /// <summary>The child of the scope this path passes through, or the scope itself.</summary>
+    private static Guid BranchUnder(Guid scope, IReadOnlyList<Guid> path)
+    {
+        var index = path.ToList().IndexOf(scope);
+
+        return index >= 0 && index + 1 < path.Count ? path[index + 1] : scope;
+    }
+
+    /// <summary>
+    /// The legacy department and unit this node's people mostly belong to.
+    /// </summary>
+    /// <remarks>
+    /// Whichever most of them carry, not whichever the first of them carries. An administrator may move somebody
+    /// between branches (v2 08.1) and that correction writes the node, not the legacy columns beside it — so one
+    /// moved person sorting first would otherwise decide the whole node's board layout, taxonomy and shift slots.
+    /// Both of these fall away with the legacy tables.
+    /// </remarks>
+    private static Guid? DepartmentOf(IReadOnlyList<NodeMember> people) =>
+        Commonest(people.Select(person => person.DepartmentId));
+
+    private static Guid? UnitOf(IReadOnlyList<NodeMember> people) =>
+        Commonest(people.Select(person => person.UnitId));
+
+    private static Guid? Commonest(IEnumerable<Guid?> ids) =>
+        ids.Where(id => id is not null)
+            .GroupBy(id => id!.Value)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key)
+            .Select(group => (Guid?)group.Key)
+            .FirstOrDefault();
+
     // --- Shared shaping ----------------------------------------------------------------------------------------
 
-    private async Task<string> ArchetypeForAsync(Guid departmentId, CancellationToken ct)
+    /// <summary>
+    /// Which board this node renders with.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The profile decides, and it decides by naming an archetype rather than by having a code this method
+    /// recognises — which is the difference v2 §10.0 draws between behaviour that is data and behaviour that is a
+    /// branch. Two sibling units under one department reach here with different profiles and leave with different
+    /// boards, and nothing in this file knows or cares what either of them does for a living.
+    /// </para>
+    /// <para>
+    /// First entry wins where a profile names several. The list is ordered by preference precisely so an
+    /// administrator can express "work orders, or task progress if that is not available" without the platform
+    /// having an opinion about which is more appropriate for them.
+    /// </para>
+    /// <para>
+    /// The fallback is the pre-v2 department layout, kept because a deployment that has authored no profiles must
+    /// keep the boards it had. It maps the two legacy layout values onto archetypes and is the only place that
+    /// still reads them.
+    /// </para>
+    /// </remarks>
+    private async Task<string> ArchetypeForAsync(
+        NodeProfileSnapshot? profile,
+        Guid departmentId,
+        CancellationToken ct)
     {
+        if (profile is not null)
+        {
+            foreach (var archetype in profile.BoardArchetypes)
+            {
+                // Mapping archetype names onto the components that exist is a rendering concern, not an
+                // organizational one, so it is allowed to be a branch — what v2 §10.6 forbids is branching on the
+                // profile's *code*. "week-grid" is the plain canvas, which is the task-progress board with
+                // neither a pool nor shifts on it; there is no fourth component to render.
+                var renderable = archetype.Trim().ToLowerInvariant() switch
+                {
+                    BoardArchetypes.WorkOrders => BoardArchetypes.WorkOrders,
+                    BoardArchetypes.Shifts => BoardArchetypes.Shifts,
+                    BoardArchetypes.TaskProgress or "week-grid" => BoardArchetypes.TaskProgress,
+                    _ => null,
+                };
+
+                if (renderable is not null)
+                {
+                    return renderable;
+                }
+            }
+        }
+
         var layout = await directory.GetDefaultBoardLayoutAsync(departmentId, ct);
 
         return layout.Trim().ToLowerInvariant() switch
@@ -391,6 +499,16 @@ internal sealed class BoardComposer(
             _ => BoardArchetypes.TaskProgress,
         };
     }
+
+    /// <summary>
+    /// Whether a capability is on for a node, defaulting to on where no profile is in force.
+    /// </summary>
+    /// <remarks>
+    /// On by default so this slice never removes a control from a deployment that has authored nothing. A branch
+    /// loses the work-order pool because an administrator switched it off, not because profiles shipped.
+    /// </remarks>
+    private static bool Allows(NodeProfileSnapshot? profile, string capability) =>
+        profile is null || profile.Allows(capability);
 
     private async Task<IReadOnlyList<WorkOrderView>> PoolForAsync(Guid unitId, CancellationToken ct)
     {

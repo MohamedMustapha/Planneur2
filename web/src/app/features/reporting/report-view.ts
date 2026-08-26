@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
@@ -8,7 +9,9 @@ import {
   ReportSection,
   ReportingStore,
 } from '../../core/reporting/reporting.store';
-import { ProjectsStore } from '../../core/projects/projects.store';
+import { NodeBriefBlock } from '../../core/reporting/reporting.store';
+import { CatalogStore } from '../../core/portfolio/catalog.store';
+import { OrgAdminStore } from '../../core/admin/org-admin.store';
 import { PageHeader } from '../../shared/ui/page-header/page-header';
 
 /**
@@ -22,7 +25,7 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
 @Component({
   selector: 'app-report-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, FormsModule, PageHeader],
+  imports: [TranslocoDirective, FormsModule, DatePipe, PageHeader],
   templateUrl: './report-view.html',
   styleUrl: './report-view.scss',
 })
@@ -30,9 +33,22 @@ export class ReportView {
   private readonly transloco = inject(TranslocoService);
 
   protected readonly reporting = inject(ReportingStore);
-  protected readonly projects = inject(ProjectsStore);
+  protected readonly catalog = inject(CatalogStore);
+  protected readonly org = inject(OrgAdminStore);
 
   protected readonly periods: readonly ReportPeriodKind[] = ['week', 'month'];
+
+  /**
+   * The brief flattened for rendering.
+   *
+   * Flattened here rather than recursed in the template, for the same reason the consolidated finance rows are:
+   * a recursive template needs a second component to recurse into, and the depth is already carried on the row.
+   */
+  protected readonly briefRows = computed<readonly BriefRow[]>(() => {
+    const brief = this.reporting.brief();
+
+    return brief ? flatten(brief.node, 0) : [];
+  });
 
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -40,11 +56,34 @@ export class ReportView {
   /** The link the last export produced. Short-lived, which is why it is shown rather than followed silently. */
   protected readonly exportUrl = signal<string | null>(null);
 
-  protected readonly needsProject = computed(() => this.reporting.scope() === 'project');
+  /**
+   * The scope actually in force: the server's resolved answer, or the pick that has not landed yet.
+   *
+   * The requested scope is null until somebody chooses one — the page opens on whatever the server says is
+   * widest — so keying the pickers off it alone would leave a head with no branch selector on the screen they
+   * land on.
+   */
+  protected readonly activeScope = computed(() => this.reporting.report()?.scope ?? this.reporting.scope());
 
-  protected readonly awaitingProject = computed(
-    () => this.needsProject() && !this.reporting.scopeId(),
-  );
+  protected readonly needsItem = computed(() => this.activeScope() === 'item');
+
+  /** The branch scope takes an optional target: no pick means wherever the caller hangs off the tree. */
+  protected readonly onNodeScope = computed(() => this.activeScope() === 'node');
+
+  protected setRendering(value: 'brief' | 'details'): void {
+    this.reporting.rendering.set(value);
+  }
+
+  protected setBriefDepth(value: string): void {
+    this.reporting.briefDepth.set(value as '1' | 'all');
+  }
+
+  /** Whole hours, never decimals: §07.3's first rule, and the reason the old table read as a spreadsheet. */
+  protected whole(hours: number): number {
+    return Math.round(hours);
+  }
+
+  protected readonly awaitingItem = computed(() => this.needsItem() && !this.reporting.scopeId());
 
   /** Whatever went wrong: an action's refusal, or the report itself failing to load. */
   protected readonly message = computed(() => {
@@ -80,8 +119,12 @@ export class ReportView {
     this.reporting.show(scope);
   }
 
-  protected selectProject(projectId: string): void {
-    this.reporting.show('project', projectId || null);
+  protected selectItem(itemId: string): void {
+    this.reporting.show('item', itemId || null);
+  }
+
+  protected selectNode(nodeId: string): void {
+    this.reporting.show('node', nodeId || null);
   }
 
   protected setPeriod(period: ReportPeriodKind): void {
@@ -169,4 +212,17 @@ export class ReportView {
       this.busy.set(false);
     }
   }
+}
+
+/** One line of the brief: a branch, its rolled-up numbers, and how deep it sits under the one asked for. */
+export interface BriefRow {
+  readonly block: NodeBriefBlock;
+  readonly depth: number;
+}
+
+function flatten(block: NodeBriefBlock, depth: number): readonly BriefRow[] {
+  return [
+    { block, depth },
+    ...block.children.flatMap((child) => flatten(child, depth + 1)),
+  ];
 }

@@ -1,114 +1,126 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ActivitiesStore } from '../activities/activities.store';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { SessionStore } from '../session/session.store';
 import { ObligationsStore } from './obligations.store';
+
+interface ObligationDto {
+  readonly id: string;
+  readonly key: string;
+  readonly params: Record<string, string>;
+  readonly severity: string;
+}
+
+const overTarget: ObligationDto = {
+  id: 'over-target',
+  key: 'obligations.overTarget',
+  params: { hours: '5' },
+  severity: 'warning',
+};
+
+const overdue: ObligationDto = {
+  id: 'overdue-actions',
+  key: 'obligations.overdueActions',
+  params: { count: '2' },
+  severity: 'danger',
+};
 
 /**
  * The one thing allowed to pierce Focus mode.
  *
- * An obligation is something the viewer owes somebody, so the failure worth guarding against is the quiet one: a
- * chip that stops appearing, or a dismissal that outlives the fact it waved away. Both would leave Focus mode
- * concealing exactly what §02.2 says it may never conceal.
+ * All three sources are the server's answer now, so what is worth pinning here is the client half: that a
+ * dismissal hides a chip without settling the fact behind it, and that the banner picks the most severe one.
  */
 describe('ObligationsStore', () => {
-  /** Resets first, so a scenario may stand up a second store to ask what a fresh session would see. */
-  function storeWith(status: { overTarget: boolean; overtime?: number }): ObligationsStore {
+  async function storeWith(rows: readonly ObligationDto[]): Promise<ObligationsStore> {
     TestBed.resetTestingModule();
 
-    const activities = {
-      isOverTarget: signal(status.overTarget),
-      overtime: signal(status.overtime ?? 0),
-    };
-
     TestBed.configureTestingModule({
-      providers: [{ provide: ActivitiesStore, useValue: activities }],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: SessionStore, useValue: { isAuthenticated: signal(true) } },
+      ],
     });
 
-    return TestBed.inject(ObligationsStore);
+    const store = TestBed.inject(ObligationsStore);
+
+    TestBed.tick();
+    TestBed.inject(HttpTestingController).expectOne('/api/guidance/obligations').flush(rows);
+
+    // The fetch resolves on a microtask, so the signal is only readable after one has run.
+    await Promise.resolve();
+
+    return store;
   }
 
-  it('finds nothing to say about a week inside its target', () => {
-    const store = storeWith({ overTarget: false });
+  it('finds nothing to say about a viewer who owes nothing', async () => {
+    const store = await storeWith([]);
 
     expect(store.obligations()).toEqual([]);
     expect(store.hasAny()).toBe(false);
     expect(store.top()).toBeNull();
   });
 
-  it('raises a chip for a week over target', () => {
-    const store = storeWith({ overTarget: true, overtime: 5 });
-
-    const obligation = store.obligations()[0];
+  it('raises a chip for each obligation the server reports', async () => {
+    const store = await storeWith([overTarget]);
 
     expect(store.hasAny()).toBe(true);
-    expect(obligation.id).toBe('week-over-target');
-    expect(obligation.severity).toBe('warning');
+    expect(store.obligations()[0].id).toBe('over-target');
+    expect(store.obligations()[0].severity).toBe('warning');
   });
 
-  it('labels through a key rather than a sentence', () => {
-    const store = storeWith({ overTarget: true, overtime: 5 });
+  it('labels through a key rather than a sentence', async () => {
+    const store = await storeWith([overTarget]);
 
     // A chip built from a pre-rendered string would keep the language it was computed in and stop re-labelling on
     // a switch, which is the one thing every other label in the shell gets right.
-    expect(store.top()?.labelKey).toBe('obligations.weekOverTarget');
-    expect(store.top()?.params).toEqual({ hours: 5 });
+    expect(store.top()?.labelKey).toBe('obligations.overTarget');
+    expect(store.top()?.params).toEqual({ hours: '5' });
   });
 
-  it('recomputes when the week does', () => {
-    TestBed.resetTestingModule();
+  it('gives the banner the most severe one', async () => {
+    const store = await storeWith([overTarget, overdue]);
 
-    const activities = { isOverTarget: signal(false), overtime: signal(0) };
-
-    TestBed.configureTestingModule({
-      providers: [{ provide: ActivitiesStore, useValue: activities }],
-    });
-
-    const store = TestBed.inject(ObligationsStore);
-
-    expect(store.hasAny()).toBe(false);
-
-    activities.isOverTarget.set(true);
-    activities.overtime.set(2);
-
-    // Derived, not pushed: logging the hour that tips the week over has to raise the chip without anything
-    // remembering to tell this store about it.
-    expect(store.hasAny()).toBe(true);
-    expect(store.top()?.params).toEqual({ hours: 2 });
+    // The Focus banner has room for one. An overdue commitment outranks a long week.
+    expect(store.top()?.id).toBe('overdue-actions');
   });
 
-  it('hides a chip the viewer waved away', () => {
-    const store = storeWith({ overTarget: true, overtime: 5 });
+  it('hides a chip the viewer waved away', async () => {
+    const store = await storeWith([overTarget]);
 
-    store.dismiss('week-over-target');
+    store.dismiss('over-target');
 
     expect(store.obligations()).toEqual([]);
     expect(store.hasAny()).toBe(false);
   });
 
-  it('ignores a second dismissal of the same chip', () => {
-    const store = storeWith({ overTarget: true, overtime: 5 });
+  it('ignores a second dismissal of the same chip', async () => {
+    const store = await storeWith([overTarget]);
 
-    store.dismiss('week-over-target');
-    store.dismiss('week-over-target');
+    store.dismiss('over-target');
+    store.dismiss('over-target');
 
     expect(store.obligations()).toEqual([]);
   });
 
-  it('leaves other obligations alone when one is dismissed', () => {
-    const store = storeWith({ overTarget: true, overtime: 5 });
+  it('leaves other obligations alone when one is dismissed', async () => {
+    const store = await storeWith([overTarget]);
 
     store.dismiss('something-else-entirely');
 
     expect(store.hasAny()).toBe(true);
   });
 
-  it('keeps the underlying fact rather than settling it', () => {
-    const store = storeWith({ overTarget: true, overtime: 5 });
+  it('keeps the underlying fact rather than settling it', async () => {
+    const store = await storeWith([overTarget]);
 
-    store.dismiss('week-over-target');
+    store.dismiss('over-target');
 
     // Dismissal is session-scoped and hides the chip only. Persisting it would let somebody silence a genuine
-    // overrun permanently, which is the opposite of what an obligation is for — so a fresh store still raises it.
-    expect(storeWith({ overTarget: true, overtime: 5 }).hasAny()).toBe(true);
+    // obligation permanently, which is the opposite of what one is for — so a fresh store still raises it.
+    expect(store.hasAny()).toBe(false);
+    expect((await storeWith([overTarget])).hasAny()).toBe(true);
   });
 });

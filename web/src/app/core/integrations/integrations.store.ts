@@ -21,7 +21,7 @@ export interface MappingView {
 
 export interface ConnectionView {
   readonly id: string;
-  readonly departmentId: string;
+  readonly nodeId: string;
   readonly provider: ExternalProvider;
   readonly name: string;
   readonly baseUrl: string;
@@ -42,7 +42,7 @@ export interface ConnectionView {
 }
 
 export interface ConnectionPayload {
-  readonly departmentId: string;
+  readonly nodeId: string;
   readonly provider: ExternalProvider;
   readonly name: string;
   readonly baseUrl: string;
@@ -101,18 +101,21 @@ export class IntegrationsStore {
   private readonly http = inject(HttpClient);
   private readonly session = inject(SessionStore);
 
-  /** Narrows the list to one department. Null asks for everything the caller may administer. */
-  readonly departmentId = signal<string | null>(null);
+  /**
+   * Narrows the list to one branch, whose *effective* connections come back: wired at it, or inherited from
+   * above it. Null asks for everything the caller may administer.
+   */
+  readonly nodeId = signal<string | null>(null);
 
   private readonly connectionsResource = httpResource<readonly ConnectionView[]>(() => {
     if (!this.session.isAuthenticated()) {
       return undefined;
     }
 
-    const departmentId = this.departmentId();
+    const nodeId = this.nodeId();
 
-    return departmentId
-      ? `/api/integrations/connections?departmentId=${departmentId}`
+    return nodeId
+      ? `/api/integrations/connections?nodeId=${nodeId}`
       : '/api/integrations/connections';
   });
 

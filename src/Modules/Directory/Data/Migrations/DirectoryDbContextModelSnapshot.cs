@@ -103,12 +103,19 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("parent_department_id");
 
+                    b.Property<Guid?>("ProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("profile_id");
+
                     b.HasKey("Id")
                         .HasName("pk_department");
 
                     b.HasIndex("Code")
                         .IsUnique()
                         .HasDatabaseName("ix_department_code");
+
+                    b.HasIndex("ProfileId")
+                        .HasDatabaseName("ix_department_profile_id");
 
                     b.ToTable("department", "directory");
                 });
@@ -172,11 +179,6 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("shift_templates_json");
 
-                    b.Property<string>("WorkingDayJson")
-                        .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("working_day_json");
-
                     b.Property<int>("Version")
                         .HasColumnType("integer")
                         .HasColumnName("version");
@@ -185,6 +187,11 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasPrecision(5, 2)
                         .HasColumnType("numeric(5,2)")
                         .HasColumnName("weekly_target_hours");
+
+                    b.Property<string>("WorkingDayJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("working_day_json");
 
                     b.HasKey("Id")
                         .HasName("pk_department_config");
@@ -270,6 +277,203 @@ namespace Cracra.Modules.Directory.Data.Migrations
                     b.ToTable("functional_role", "directory");
                 });
 
+            modelBuilder.Entity("Cracra.Modules.Directory.Domain.NodeProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ActivityTaxonomyJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("activity_taxonomy_json");
+
+                    b.PrimitiveCollection<string[]>("BoardArchetypes")
+                        .HasColumnType("text[]")
+                        .HasColumnName("board_archetypes");
+
+                    b.Property<string>("BudgetDefaultsJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("budget_defaults_json");
+
+                    b.Property<string>("CapabilitiesJson")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("capabilities_json");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("HeadlinePattern")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("headline_pattern");
+
+                    b.PrimitiveCollection<string[]>("ItemTypes")
+                        .HasColumnType("text[]")
+                        .HasColumnName("item_types");
+
+                    b.Property<string>("LabelKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("label_key");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("modified_by");
+
+                    b.PrimitiveCollection<string[]>("SolvesCategories")
+                        .HasColumnType("text[]")
+                        .HasColumnName("solves_categories");
+
+                    b.HasKey("Id")
+                        .HasName("pk_node_profile");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_node_profile_code");
+
+                    b.ToTable("node_profile", "directory");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Directory.Domain.OrgLevel", b =>
+                {
+                    b.Property<int>("LevelNo")
+                        .HasColumnType("integer")
+                        .HasColumnName("level_no");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<string>("HeadLabelKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("head_label_key");
+
+                    b.Property<bool>("IsOptional")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_optional");
+
+                    b.Property<string>("LabelKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("label_key");
+
+                    b.Property<string>("LabelPluralKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("label_plural_key");
+
+                    b.Property<bool>("PeopleAllowed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("people_allowed");
+
+                    b.HasKey("LevelNo")
+                        .HasName("pk_org_level");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_org_level_code");
+
+                    b.ToTable("org_level", "directory", t =>
+                        {
+                            t.HasCheckConstraint("ck_org_level_level_no", "level_no between 1 and 8");
+                        });
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Directory.Domain.OrgNode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.PrimitiveCollection<Guid[]>("AncestorIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("ancestor_ids")
+                        .HasDefaultValueSql("'{}'::uuid[]");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid?>("HeadPersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("head_person_id");
+
+                    b.Property<int>("LevelNo")
+                        .HasColumnType("integer")
+                        .HasColumnName("level_no");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("parent_id");
+
+                    b.Property<Guid?>("ProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("profile_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_org_node");
+
+                    b.HasIndex("HeadPersonId")
+                        .HasDatabaseName("ix_org_node_head_person_id");
+
+                    b.HasIndex("LevelNo")
+                        .HasDatabaseName("ix_org_node_level_no");
+
+                    b.HasIndex("ProfileId")
+                        .HasDatabaseName("ix_org_node_profile_id");
+
+                    b.HasIndex("ParentId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("ix_org_node_parent_id_code");
+
+                    b.HasIndex("ParentId", "LevelNo")
+                        .HasDatabaseName("ix_org_node_parent_id_level_no");
+
+                    b.ToTable("org_node", "directory");
+                });
+
             modelBuilder.Entity("Cracra.Modules.Directory.Domain.Person", b =>
                 {
                     b.Property<Guid>("Id")
@@ -295,6 +499,18 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("character varying(320)")
                         .HasColumnName("email");
 
+                    b.Property<bool?>("FocusMode")
+                        .HasColumnType("boolean")
+                        .HasColumnName("focus_mode");
+
+                    b.Property<Guid>("HomeNodeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("home_node_id");
+
+                    b.Property<Guid?>("HomeNodeOverrideId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("home_node_override_id");
+
                     b.Property<DateTimeOffset?>("LastSyncedAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("last_synced_at");
@@ -309,23 +525,12 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("modified_at");
 
-                    b.Property<Guid?>("PrimaryDepartmentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("primary_department_id");
-
-                    b.Property<Guid?>("PrimaryUnitId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("primary_unit_id");
-
-                    b.Property<string>("TimeZone")
+                    b.PrimitiveCollection<Guid[]>("NodeAncestorIds")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("time_zone");
-
-                    b.Property<bool?>("FocusMode")
-                        .HasColumnType("boolean")
-                        .HasColumnName("focus_mode");
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("node_ancestor_ids")
+                        .HasDefaultValueSql("'{}'::uuid[]");
 
                     b.Property<string>("PreferredLanguage")
                         .HasMaxLength(8)
@@ -342,6 +547,20 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("preferred_time_zone");
 
+                    b.Property<Guid?>("PrimaryDepartmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("primary_department_id");
+
+                    b.Property<Guid?>("PrimaryUnitId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("primary_unit_id");
+
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("time_zone");
+
                     b.Property<string>("UiLanguage")
                         .IsRequired()
                         .HasMaxLength(8)
@@ -350,6 +569,9 @@ namespace Cracra.Modules.Directory.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_person");
+
+                    b.HasIndex("HomeNodeId")
+                        .HasDatabaseName("ix_person_home_node_id");
 
                     b.HasIndex("LdapUid")
                         .IsUnique()
@@ -460,6 +682,10 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("name");
 
+                    b.Property<Guid?>("ProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("profile_id");
+
                     b.HasKey("Id")
                         .HasName("pk_unit");
 
@@ -468,11 +694,23 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasDatabaseName("ix_unit_ldap_fonction")
                         .HasFilter("ldap_fonction is not null");
 
+                    b.HasIndex("ProfileId")
+                        .HasDatabaseName("ix_unit_profile_id");
+
                     b.HasIndex("DepartmentId", "Code")
                         .IsUnique()
                         .HasDatabaseName("ix_unit_department_id_code");
 
                     b.ToTable("unit", "directory");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Directory.Domain.Department", b =>
+                {
+                    b.HasOne("Cracra.Modules.Directory.Domain.NodeProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_department_node_profile_profile_id");
                 });
 
             modelBuilder.Entity("Cracra.Modules.Directory.Domain.DepartmentConfig", b =>
@@ -485,6 +723,28 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .HasConstraintName("fk_department_config_department_department_id");
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Directory.Domain.OrgNode", b =>
+                {
+                    b.HasOne("Cracra.Modules.Directory.Domain.OrgLevel", null)
+                        .WithMany()
+                        .HasForeignKey("LevelNo")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_org_node_org_level_level_no");
+
+                    b.HasOne("Cracra.Modules.Directory.Domain.OrgNode", null)
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_org_node_org_node_parent_id");
+
+                    b.HasOne("Cracra.Modules.Directory.Domain.NodeProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_org_node_node_profile_profile_id");
                 });
 
             modelBuilder.Entity("Cracra.Modules.Directory.Domain.PersonFunctionalRole", b =>
@@ -537,6 +797,12 @@ namespace Cracra.Modules.Directory.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_unit_department_department_id");
+
+                    b.HasOne("Cracra.Modules.Directory.Domain.NodeProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_unit_node_profile_profile_id");
 
                     b.Navigation("Department");
                 });

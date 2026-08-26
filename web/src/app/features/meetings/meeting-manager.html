@@ -46,6 +46,35 @@
             </select>
           </label>
 
+          <label class="field">
+            <span class="field__label">{{ t('meetings.level') }}</span>
+            <select class="select" (change)="setLevel($any($event.target).value)">
+              @for (option of levels; track option) {
+                <option [value]="option" [selected]="level() === option">
+                  {{ t('meetings.levelOption.' + option) }}
+                </option>
+              }
+            </select>
+          </label>
+
+          @if (isCrossNode()) {
+            <div class="field">
+              <span class="field__label">{{ t('meetings.crossNodeTargets') }}</span>
+              <div class="meetings__days">
+                @for (option of crossNodeOptions(); track option.id) {
+                  <button
+                    type="button"
+                    class="chip"
+                    [class.chip--on]="crossNodeIds().includes(option.id)"
+                    (click)="toggleCrossNode(option.id)"
+                  >
+                    {{ option.label }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
           @if (needsScopeId()) {
             <label class="field">
               <span class="field__label">{{ t('meetings.target') }}</span>
@@ -185,6 +214,7 @@
                 </div>
                 <div class="meetings__item-meta">
                   <span>{{ t('meetings.scope.' + series.scopeType) }}</span>
+                  <span>{{ t('meetings.levelOption.' + series.level) }}</span>
                   <span class="num">{{ series.startTime.slice(0, 5) }}</span>
                   <span class="num">{{ series.durationMinutes }}′</span>
                   @if (series.videoLink) {

@@ -504,7 +504,7 @@ public sealed class KudosTests(PostgresFixture postgres)
         factory.AsUser(SeedOrganisation.Thomas);
 
         var report = await factory.CreateClient().GetFromJsonAsync<ReportEnvelope>(
-            "/api/reports?scope=unit&period=month",
+            $"/api/reports?scope=node&scopeId={SeedOrganisation.Units.Infrastructure}&period=month",
             TestContext.Current.CancellationToken);
 
         report.ShouldNotBeNull();

@@ -112,7 +112,7 @@ public sealed class ConnectionScheduleTests
     private static ExternalConnection Connection() => new()
     {
         Id = Guid.CreateVersion7(),
-        DepartmentId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+        NodeId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
         Provider = ExternalProviders.AzureDevOps,
         Name = "IS — DevOps",
         BaseUrl = "https://devops.intranet",

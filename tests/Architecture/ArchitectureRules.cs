@@ -52,6 +52,14 @@ public sealed class ArchitectureRules
         // none, so it has nothing to publish. The rule below that every module directory is scanned still holds,
         // because it checks directories against this list rather than assuming a pair.
         typeof(Cracra.Modules.Finance.FinanceModule).Assembly,
+
+        typeof(Cracra.Modules.Problems.ProblemsModule).Assembly,
+        typeof(Cracra.Modules.Problems.Contracts.ProblemCard).Assembly,
+        typeof(Cracra.Modules.Strategy.StrategyModule).Assembly,
+        typeof(Cracra.Modules.Strategy.Contracts.StrategyView).Assembly,
+
+        // Guidance publishes nothing either: it reads five modules to advise the shell and is read by none.
+        typeof(Cracra.Modules.Guidance.GuidanceModule).Assembly,
     ];
 
     /// <summary>

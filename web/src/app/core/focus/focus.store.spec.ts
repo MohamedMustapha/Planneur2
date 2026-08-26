@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { AccessStore } from '../access/access.store';
-import { FocusStore, focusDefaultFor, focusRouteFor, isPiercedBy } from './focus.store';
+import { NavigationStore } from '../navigation/navigation.store';
+import { FocusStore, focusDefaultFor, isPiercedBy } from './focus.store';
 
 /**
  * The three decisions Focus mode makes on its own.
@@ -12,34 +13,13 @@ import { FocusStore, focusDefaultFor, focusRouteFor, isPiercedBy } from './focus
  * pass. These three are rules, and a rule that drifts silently is the reason a member finds themselves landing on
  * a portfolio they cannot read.
  */
-describe('focusRouteFor', () => {
-  it('lands a member on their own week', () => {
-    expect(focusRouteFor(['member'])).toBe('/board');
-  });
-
-  it('lands a unit head on their team board', () => {
-    expect(focusRouteFor(['member', 'unit-head'])).toBe('/team');
-  });
-
-  it('prefers the widest responsibility when somebody wears two hats', () => {
-    // Being a PMO is the job; being a member is how the payroll describes you. Opening on the personal week would
-    // make the first click of every session "navigate away from here".
-    expect(focusRouteFor(['member', 'unit-head', 'pmo'])).toBe('/portfolio');
-  });
-
-  it('falls back to the board for a viewer with no contextual role yet', () => {
-    // whoami has not resolved. The personal week is the one screen everybody is entitled to.
-    expect(focusRouteFor([])).toBe('/board');
-  });
-});
-
 describe('focusDefaultFor', () => {
   it('is on for a member', () => {
     expect(focusDefaultFor(['member'])).toBe(true);
   });
 
   it('is off for anyone whose day is comparison', () => {
-    expect(focusDefaultFor(['member', 'dept-head'])).toBe(false);
+    expect(focusDefaultFor(['member', 'node-head'])).toBe(false);
     expect(focusDefaultFor(['pmo'])).toBe(false);
     expect(focusDefaultFor(['po'])).toBe(false);
   });
@@ -55,7 +35,7 @@ describe('isPiercedBy', () => {
   });
 
   it('treats a detail route under the target as still being there', () => {
-    expect(isPiercedBy('/projects/42', '/projects')).toBe(false);
+    expect(isPiercedBy('/portfolio/42', '/portfolio')).toBe(false);
   });
 
   it('pierces on a deep link elsewhere', () => {
@@ -73,7 +53,7 @@ describe('isPiercedBy', () => {
 describe('FocusStore', () => {
   function storeFor(
     roles: readonly string[],
-    options: { url?: string } = {},
+    options: { url?: string; focusRoute?: string } = {},
   ): { store: FocusStore; navigate: (url: string) => void; navigated: string[] } {
     TestBed.resetTestingModule();
 
@@ -93,6 +73,10 @@ describe('FocusStore', () => {
       providers: [
         { provide: AccessStore, useValue: { roles: signal(roles) } },
         { provide: Router, useValue: router },
+        {
+          provide: NavigationStore,
+          useValue: { focusRoute: signal(options.focusRoute ?? '/board') },
+        },
       ],
     });
 
@@ -112,7 +96,7 @@ describe('FocusStore', () => {
 
   it('applies the role default while nobody has chosen', () => {
     expect(storeFor(['member']).store.enabled()).toBe(true);
-    expect(storeFor(['member', 'dept-head']).store.enabled()).toBe(false);
+    expect(storeFor(['member', 'node-head']).store.enabled()).toBe(false);
   });
 
   it('lets a choice override the default in either direction', () => {
@@ -239,7 +223,10 @@ describe('FocusStore', () => {
   });
 
   it('follows the viewer’s own focus route rather than the board', () => {
-    const { store, navigate } = storeFor(['member', 'pmo'], { url: '/portfolio' });
+    const { store, navigate } = storeFor(['member', 'pmo'], {
+      url: '/portfolio',
+      focusRoute: '/portfolio',
+    });
 
     store.choose(true);
 
@@ -253,10 +240,10 @@ describe('FocusStore', () => {
   });
 
   it('sends the viewer back to their focus screen', () => {
-    const { store, navigated } = storeFor(['member', 'unit-head']);
+    const { store, navigated } = storeFor(['member', 'node-head'], { focusRoute: '/node' });
 
     store.returnToFocus();
 
-    expect(navigated).toEqual(['/team']);
+    expect(navigated).toEqual(['/node']);
   });
 });

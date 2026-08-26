@@ -33,6 +33,32 @@ public sealed class PortfolioLifecycleTests(PostgresFixture postgres)
         Lane(board, "considered").Items.Select(item => item.Id).ShouldContain(itemId);
     }
 
+    /// <summary>
+    /// Two candidates, one name (v2 §03.1's unique code).
+    /// </summary>
+    /// <remarks>
+    /// The candidate path predates items having codes and went on inserting an empty one, so the unique index
+    /// refused the second candidate anybody proposed — with a 500, because a duplicate key is not a rule the
+    /// domain states. Every other test here proposes exactly one candidate against a fresh database, which is
+    /// precisely why nothing caught it until a browser did.
+    /// </remarks>
+    [Fact]
+    public async Task A_second_candidate_with_the_same_name_gets_its_own_code()
+    {
+        await using var factory = await SeededAsync();
+
+        var first = await ConsiderAsync(factory);
+        var second = await ConsiderAsync(factory);
+
+        second.ShouldNotBe(first);
+
+        var board = await BoardAsync(factory, SeedOrganisation.Olivier);
+        var considered = Lane(board, "considered").Items.Select(item => item.Id).ToList();
+
+        considered.ShouldContain(first);
+        considered.ShouldContain(second);
+    }
+
     [Fact]
     public async Task Committing_provisions_a_project_and_moves_the_item()
     {
@@ -203,20 +229,31 @@ public sealed class PortfolioLifecycleTests(PostgresFixture postgres)
         detail.History[0].ToState.ShouldBe("committed");
     }
 
+    /// <summary>
+    /// A head of another branch reads a candidate; a member of one does not (v2 §03.5).
+    /// </summary>
+    /// <remarks>
+    /// This reverses the v1 rule, deliberately. The catalog exists so that somebody about to ask for a new build
+    /// can first find out whether the thing already exists, and a duplicate nobody is allowed to see is a
+    /// duplicate that gets built twice. The widening stops at heads, and reading is not moving — the write test
+    /// below is the other half of the same rule.
+    /// </remarks>
     [Fact]
-    public async Task A_candidate_from_another_department_is_invisible()
+    public async Task A_head_of_another_branch_can_see_a_candidate_but_a_member_of_one_cannot()
     {
         await using var factory = await SeededAsync();
         var itemId = await ConsiderAsync(factory);
+        var ct = TestContext.Current.CancellationToken;
 
-        // Laurent heads Finance; the candidate is sponsored by IS and has no project yet, so there is nothing to
-        // derive visibility from beyond the sponsoring department.
         factory.AsUser(SeedOrganisation.Laurent);
 
-        var response = await factory.CreateClient()
-            .GetAsync($"/api/portfolio/{itemId}", TestContext.Current.CancellationToken);
+        (await factory.CreateClient().GetAsync($"/api/portfolio/{itemId}", ct))
+            .StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        factory.AsUser(SeedOrganisation.Sofia);
+
+        (await factory.CreateClient().GetAsync($"/api/portfolio/{itemId}", ct))
+            .StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -289,8 +326,10 @@ public sealed class PortfolioLifecycleTests(PostgresFixture postgres)
         await using var factory = await SeededAsync();
         var itemId = await ConsiderAsync(factory);
 
-        // Laurent heads Finance and passes the any-head policy at the door. The candidate is sponsored by IS, so
-        // RLS never shows it to him — 404, the same answer a non-existent id gets.
+        // Laurent heads Finance and passes the any-head policy at the door. Since §03 he can also read the
+        // candidate — the catalog is browsable across branches — so the refusal is 403 rather than the 404 that
+        // used to fall out of not being able to see it at all. Reading somebody else's item is the point;
+        // committing it on their behalf is not.
         factory.AsUser(SeedOrganisation.Laurent);
 
         var response = await factory.CreateClient().PostAsJsonAsync(
@@ -298,7 +337,7 @@ public sealed class PortfolioLifecycleTests(PostgresFixture postgres)
             new { projectCode = "PRJ-NOPE", decisionNotes = "Taking this over." },
             TestContext.Current.CancellationToken);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
     }
 
     [Fact]

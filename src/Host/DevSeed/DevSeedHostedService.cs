@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 
 namespace Cracra.Host.DevSeed;
 
@@ -16,6 +16,11 @@ namespace Cracra.Host.DevSeed;
 /// — cross-module references store the id and are validated in the application layer — so a project seeded before
 /// its people have synced is not broken, it is briefly unnamed on screen and correct the moment the sync lands.
 /// Waiting would mean coupling the seeder to another module's schedule to fix a few seconds of cosmetics.
+/// </para>
+/// <para>
+/// The one exception is the node-profile attachment (v2 §10), which writes onto <c>unit</c> rows and therefore
+/// cannot run before they exist. That step waits for them itself rather than making the whole seed wait, so the
+/// property above still holds for everything else.
 /// </para>
 /// <para>
 /// Failures are logged and swallowed. Demo data is worth a warning in the log; it is not worth taking the API down

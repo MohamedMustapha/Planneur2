@@ -123,5 +123,5 @@ public sealed class IterationTests
     }
 
     private static PortfolioItem Candidate() =>
-        PortfolioItem.Consider("Refonte du portail", 10, Dept, null, Head, Now);
+        PortfolioItem.Consider("REFONTEPORTA", "Refonte du portail", 10, Dept, null, Head, Now);
 }

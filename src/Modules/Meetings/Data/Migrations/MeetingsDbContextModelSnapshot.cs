@@ -68,6 +68,69 @@ namespace Cracra.Modules.Meetings.Data.Migrations
                     b.ToTable("outbox_message", "meetings");
                 });
 
+            modelBuilder.Entity("Cracra.Modules.Meetings.Domain.ActionItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly?>("Due")
+                        .HasColumnType("date")
+                        .HasColumnName("due");
+
+                    b.Property<Guid?>("LinkId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("link_id");
+
+                    b.Property<string>("LinkType")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("link_type");
+
+                    b.Property<Guid>("MinutesId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("minutes_id");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<Guid>("OwnerPersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_person_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_action_item");
+
+                    b.HasIndex("MinutesId")
+                        .HasDatabaseName("ix_action_item_minutes_id");
+
+                    b.HasIndex("LinkType", "LinkId")
+                        .HasDatabaseName("ix_action_item_link_type_link_id");
+
+                    b.HasIndex("OwnerPersonId", "Status", "Due")
+                        .HasDatabaseName("ix_action_item_owner_person_id_status_due");
+
+                    b.ToTable("action_item", "meetings");
+                });
+
             modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingAttendance", b =>
                 {
                     b.Property<Guid>("OccurrenceId")
@@ -95,6 +158,140 @@ namespace Cracra.Modules.Meetings.Data.Migrations
                         .HasDatabaseName("ix_meeting_attendance_person_id");
 
                     b.ToTable("meeting_attendance", "meetings");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingDecision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DecidedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("decided_by");
+
+                    b.Property<Guid>("MinutesId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("minutes_id");
+
+                    b.Property<string>("Rationale")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("rationale");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_meeting_decision");
+
+                    b.HasIndex("MinutesId")
+                        .HasDatabaseName("ix_meeting_decision_minutes_id");
+
+                    b.ToTable("meeting_decision", "meetings");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingMinutes", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.PrimitiveCollection<Guid[]>("Absentees")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("absentees");
+
+                    b.Property<string>("Agenda")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)")
+                        .HasColumnName("agenda");
+
+                    b.PrimitiveCollection<Guid[]>("Attendees")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("attendees");
+
+                    b.Property<Guid>("AuthorPersonId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_person_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("level");
+
+                    b.Property<DateTimeOffset>("ModifiedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("modified_at");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<Guid>("OccurrenceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("occurrence_id");
+
+                    b.Property<bool>("Published")
+                        .HasColumnType("boolean")
+                        .HasColumnName("published");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
+                        .HasColumnType("timestamptz")
+                        .HasColumnName("published_at");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("scope_id");
+
+                    b.PrimitiveCollection<Guid[]>("ScopeIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("scope_ids");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("scope_type");
+
+                    b.Property<Guid>("SeriesId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("series_id");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(16000)
+                        .HasColumnType("character varying(16000)")
+                        .HasColumnName("summary");
+
+                    b.HasKey("Id")
+                        .HasName("pk_meeting_minutes");
+
+                    b.HasIndex("AuthorPersonId")
+                        .HasDatabaseName("ix_meeting_minutes_author_person_id");
+
+                    b.HasIndex("OccurrenceId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_meeting_minutes_occurrence_id");
+
+                    b.HasIndex("ScopeType", "ScopeId", "OccurredAt")
+                        .HasDatabaseName("ix_meeting_minutes_scope_type_scope_id_occurred_at");
+
+                    b.ToTable("meeting_minutes", "meetings");
                 });
 
             modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingOccurrence", b =>
@@ -187,6 +384,12 @@ namespace Cracra.Modules.Meetings.Data.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("kind");
 
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("level");
+
                     b.Property<string>("Location")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
@@ -215,6 +418,11 @@ namespace Cracra.Modules.Meetings.Data.Migrations
                     b.Property<Guid?>("ScopeId")
                         .HasColumnType("uuid")
                         .HasColumnName("scope_id");
+
+                    b.PrimitiveCollection<Guid[]>("ScopeIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("scope_ids");
 
                     b.Property<string>("ScopeType")
                         .IsRequired()
@@ -332,6 +540,16 @@ namespace Cracra.Modules.Meetings.Data.Migrations
                     b.ToTable("special_day", "meetings");
                 });
 
+            modelBuilder.Entity("Cracra.Modules.Meetings.Domain.ActionItem", b =>
+                {
+                    b.HasOne("Cracra.Modules.Meetings.Domain.MeetingMinutes", null)
+                        .WithMany("Actions")
+                        .HasForeignKey("MinutesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_action_item_meeting_minutes_minutes_id");
+                });
+
             modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingAttendance", b =>
                 {
                     b.HasOne("Cracra.Modules.Meetings.Domain.MeetingOccurrence", "Occurrence")
@@ -344,6 +562,16 @@ namespace Cracra.Modules.Meetings.Data.Migrations
                     b.Navigation("Occurrence");
                 });
 
+            modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingDecision", b =>
+                {
+                    b.HasOne("Cracra.Modules.Meetings.Domain.MeetingMinutes", null)
+                        .WithMany("Decisions")
+                        .HasForeignKey("MinutesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_meeting_decision_meeting_minutes_minutes_id");
+                });
+
             modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingOccurrence", b =>
                 {
                     b.HasOne("Cracra.Modules.Meetings.Domain.MeetingSeries", "Series")
@@ -354,6 +582,13 @@ namespace Cracra.Modules.Meetings.Data.Migrations
                         .HasConstraintName("fk_meeting_occurrence_meeting_series_series_id");
 
                     b.Navigation("Series");
+                });
+
+            modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingMinutes", b =>
+                {
+                    b.Navigation("Actions");
+
+                    b.Navigation("Decisions");
                 });
 
             modelBuilder.Entity("Cracra.Modules.Meetings.Domain.MeetingOccurrence", b =>

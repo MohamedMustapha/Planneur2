@@ -4,40 +4,10 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { AccessStore } from '../access/access.store';
 import { CONTEXTUAL_ROLES } from '../navigation/navigation';
+import { NavigationStore } from '../navigation/navigation.store';
 
 /** Cache of the server-held preference, so a cold load renders the right shell before `/me` answers. */
 const STORAGE_KEY = 'cracra.focus';
-
-/**
- * Where each role's primary intent lives — v2 §02.1, mapped onto the routes this build actually has.
- *
- * The v2 nav table is written against the generic node tree from `01-org-model.md`, which is a later slice. Until
- * it lands, the same idea is expressed against the roles the access module already returns: the landing screen is
- * whichever one the person's job is *about*, and Focus mode shows that screen and nothing else.
- *
- * Order matters — the first match wins, so somebody who is both a member and a PMO focuses on the portfolio
- * rather than on their own week. The widest responsibility is the one the tool should open on.
- */
-const FOCUS_ROUTE_BY_ROLE: readonly (readonly [string, string])[] = [
-  [CONTEXTUAL_ROLES.pmo, '/portfolio'],
-  [CONTEXTUAL_ROLES.departmentHead, '/department'],
-  [CONTEXTUAL_ROLES.unitHead, '/team'],
-  [CONTEXTUAL_ROLES.productOwner, '/projects'],
-  [CONTEXTUAL_ROLES.projectLead, '/projects'],
-  [CONTEXTUAL_ROLES.member, '/board'],
-];
-
-/**
- * Where Focus mode lands this viewer.
- *
- * Exported and pure so the rule can be pinned in a unit test without a TestBed: which screen a role's day is
- * *about* is a product decision, and it is the kind of decision that quietly rots when the roles change.
- */
-export function focusRouteFor(roles: readonly string[]): string {
-  const match = FOCUS_ROUTE_BY_ROLE.find(([role]) => roles.includes(role));
-
-  return match ? match[1] : '/board';
-}
 
 /**
  * On for members, off for heads, PO and PMO (§02.2).
@@ -47,8 +17,7 @@ export function focusRouteFor(roles: readonly string[]): string {
  */
 export function focusDefaultFor(roles: readonly string[]): boolean {
   const wide: readonly string[] = [
-    CONTEXTUAL_ROLES.unitHead,
-    CONTEXTUAL_ROLES.departmentHead,
+    CONTEXTUAL_ROLES.nodeHead,
     CONTEXTUAL_ROLES.pmo,
     CONTEXTUAL_ROLES.productOwner,
     CONTEXTUAL_ROLES.projectLead,
@@ -90,6 +59,7 @@ export function isPiercedBy(url: string, focusRoute: string): boolean {
 export class FocusStore {
   private readonly access = inject(AccessStore);
   private readonly router = inject(Router);
+  private readonly navigation = inject(NavigationStore);
 
   /**
    * What this person chose, or null if they never have.
@@ -105,8 +75,8 @@ export class FocusStore {
   /** Whether the person is *in* Focus mode. What the toggle reflects. */
   readonly enabled = computed(() => this.preference() ?? this.roleDefault());
 
-  /** The route Focus mode focuses on, for this viewer. */
-  readonly focusRoute = computed(() => focusRouteFor(this.access.roles()));
+  /** The route Focus mode focuses on: whichever section the server named as this viewer's intent. */
+  readonly focusRoute = computed(() => this.navigation.focusRoute());
 
   private readonly url = toSignal(
     this.router.events.pipe(

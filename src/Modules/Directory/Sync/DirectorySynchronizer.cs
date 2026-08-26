@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Cracra.BuildingBlocks.Observability;
 using Cracra.BuildingBlocks.Persistence.Outbox;
 using Cracra.BuildingBlocks.Web.Users;
@@ -6,6 +6,7 @@ using Cracra.Modules.Access.Contracts;
 using Cracra.Modules.Directory.Contracts;
 using Cracra.Modules.Directory.Data;
 using Cracra.Modules.Directory.Domain;
+using Cracra.Modules.Directory.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -62,6 +63,7 @@ internal sealed class DirectorySynchronizer(
 
         var context = scope.ServiceProvider.GetRequiredService<DirectoryDbContext>();
         var materializer = scope.ServiceProvider.GetRequiredService<IRoleMaterializer>();
+        var projection = scope.ServiceProvider.GetRequiredService<IOrgTreeProjection>();
 
         var users = await keycloak.GetUsersAsync(ct);
         var groups = await keycloak.GetGroupsAsync(ct);
@@ -74,7 +76,7 @@ internal sealed class DirectorySynchronizer(
         var strategy = context.Database.CreateExecutionStrategy();
 
         var result = await strategy.ExecuteAsync(async cancellationToken =>
-            await ReconcileAsync(context, materializer, users, groups, cancellationToken), ct);
+            await ReconcileAsync(context, materializer, projection, users, groups, cancellationToken), ct);
 
         var elapsed = Stopwatch.GetElapsedTime(started);
 
@@ -96,6 +98,7 @@ internal sealed class DirectorySynchronizer(
     private async Task<DirectorySyncResult> ReconcileAsync(
         DirectoryDbContext context,
         IRoleMaterializer materializer,
+        IOrgTreeProjection projection,
         IReadOnlyList<KeycloakUser> users,
         IReadOnlyList<KeycloakGroup> groups,
         CancellationToken ct)
@@ -161,6 +164,9 @@ internal sealed class DirectorySynchronizer(
                 newUnits++;
             }
         }
+
+        await context.SaveChangesAsync(ct);
+        await projection.ProjectAsync(context, ct);
 
         var seen = new HashSet<Guid>();
 

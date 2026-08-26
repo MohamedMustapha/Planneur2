@@ -66,7 +66,7 @@ internal static class MirrorMapper
             Title = snapshot.Title,
             Type = snapshot.Type,
             State = snapshot.State,
-            DepartmentId = connection.DepartmentId,
+            NodeId = connection.NodeId,
         };
 
         Apply(item, snapshot, connection, mappings, people, now);
@@ -118,10 +118,14 @@ internal static class MirrorMapper
         item.ProjectId = projectId;
 
         // A ServiceNow item takes the unit its assignment group maps to; a DevOps item has none, and falls back
-        // to nothing rather than to the connection's department's first unit. An item that claims to be in a
-        // queue it was never in would put itself in front of a team that cannot do anything with it.
+        // to nothing rather than to the connection's branch's first unit. An item that claims to be in a queue it
+        // was never in would put itself in front of a team that cannot do anything with it.
         item.UnitId = unitId;
-        item.DepartmentId = connection.DepartmentId;
+
+        // The narrowest branch the item belongs to: the one its assignment group maps to, or the connection's
+        // where nothing maps. Hanging every item at the connection's branch would put a helpdesk queue above the
+        // team that works it, where the people in it cannot see their own tickets.
+        item.NodeId = unitId ?? connection.NodeId;
         item.Url = snapshot.Url;
         item.EstimatedHours = snapshot.EstimatedHours;
         item.UpdatedAtSource = snapshot.UpdatedAtSource;

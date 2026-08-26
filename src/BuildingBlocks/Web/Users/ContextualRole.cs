@@ -8,7 +8,13 @@ namespace Cracra.BuildingBlocks.Web.Users;
 public static class ContextualRole
 {
     public const string Member = "member";
+
+    public const string NodeHead = "node-head";
+
+    public const string Admin = "admin";
+
     public const string UnitHead = "unit-head";
+
     public const string DepartmentHead = "dept-head";
     public const string ProjectLead = "project-lead";
     public const string ProductOwner = "po";
@@ -20,6 +26,8 @@ public static class ContextualRole
     public static readonly IReadOnlyList<string> All =
     [
         Member,
+        NodeHead,
+        Admin,
         UnitHead,
         DepartmentHead,
         ProjectLead,
@@ -28,6 +36,8 @@ public static class ContextualRole
         System,
     ];
 
+    public static readonly IReadOnlyList<string> LegacyHeadRoles = [UnitHead, DepartmentHead];
+
     /// <summary>The roles that get cross-department read on shared projects (knowledge flow).</summary>
-    public static readonly IReadOnlyList<string> Heads = [UnitHead, DepartmentHead, Pmo];
+    public static readonly IReadOnlyList<string> Heads = [NodeHead, Pmo];
 }

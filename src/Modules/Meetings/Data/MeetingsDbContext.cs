@@ -18,6 +18,12 @@ public sealed class MeetingsDbContext(DbContextOptions<MeetingsDbContext> option
 
     public DbSet<SpecialDay> SpecialDays => Set<SpecialDay>();
 
+    public DbSet<MeetingMinutes> Minutes => Set<MeetingMinutes>();
+
+    public DbSet<MeetingDecision> Decisions => Set<MeetingDecision>();
+
+    public DbSet<ActionItem> Actions => Set<ActionItem>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MeetingsDbContext).Assembly);
@@ -38,6 +44,8 @@ internal sealed class MeetingSeriesConfiguration : IEntityTypeConfiguration<Meet
         builder.Property(series => series.Kind).HasMaxLength(64).IsRequired();
         builder.Property(series => series.NameKey).HasMaxLength(256).IsRequired();
         builder.Property(series => series.ScopeType).HasMaxLength(32).IsRequired();
+        builder.Property(series => series.Level).HasMaxLength(32).IsRequired();
+        builder.Property(series => series.ScopeIds).HasColumnType("uuid[]").IsRequired();
         builder.Property(series => series.RecurrenceRule).HasMaxLength(512).IsRequired();
         builder.Property(series => series.TimeZoneId).HasMaxLength(64).IsRequired();
         builder.Property(series => series.Location).HasMaxLength(256);
@@ -109,5 +117,85 @@ internal sealed class SpecialDayConfiguration : IEntityTypeConfiguration<Special
 
         builder.HasIndex(day => new { day.Date, day.ScopeType, day.ScopeId });
         builder.HasIndex(day => day.DepartmentId);
+    }
+}
+
+internal sealed class MeetingMinutesConfiguration : IEntityTypeConfiguration<MeetingMinutes>
+{
+    public void Configure(EntityTypeBuilder<MeetingMinutes> builder)
+    {
+        builder.ToTable("meeting_minutes");
+        builder.HasKey(minutes => minutes.Id);
+
+        builder.Property(minutes => minutes.Id).ValueGeneratedNever();
+        builder.Property(minutes => minutes.Level).HasMaxLength(32).IsRequired();
+        builder.Property(minutes => minutes.ScopeType).HasMaxLength(32).IsRequired();
+        builder.Property(minutes => minutes.ScopeIds).HasColumnType("uuid[]").IsRequired();
+        builder.Property(minutes => minutes.Attendees).HasColumnType("uuid[]").IsRequired();
+        builder.Property(minutes => minutes.Absentees).HasColumnType("uuid[]").IsRequired();
+        builder.Property(minutes => minutes.Agenda).HasMaxLength(8000);
+        builder.Property(minutes => minutes.Summary).HasMaxLength(16000);
+
+        // One CR per occurrence. Two people writing minutes for the same meeting is a merge nobody wants to do
+        // afterwards, and the editor opens the existing draft instead.
+        builder.HasIndex(minutes => minutes.OccurrenceId).IsUnique();
+
+        // The "Derniers CR" strip's query: what was published to this scope, most recent first.
+        builder.HasIndex(minutes => new { minutes.ScopeType, minutes.ScopeId, minutes.OccurredAt });
+        builder.HasIndex(minutes => minutes.AuthorPersonId);
+
+        builder.HasMany(minutes => minutes.Decisions)
+            .WithOne()
+            .HasForeignKey(decision => decision.MinutesId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(minutes => minutes.Actions)
+            .WithOne()
+            .HasForeignKey(action => action.MinutesId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation(minutes => minutes.Decisions).UsePropertyAccessMode(PropertyAccessMode.Field);
+        builder.Navigation(minutes => minutes.Actions).UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+}
+
+internal sealed class MeetingDecisionConfiguration : IEntityTypeConfiguration<MeetingDecision>
+{
+    public void Configure(EntityTypeBuilder<MeetingDecision> builder)
+    {
+        builder.ToTable("meeting_decision");
+        builder.HasKey(decision => decision.Id);
+
+        builder.Property(decision => decision.Id).ValueGeneratedNever();
+        builder.Property(decision => decision.Text).HasMaxLength(4000).IsRequired();
+        builder.Property(decision => decision.Rationale).HasMaxLength(4000);
+        builder.Property(decision => decision.DecidedBy).HasMaxLength(256);
+
+        builder.HasIndex(decision => decision.MinutesId);
+    }
+}
+
+internal sealed class ActionItemConfiguration : IEntityTypeConfiguration<ActionItem>
+{
+    public void Configure(EntityTypeBuilder<ActionItem> builder)
+    {
+        builder.ToTable("action_item");
+        builder.HasKey(action => action.Id);
+
+        builder.Property(action => action.Id).ValueGeneratedNever();
+        builder.Property(action => action.Title).HasMaxLength(1000).IsRequired();
+        builder.Property(action => action.Status).HasMaxLength(16).IsRequired();
+        builder.Property(action => action.LinkType).HasMaxLength(16).IsRequired();
+
+        builder.Ignore(action => action.IsOpen);
+
+        builder.HasIndex(action => action.MinutesId);
+
+        // The tracker's two questions: "what do I owe" and "what is still open here", both with the overdue ones
+        // first. Status leads because every one of those queries filters on it.
+        builder.HasIndex(action => new { action.OwnerPersonId, action.Status, action.Due });
+
+        // And the reverse: when a problem or an item resolves, which actions were waiting on it.
+        builder.HasIndex(action => new { action.LinkType, action.LinkId });
     }
 }

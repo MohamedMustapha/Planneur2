@@ -1,4 +1,4 @@
-﻿namespace Cracra.Modules.Directory.Domain;
+namespace Cracra.Modules.Directory.Domain;
 
 /// <summary>
 /// A department — the top of the org tree and the unit of configuration. "Department-agnostic" in the positioning
@@ -19,6 +19,16 @@ public sealed class Department
 
     /// <summary>Set when a department sits under another. Null for a top-level one.</summary>
     public Guid? ParentDepartmentId { get; set; }
+
+    /// <summary>
+    /// The behaviour profile this department points at, or null to inherit its parent's (v2 §10).
+    /// </summary>
+    /// <remarks>
+    /// Null is not "no profile" — it is "ask upward". A deployment that has authored one profile at the root gets
+    /// consistent behaviour everywhere without touching another row, which is what makes profiles adoptable
+    /// incrementally rather than as a big-bang configuration exercise.
+    /// </remarks>
+    public Guid? ProfileId { get; set; }
 
     public bool Active { get; set; } = true;
 
@@ -62,6 +72,16 @@ public sealed class Unit
 
     public UnitKind Kind { get; set; } = UnitKind.Delivery;
 
+    /// <summary>
+    /// The behaviour profile this unit points at, or null to inherit from its department upward (v2 §10).
+    /// </summary>
+    /// <remarks>
+    /// This is where two sibling units under one department stop being the same tool: one points at a dispatch
+    /// profile and gets the work-order pool, the other points at a delivery profile and gets task progress.
+    /// <see cref="Kind"/> stays for what LDAP sync reads it for and no longer decides anything about the board.
+    /// </remarks>
+    public Guid? ProfileId { get; set; }
+
     public bool Active { get; set; } = true;
 
     public DateTimeOffset CreatedAt { get; set; }
@@ -98,6 +118,20 @@ public sealed class Person
 
     /// <summary>Denormalized for the same reason — it feeds <c>app.dept_ids</c> and the department predicates.</summary>
     public Guid? PrimaryDepartmentId { get; set; }
+
+    public Guid HomeNodeId { get; set; }
+
+    /// <summary>
+    /// Where an administrator put this person, when the directory is wrong about them (v2 §08.1).
+    /// </summary>
+    /// <remarks>
+    /// Kept beside the derived node rather than instead of it, because the sync has to be able to tell "this is
+    /// where LDAP says they sit" from "this is where somebody decided they sit". Without the distinction every
+    /// sync would either undo the correction or lose the LDAP value it was correcting.
+    /// </remarks>
+    public Guid? HomeNodeOverrideId { get; set; }
+
+    public Guid[] NodeAncestorIds { get; private set; } = [];
 
     public string TimeZone { get; set; } = "Europe/Paris";
 

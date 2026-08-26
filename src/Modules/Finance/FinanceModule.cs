@@ -19,6 +19,9 @@ public static class FinanceModule
         services.AddScoped<IFinanceConfigService, FinanceConfigService>();
         services.AddScoped<ICapexOpexService, CapexOpexService>();
         services.AddScoped<ICapexOpexExporter, CapexOpexExporter>();
+        services.AddScoped<IConsolidationService, ConsolidationService>();
+        services.AddScoped<ICommitmentService, CommitmentService>();
+        services.AddScoped<IConsolidatedExporter, ConsolidatedExporter>();
 
         // No hosted service, no outbox consumer, no integration event. Finance derives and exports; it changes
         // nothing anybody else can observe, which is what "emits nothing" in the spec means in practice.

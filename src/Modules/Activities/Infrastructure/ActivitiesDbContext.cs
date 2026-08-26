@@ -46,6 +46,12 @@ internal sealed class ActivityEntryConfiguration : IEntityTypeConfiguration<Acti
         builder.Property(entry => entry.Note).HasMaxLength(2000);
         builder.Property(entry => entry.Hours).HasPrecision(6, 2);
 
+        builder.Property(entry => entry.NodeId).ValueGeneratedOnAddOrUpdate();
+        builder.Property(entry => entry.NodeAncestorIds)
+            .HasColumnType("uuid[]")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsRequired();
+
         builder.Ignore(entry => entry.DomainEvents);
         builder.Ignore(entry => entry.Slot);
         builder.Ignore(entry => entry.Week);

@@ -34,6 +34,14 @@ public static class DirectoryModule
         // The knobs S5, S6 and S9 read across the module boundary.
         services.AddScoped<Contracts.IDepartmentConfigReader, DepartmentConfigReader>();
 
+        // v2 §10. Scoped because the walk runs under the caller's RLS session, and the answer to "what profile is
+        // in force here" is therefore the caller's answer, not a cacheable global one.
+        services.AddScoped<Contracts.INodeProfileReader, NodeProfileResolver>();
+        services.AddScoped<INodeProfileService, NodeProfileService>();
+        services.AddScoped<IOrgTreeProjection, OrgTreeProjection>();
+        services.AddScoped<IOrgAdminService, OrgAdminService>();
+        services.AddScoped<Contracts.IOrgNodeReader, OrgNodeReader>();
+
         // Singleton: it opens its own system-context scope per call, deliberately outside whatever
         // session is asking. See the type for why that is safe and how narrow it is kept.
         services.AddSingleton<Contracts.IDirectoryReferenceReader, DirectoryReferenceReader>();

@@ -8,7 +8,7 @@ namespace Cracra.Modules.Scheduling.Application;
 // query that started applying rules would be a rule living somewhere the domain cannot see it.
 // =================================================================================================================
 
-public sealed record GetBoardQuery(string? Type, Guid? ScopeId, DateOnly? From, DateOnly? To)
+public sealed record GetBoardQuery(string? Type, Guid? ScopeId, bool ExpandPeople, DateOnly? From, DateOnly? To)
     : IRequest<BoardPayload>;
 
 public sealed record GetPoolQuery(Guid? UnitId, string? Source) : IRequest<IReadOnlyList<WorkOrderView>>;
@@ -24,7 +24,13 @@ internal sealed class GetBoardHandler(BoardComposer composer) : IRequestHandler<
         var from = request.From ?? MondayOf(DateOnly.FromDateTime(DateTime.UtcNow));
         var to = request.To ?? from.AddDays(6);
 
-        return await composer.ComposeAsync(request.Type ?? BoardTypes.My, request.ScopeId, from, to, ct);
+        return await composer.ComposeAsync(
+            request.Type ?? BoardTypes.My,
+            request.ScopeId,
+            request.ExpandPeople,
+            from,
+            to,
+            ct);
     }
 
     private static DateOnly MondayOf(DateOnly day) =>

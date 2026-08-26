@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Web.Users;
+using Cracra.BuildingBlocks.Web.Users;
 using Cracra.Modules.Directory.Domain;
 
 namespace Cracra.Modules.Directory.Sync;
@@ -106,6 +106,9 @@ public static class DirectoryMapping
         person.Email = mapped.Email;
         person.PrimaryUnitId = mapped.UnitId;
         person.PrimaryDepartmentId = mapped.DepartmentId;
+        // §08.1: an administrator's correction outranks the directory, and keeps outranking it. A sync that
+        // reset this would undo the fix every night and leave nobody able to say why.
+        person.HomeNodeId = person.HomeNodeOverrideId ?? mapped.UnitId;
         person.UiLanguage = mapped.UiLanguage;
         person.Active = mapped.Active;
         person.LastSyncedAt = now;
@@ -126,6 +129,7 @@ public static class DirectoryMapping
         Email = mapped.Email,
         PrimaryUnitId = mapped.UnitId,
         PrimaryDepartmentId = mapped.DepartmentId,
+        HomeNodeId = mapped.UnitId,
         UiLanguage = mapped.UiLanguage,
         Active = mapped.Active,
         LastSyncedAt = now,

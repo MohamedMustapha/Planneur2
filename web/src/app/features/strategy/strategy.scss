@@ -1,0 +1,261 @@
+.switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-end: var(--space-4);
+
+  &__tab {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-4);
+    text-align: start;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+
+    &--on {
+      border-color: var(--accent-strong);
+      background: var(--accent-soft);
+    }
+  }
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  margin-block-end: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  &__text {
+    h2 {
+      margin: 0 0 var(--space-1);
+    }
+
+    p {
+      margin: 0 0 var(--space-1);
+    }
+  }
+}
+
+/*
+ * The ring is a plain SVG rather than a chart library: it renders one number, it has to be legible at 48px in a
+ * list of twenty, and it must print. Rotated so the stroke starts at twelve o'clock, which is where every reader
+ * expects a dial to start.
+ */
+.ring {
+  inline-size: 3rem;
+  block-size: 3rem;
+  flex: none;
+  transform: rotate(-90deg);
+
+  &--big {
+    inline-size: 4.5rem;
+    block-size: 4.5rem;
+  }
+
+  &__track {
+    fill: none;
+    stroke: var(--surface-sunken);
+    stroke-width: 6;
+  }
+
+  &__fill {
+    fill: none;
+    stroke: var(--accent-strong);
+    stroke-width: 6;
+    stroke-linecap: round;
+
+    &--at-risk {
+      stroke: var(--warn-strong, #b8860b);
+    }
+
+    &--off-track {
+      stroke: var(--danger-strong, #b3261e);
+    }
+  }
+}
+
+.attention {
+  padding: var(--space-3);
+  margin-block-end: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--warn-soft, var(--accent-soft));
+}
+
+.objectives {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0 0 var(--space-6);
+  list-style: none;
+}
+
+.objective {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  &__main {
+    display: flex;
+    gap: var(--space-4);
+    inline-size: 100%;
+    padding: var(--space-4);
+    text-align: start;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+
+  &__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-2);
+
+    h3 {
+      margin: 0;
+      font-size: var(--text-md);
+    }
+  }
+
+  &__meta,
+  &__work {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+  }
+}
+
+.alignment {
+  padding: var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+
+  h2 {
+    margin-block-start: 0;
+  }
+
+  &__cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+.gap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.chip {
+  padding: 0.1rem var(--space-2);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  font-size: var(--text-xs);
+
+  &--work {
+    background: var(--surface-sunken);
+    border-color: transparent;
+  }
+
+  &--override {
+    background: var(--warn-soft, var(--accent-soft));
+    border-color: transparent;
+  }
+}
+
+.pill {
+  padding: 0.1rem var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  background: var(--surface-sunken);
+
+  &--done {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  &--at-risk {
+    background: var(--warn-soft, var(--accent-soft));
+  }
+
+  &--off-track {
+    background: var(--danger-soft, var(--surface-sunken));
+  }
+}
+
+.warn {
+  color: var(--warn-strong, var(--fg-muted));
+}
+
+.drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: min(32rem, 100vw);
+  overflow-y: auto;
+  padding: var(--space-5);
+  background: var(--surface-raised);
+  border-inline-start: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-block-end: var(--space-4);
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    margin-block-start: var(--space-4);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-block-end: var(--space-4);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--space-3);
+}
+
+.list {
+  padding-inline-start: var(--space-4);
+  margin: 0;
+}
+
+.muted {
+  color: var(--fg-muted);
+}

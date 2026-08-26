@@ -2,6 +2,7 @@
 using Cracra.Modules.Access.Contracts;
 using Cracra.Modules.Activities.Domain;
 using Cracra.Modules.Activities.Infrastructure;
+using Cracra.Modules.Directory.Data;
 using Cracra.Modules.Projects.Domain;
 using Cracra.Modules.Projects.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -56,6 +57,8 @@ internal sealed class DevDataSeeder(
         var now = DateTimeOffset.UtcNow;
         var seeded = 0;
 
+        await AttachNodeProfilesAsync(ct);
+
         foreach (var blueprint in DevSeedCatalogue.Projects)
         {
             if (await SeedProjectAsync(blueprint, settings, now, ct))
@@ -70,6 +73,112 @@ internal sealed class DevDataSeeder(
         }
 
         return seeded;
+    }
+
+    /// <summary>
+    /// Points two sibling DSI units at different profiles, so the dev box shows what v2 §10 is for.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The profile rows themselves are seeded by the Directory migration, because they are vocabulary the platform
+    /// ships. The <em>attachment</em> is not: which branch does which kind of work is a deployment's own answer,
+    /// and a migration that decided it for them would be exactly the hardcoded org semantics this slice removes.
+    /// So it lives here, on the dev box, next to the rest of the make-believe.
+    /// </para>
+    /// <para>
+    /// Delivery on one unit and dispatch on its sibling under the same department is the whole demonstration: the
+    /// two land on different boards, offer different activity subtypes, and hide different controls, without
+    /// either of them being a different <em>kind</em> of thing in the schema.
+    /// </para>
+    /// </remarks>
+    private async Task AttachNodeProfilesAsync(CancellationToken ct)
+    {
+        await using var scope = scopes.CreateAsyncScope();
+
+        scope.ServiceProvider.GetRequiredService<IUserContextAccessor>().Current = UserContext.SystemJob;
+
+        var directory = scope.ServiceProvider.GetRequiredService<DirectoryDbContext>();
+
+        var attachments = new Dictionary<Guid, string>
+        {
+            [DevSeedCatalogue.DevelopmentUnitId] = "DELIVERY",
+            [DevSeedCatalogue.HelpdeskUnitId] = "DISPATCH",
+            [DevSeedCatalogue.TransformationUnitId] = "ADVISORY",
+        };
+
+        // The one part of this seed that genuinely depends on the Keycloak sync having landed. The rest does not
+        // — a project seeded before its people exist is briefly unnamed and correct the moment they arrive — but
+        // an attachment is a write onto a `unit` row, and on a fresh database those rows do not exist yet. Left
+        // to race, the seeder silently attached nothing and the dev box came up with no profiles anywhere, which
+        // looked exactly like the feature not working.
+        if (!await WaitForUnitsAsync(directory, [.. attachments.Keys], ct))
+        {
+            logger.LogWarning(
+                "Dev seed: the directory has no units yet, so no node profiles were attached. Re-run the seeder "
+                + "once the Keycloak sync has completed.");
+
+            return;
+        }
+
+        var profiles = await directory.NodeProfiles
+            .Where(profile => attachments.Values.Contains(profile.Code))
+            .ToDictionaryAsync(profile => profile.Code, profile => profile.Id, ct);
+
+        var changed = 0;
+
+        foreach (var (unitId, code) in attachments)
+        {
+            if (!profiles.TryGetValue(code, out var profileId))
+            {
+                continue;
+            }
+
+            var unit = await directory.Units.AsTracking().SingleOrDefaultAsync(u => u.Id == unitId, ct);
+
+            // Absent rather than unprofiled: a dev box whose directory sync has not run yet has no units at all,
+            // and re-running the seeder after it has is what fixes that. Nothing here should fail over it.
+            if (unit is null || unit.ProfileId == profileId)
+            {
+                continue;
+            }
+
+            unit.ProfileId = profileId;
+            unit.ModifiedAt = DateTimeOffset.UtcNow;
+            changed++;
+        }
+
+        if (changed > 0)
+        {
+            await directory.SaveChangesAsync(ct);
+            logger.LogInformation("Dev seed: attached node profiles to {UnitCount} units.", changed);
+        }
+    }
+
+    /// <summary>
+    /// Waits, briefly, for the directory sync to have created the units this seed attaches to.
+    /// </summary>
+    /// <remarks>
+    /// A bounded poll rather than a dependency on the sync service, because the two are separate background
+    /// services with no ordering between them and coupling the seeder to another module's schedule to fix a
+    /// startup race would be the larger sin. Giving up is logged and harmless: the profiles are attached on the
+    /// next boot, and every unattached node simply inherits platform behaviour in the meantime.
+    /// </remarks>
+    private static async Task<bool> WaitForUnitsAsync(
+        DirectoryDbContext directory,
+        IReadOnlyList<Guid> unitIds,
+        CancellationToken ct)
+    {
+        for (var attempt = 0; attempt < 60; attempt++)
+        {
+            if (await directory.Units.AnyAsync(unit => unitIds.Contains(unit.Id), ct))
+            {
+                return true;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(1), ct);
+        }
+
+        return false;
     }
 
     private async Task<bool> SeedProjectAsync(

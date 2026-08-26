@@ -25,6 +25,9 @@ public static class IntegrationsModule
             .ValidateOnStart();
 
         services.AddScoped<IConnectionService, ConnectionService>();
+
+        // The capability gate (v2 10.3). Scoped, because the answer is the caller's branch's.
+        services.AddScoped<IIntegrationCapability, IntegrationCapability>();
         services.AddSingleton<IIntegrationCredentials, IntegrationCredentials>();
 
         // One implementation behind the module's own endpoint and behind the contract S5 and S6a consume.

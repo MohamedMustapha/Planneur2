@@ -1,4 +1,4 @@
-﻿using Cracra.BuildingBlocks.Mediator;
+using Cracra.BuildingBlocks.Mediator;
 using Cracra.BuildingBlocks.Web.Authorization;
 using Cracra.Modules.Scheduling.Application;
 using Cracra.Modules.Scheduling.Contracts;
@@ -15,13 +15,17 @@ namespace Cracra.Modules.Scheduling.Api;
 
 public sealed class GetBoardRequest
 {
-    /// <summary>my | team | unit | project | department.</summary>
+    /// <summary>my | node | project.</summary>
     [QueryParam]
     public string? Type { get; set; }
 
-    /// <summary>The unit, project or department the board is about. Defaults to the caller's own.</summary>
+    /// <summary>The node or project the board is about. Defaults to the caller's own node.</summary>
     [QueryParam]
     public Guid? ScopeId { get; set; }
+
+    /// <summary>Rows are people even where the node has children.</summary>
+    [QueryParam]
+    public bool ExpandPeople { get; set; }
 
     [QueryParam]
     public DateOnly? From { get; set; }
@@ -42,7 +46,7 @@ public sealed class GetBoardEndpoint(ISender sender) : Endpoint<GetBoardRequest,
 
     public override async Task HandleAsync(GetBoardRequest request, CancellationToken ct) =>
         await Send.OkAsync(
-            await sender.Send(new GetBoardQuery(request.Type, request.ScopeId, request.From, request.To), ct),
+            await sender.Send(new GetBoardQuery(request.Type, request.ScopeId, request.ExpandPeople, request.From, request.To), ct),
             ct);
 }
 

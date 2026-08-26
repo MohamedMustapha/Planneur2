@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { LocalizedNumber } from '../../core/i18n/localized-number.pipe';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -14,7 +15,7 @@ import { PageHeader } from '../../shared/ui/page-header/page-header';
 @Component({
   selector: 'app-project-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, RouterLink, DecimalPipe, PageHeader],
+  imports: [LocalizedNumber, TranslocoDirective, RouterLink, DecimalPipe, PageHeader],
   templateUrl: './project-list.html',
   styleUrl: './project-list.scss',
 })

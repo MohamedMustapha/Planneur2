@@ -8,9 +8,14 @@
          never reaches into either schema. -->
     <ProjectReference Include="../Directory.Contracts/Cracra.Modules.Directory.Contracts.csproj" />
     <ProjectReference Include="../Projects.Contracts/Cracra.Modules.Projects.Contracts.csproj" />
+    <!-- v2 §07.2: an action points at a problem or a catalog item, and closes when it resolves. -->
+    <ProjectReference Include="../Problems.Contracts/Cracra.Modules.Problems.Contracts.csproj" />
+    <ProjectReference Include="../Portfolio.Contracts/Cracra.Modules.Portfolio.Contracts.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Web/Cracra.BuildingBlocks.Web.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Persistence/Cracra.BuildingBlocks.Persistence.csproj" />
     <ProjectReference Include="../../BuildingBlocks/Abstractions/Cracra.BuildingBlocks.Abstractions.csproj" />
+    <!-- v2 §07.2: the optional AI draft of the CR summary. -->
+    <ProjectReference Include="../../BuildingBlocks/Ai/Cracra.BuildingBlocks.Ai.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
